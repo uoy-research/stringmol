@@ -17,10 +17,10 @@ cd src
 #cppcheck --error-exitcode=1 --force --check-config --enable=all *.cpp
 echo "----------------------------"
 echo "Checking config with cppcheck"
-cppcheck --error-exitcode=1 --force --check-config --suppress=missingIncludeSystem .
+cppcheck --error-exitcode=1 --force --check-config --suppress=missingIncludeSystem -i src/lodepng.* .
 echo "----------------------------"
 echo "Checking code with cppcheck"
-cppcheck --error-exitcode=1 --force --enable=all --inline-suppr .
+cppcheck --error-exitcode=1 --force --enable=all --inline-suppr -i src/lodepng.* .
 cd ../
 echo ""
 
@@ -41,4 +41,4 @@ echo "  now testing.."
 
 
 echo "  cleaning up.."
-rm -f rng.txt
+rm -f rng.txt4
