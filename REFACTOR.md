@@ -4,9 +4,6 @@ Let's be honest, stringmol needs refactoring. There's too much redundant code in
 
 Although there are many 'standard' ways to refactor, I've not found any of them to be easy to understand and to get started. So this document is going to record what I've tried, what works and what doesn't. 
 
-
-The first thing I did was ask twitter! 
-
 # Current activity
 
 - 200811: see github.com/franticspider/TryingTravis for how I'm developing a continuous integration environment. 
@@ -29,7 +26,11 @@ There's a *huge* amount of redundancy in this - many functions are minor tweaks 
 
 # Background
 
+
+
 ## Raw Twitter comments
+
+The first thing I did was ask twitter! 
 
 Thanks here to David White (DW), Jerry Swan(JS), John Tuffen(JT) and Emily Dolson (ED) for these suggestions
 
@@ -46,7 +47,9 @@ https://en.wikipedia.org/wiki/Facade_pattern
 - JS: Approximate ordering for large-scale refactoring: 
 	1. Delete/replace code.
 	2. Modularize. Perhaps first by simply moving source code around so that related functionality is grouped, then  start to channel communication via (preferably contractual) APIs as per the Facade pattern.
-- JT: Unit testing of interface APIs first and foremost — subsequent bugs introduced by refactoring will then be found more quickly; DW: I’m assuming any notion of an “API” is a pipe dream here, but if you’ve got something more polished then agree you should definitely write unit tests and write a wee tutorial on how to use it before changing the code; JT: I supppse it also depends on where do you want to win? If it’s  a performance issue then some analysis is probably worth doing to find hotspots, rather than spending time optimising the ‘wrong things; SH: This project is going in several directions at once (R package; Web app; dedicated Hardware; GPU) and if I don't sort this now it's going to bite me. Speed is a huge issue but I know where that particular problem is and I'll fight that dragon another day; JS: Ouch. Encapsulation and layering behind a succession of facades will help prevent the codebase fragmenting in a horribly combinatorial way.
+- JT: Unit testing of interface APIs first and foremost — subsequent bugs introduced by refactoring will then be found more quickly; 
+- DW: I’m assuming any notion of an “API” is a pipe dream here, but if you’ve got something more polished then agree you should definitely write unit tests and write a wee tutorial on how to use it before changing the code; 
+- JT: I supppse it also depends on where do you want to win? If it’s  a performance issue then some analysis is probably worth doing to find hotspots, rather than spending time optimising the ‘wrong things; SH: This project is going in several directions at once (R package; Web app; dedicated Hardware; GPU) and if I don't sort this now it's going to bite me. Speed is a huge issue but I know where that particular problem is and I'll fight that dragon another day; JS: Ouch. Encapsulation and layering behind a succession of facades will help prevent the codebase fragmenting in a horribly combinatorial way.
 - ED: Low effort: Document the dependencies! Write down any assumptions you're making about how stuff is set up. Make sure there's enough info that you could get it running again a year from now.
 - ED: Medium effort: Document the expected output of the code under various circumstances. Write a script that runs the code and confirms that it produces that output. Ta-da you've got basic regression tests!
 - ED: Low effort (once you've done the above step and assuming your code is already shared on github or similar): Set up continuous integration (e.g. @travisci) to automatically run  the tests when you make changes. That way you'll know if you do anything that changes behavior.
@@ -54,9 +57,9 @@ https://en.wikipedia.org/wiki/Facade_pattern
 ## Status before writing this document
 
 - I'd got stringmol on github
-- We had a 'lost' web app at stringmol.york.ac.uk
+- We had a 'lost' web app at stringmol.york.ac.uk -- see CGI.md
 - I'd developed Rstringmol for a paper
-- I was working on deploying stringmol to Centurion hardware
+- I was working on deploying stringmol to Centurion hardware with Martin Trezfer and Matthew ___
 - I'd written some basic tests but hadn't maintained them
 - A tech. report from 2012, which describes functionality but needs updating
 - some runs through valgrind to spot any memory leaks

@@ -3444,7 +3444,7 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 				 *  CLEAVE  *
 				 ************/
 				case '%':
-						if((int dac = cleave(act))){
+						if(int dac = cleave(act)){
 							finished = 1;
 							safe_append=0;	//extract_ag(&nowhead,p);
 						}
@@ -4112,7 +4112,7 @@ int stringPM::Network_cleave(s_ag *act){
 		char *cs;
 
 		cc->S =(char *) malloc(maxl0*sizeof(char));
-		memset(c->S,0,maxl0*sizeof(char));
+		memset(cc->S,0,maxl0*sizeof(char));
 
 		cs = csite->S;
 		int cpy = strlen(cs);
