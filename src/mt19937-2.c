@@ -153,6 +153,11 @@ int mt_get_mti(){
 	return mti;
 }
 
+void mt_set_mti(int val){
+	mti = val;
+}
+
+
 /*RECORDING FUNCTION*/
 void print_mt(FILE *fp){
 	int i=0;
@@ -197,7 +202,7 @@ int load_mt(const char *fn){
 	FILE *fp;
 	const int maxl = 128;
 	char line[maxl];
-	int mtival,args_read=0,ii=-1;
+	int mtival,args_read=0,ii;
 	enum load_mt_errcode errcode = load_mt_success;
 	unsigned long mtval;
 

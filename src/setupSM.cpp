@@ -433,9 +433,76 @@ float **swdt(stringPM * A, stringPM * B,s_sw **spp_matches, int *mol_class, floa
 
 
 
+void print_class_scores(FILE *fp, float *scores,  int N){
+
+	float sum=0.;
+	int i;
+
+	for(i=0;i<N;i++){
+		sum += scores[i];
+	}
+
+	fprintf(fp,"Ratio: ");
+	for(i=0;i<N;i++){
+		if(i)
+			fprintf(fp,":");
+		fprintf(fp,"%f",scores[i]/sum);
+	}
+
+	fprintf(fp,",\tTotals: ");
+	for(i=0;i<N;i++){
+		if(i)
+			fprintf(fp,":");
+		fprintf(fp,"%f",scores[i]);
+	}
+
+	fprintf(fp,"\n");
+}
+
+void print_swdt(FILE *fp, float **dt,  stringPM * A, stringPM * B){
+
+	int a,b,
+		nA,//=A->spp_count(),
+		nB;//=B->spp_count();
+
+	A->count_spp();
+	nA = A->spl->spp_count - 1;
+
+	B->count_spp();
+	nB = B->spl->spp_count - 1;
+
+	l_spp *pA,*pB;
+
+	int *found;
+	found = (int *) malloc(nB*sizeof(int));
+	memset(found,0,nB*sizeof(int));
+
+	//Print the column names
+	printf("Species distance table:\n");
+	//fprintf(fp,"\t");
+	//for(b=0,pB=B->spl->species;b<nB;b++,pB=pB->next){
+	for(b=0,pB=B->spl->species;b<nB;b++,pB=pB->next){
+		if(pB->count){
+			found[b]=1;
+			fprintf(fp,"\t%03d",pB->spp);
+		}
+	}
+	fprintf(fp,"\n");
+	for(a=0,pA=A->spl->species;a<nA;a++,pA=pA->next){
+		fprintf(fp,"%03d",pA->spp);
+		for(b=0;b<nB;b++){
+
+			if(found[b]){
+				fprintf(fp,"\t%0.3f",dt[a][b]);
+			}
+		}
+		fprintf(fp,"\n");
+	}
+}
+
+
 
 //get stats for evolution cf seed community
-// cppcheck-suppress unusedFunction
 void evostats(char * Afn, stringPM *B,s_sw **spp_matches, float *self, float *gvm){
 
 	//Create a copy of the seed replicase population
@@ -478,6 +545,38 @@ void evostats(char * Afn, stringPM *B,s_sw **spp_matches, float *self, float *gv
 }
 
 
+
+float * self_stats(char * Afn){
+
+	//Create a copy of the seed replicase population
+
+	SMspp		SP;
+	stringPM A(&SP);
+	A.load(Afn,NULL,0,0);
+
+	//Get min dist from spp to spp
+
+	A.get_spp_count(-1);
+	A.count_spp();
+	int nA = A.spl->spp_count - 1;
+	l_spp *pA;
+
+	float *self;
+	self = (float *)malloc(nA*sizeof(float));
+	pA=A.spl->species;
+	for(int a=0;a<nA;a++,pA=pA->next){
+
+		align sw;
+		SmithWatermanV2(pA->S,pA->S,&sw,A.blosum,0);
+
+		int L = strlen(pA->S);
+		sw.score = sw.score/L;
+		self[a]=sw.score;
+
+	}
+
+	return self;
+}
 
 
 int arg_load(stringPM *A, int argc, char *argv[], int verbose ){
@@ -714,6 +813,21 @@ int randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *x
 
 
 
+
+void obsolete_find_ag_gridpos(s_ag *pag,smsprun *run, int *x, int *y){
+	for(int i=0;i<run->gridx;i++){
+		for(int j=0;j<run->gridy;j++){
+			if( run->grid[i][j] == pag ){
+				*x=i;
+				*y=j;
+				return;
+			}
+		}
+	}
+	printf("Unable to find agent %s\n",pag->S);
+}
+
+
 s_ag * pick_partner(stringPM *A, smsprun *run,int x, int y){
 
 	int i,j,xx,yy;
@@ -753,7 +867,7 @@ s_ag * pick_partner(stringPM *A, smsprun *run,int x, int y){
 						if(run->status[xx][yy] == G_NOW){
 							if(count==it)
 								run->status[xx][yy] = G_NEXT;
-						  return run->grid[xx][yy]; //TODO: should this be guarded by the if?
+								return run->grid[xx][yy];
 							count++;
 						}
 					}
@@ -1182,7 +1296,6 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 
 
 		s_ag *bag;
-    bag = NULL;
 		switch(pag->status){
 		case B_UNBOUND:
 			bag = NULL;
@@ -1332,7 +1445,6 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 					print_mt(rfp);
 					fclose(rfp);
 				}
-				fclose(fprng);
 			}
 			else{
 				printf("ERROR reading Random Number Generator config %s\n",rngfn);
@@ -1535,6 +1647,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 
 	A->update();
 	update_grid(run);
+
 
 
 	//#ifdef DEBUG
@@ -2241,7 +2354,6 @@ void find_parents(anc_node *aa, int timestep, int depth, char * ofn, int *found_
 /**Strategy is to create a text file containing the ancestry. We'll write an R or graphviz script to
  * parse this and generate figures.
  */
-//OBSOLETE: This analysis is now carried out in Rstringmol
 int smspatial_ancestry(int argc, char *argv[]){
 
 
@@ -2288,7 +2400,49 @@ int smspatial_ancestry(int argc, char *argv[]){
 
 	find_parents(aa,timestep,0,ofn,found_spp);
 
-    free(found_spp);
+
+	/*
+	while(!found_luca){
+
+
+
+
+		sprintf(fn,"splist%d.dat",timestep);
+		if((fp=fopen(fn,"r"))==NULL){
+			printf("Cannot open file %s so cannot proceed\n",fn);
+			exit(341);
+		}
+		else{
+
+			printf("Successfully opened file %s\nNow looking for species %d\n", fn, spno);
+			while((fgets(line,llen,fp)) != NULL){
+
+				//56189,-1,-1,1,EK$OYHOJLRWEK$BLUBO^>C$=?>D$BLUB}B$=?$$$BLBLUB}OYYHKOBLBLUB}OYYHKO
+				sscanf(line,"%d,%d,%d",&s1,&a1,&p1);
+
+				if(s1 == spno){
+					if(a1==-1 && p1==-1){
+						printf("Ancestors are from earlier run, decrementing timestep\n");
+						timestep -= 100;
+						fclose(fp);
+						break;
+					}
+					else{
+						printf("Ancestors found! Active is %d, Passive is %d\n",a1,p1);
+						break;
+					}
+				}
+			}
+
+			//find the species
+		}
+	}
+	*/
+
+
+	/*Open the splist file and find the entries for the species*/
+
+
 
 	return 0;
 }

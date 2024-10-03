@@ -50,12 +50,58 @@
 #include "tests.h"
 
 
-/*OBSOLTE FILE/APPROACH - TESTS ARE NOW IN ../tests/ SUBDIR
-    TESTS NOW AVAILABLE IN ../tests/ ARE COMMENTED OUT
-*/
+
+/*Test the random number generator. It must:
+ *
+ * 1: give the same sequence from a seed
+ * 2: give the current position so that we can re-seed
+ */
+int test_rand(int verbose){
+
+	int failed = 0;
+	int rin = 436;
+
+	if(verbose)printf("Testing seeding using dev/rand... \n");fflush(stdout);
+	int rout = initmyrand(-1);
+	if(rout == rin){
+		printf("FAILED - requested seed from dev/random, but got -1\n");
+	}
+	else
+		if(verbose)printf("PASSED - init set seed as %d (%u)\n",rout,(unsigned int) rout);
+
+	if(verbose)printf("Testing seeding using dev/rand again... \n");fflush(stdout);
+	rout = rout - initmyrand(-1);
+	if(rout == 0 ){
+		printf("FAILED - requested new seed from dev/random, but got same one\n");
+	}
+	else
+		if(verbose)printf("PASSED - init set seed as %d\n",rout);
+
+	if(verbose)printf("Testing seeding using ingeter %d... \n",rin);fflush(stdout);
+	rout = initmyrand(rin);
+	if(rout != rin){
+		printf("FAILED - seed not set - different seed used\n");
+	}
+	else
+		if(verbose)printf("PASSED - init set seed as %d\n",rout);
+
+
+	if(verbose)printf("Testing re-setting mt index... \n");fflush(stdout);
+	int pos = 22;
+	set_mti(pos);
+	pos = get_mti();
 
 
 
+
+	if(!failed)
+		printf("ALL RNG TESTS PASSED\n\n");
+	return failed;
+}
+
+
+
+//stringPM * test_config_settings( int argc, char *argv[], int return_SM){
 stringPM * test_config_settings( int argc, char *argv[], int return_SM){
 	/** The idea here is to report the default values of the parameters, then parse the config and report them again. */
 
@@ -69,10 +115,13 @@ stringPM * test_config_settings( int argc, char *argv[], int return_SM){
 	print_params(A,ntrials,nsteps);
 	printf("..c'est ca!\n\n");
 
+	//int readordef_param_int(char *fn, const char *label, int *val, const int defaultvalue, const int verbose)
 	readordef_param_int(argv[2], "NTRIALS", &ntrials, 1, 1);
 	int nns = readordef_param_int(argv[2], "NSTEPS", &nsteps, -1, 1);
 
 	A->load(argv[2],NULL,0,1);
+	//if(!arg_load(A, argc, argv, 0))
+	//	return NULL;
 
 	printf("\n\nAFTER loading the config, params are:\n");
 	print_params(A,ntrials,nsteps);
@@ -144,9 +193,6 @@ int compare_config(stringPM *A, stringPM *B){
 }
 
 
-
-
-//TODO: check this does what it says it does - then move/migrate to tests folder..
 /* Test loading and saving of configs..
  * STRATEGY:
  * 		1: Load a file with known settings - see if we've got the right number.
@@ -160,6 +206,7 @@ int test_loadsave(int argc, char *argv[]){
 
 	/*TODO: test arguments */
 	stringPM *A;
+	stringPM *B;
 	stringPM *C;
 	const int fnlen =200;
 	FILE *fp;
@@ -184,12 +231,9 @@ int test_loadsave(int argc, char *argv[]){
 	sprintf(argv2[2],"%s",fn);
 
 	//Load the simulation and test that the config settings are correct
-    // B unused here
-	//stringPM *B;
-	//B = test_config_settings(argc,argv2,1);
+	B = test_config_settings(argc,argv2,1);
 
-    //csc unused here...
-	//int csc = compare_config(A,B);
+	int csc = compare_config(A,B);
 
 	//Run the Trial forward
 
@@ -209,13 +253,11 @@ int test_loadsave(int argc, char *argv[]){
 	C = test_config_settings(argc,argv2,1);
 
 
-	int csc = compare_config(A,C);
+	csc = compare_config(A,C);
 
-    for(int c=0;c<argc;c++) free(argv2[c]);
-    free(argv2);
+
 	return csc;
 }
-
 
 
 
@@ -227,14 +269,20 @@ int test_all(int argc, char *argv[]){
 
 	int failed = 0;
 
+	printf("Testing rng\n");
+	failed = test_rand(0);
+
+
 	failed = test_loadsave(argc,argv);
+
+
+
 	printf("Check config test\n");
+
+
 
 	return failed;
 }
-
-
-
 
 
 void test_rand_config(int argc, char *argv[]){

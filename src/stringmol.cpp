@@ -41,6 +41,9 @@
 #include "SMspp.h"
 #include "stringPM.h"
 
+//signal
+#include "signalSM.h"
+
 //TODO: Sort out this dependency nightmare!
 // Writing PNGs
 #include "lodepng.h"
@@ -70,6 +73,7 @@ void printsppct(stringPM *A, int t);
 int joinsplists(int argc, char *argv[]){
 
 
+	FILE *fin;
 	int nlists = atoi(argv[3]);
 	char fn[256];
 	char seq[2001];
@@ -77,7 +81,7 @@ int joinsplists(int argc, char *argv[]){
 	SMspp		SP;
 	stringPM	oA(&SP),*A;
 	s_ag *pag;
-	int i,spno;
+	int i,spno,spold;
 	int tt,tottime=0;
 
 	A = &oA;
@@ -87,11 +91,9 @@ int joinsplists(int argc, char *argv[]){
 	pag->S =(char *) malloc(A->maxl0*sizeof(char));
 //First lets do the loading:
 	for(i=0;i<nlists;i++){
-	    FILE *fin;
-		
-        sprintf(fn,"%s/splist%03d.dat",argv[2],i);
+		spold=-1;
+		sprintf(fn,"%s/splist%03d.dat",argv[2],i);
 		if((fin=fopen(fn,"r"))!=NULL){
-		    int spold=-1;
 
 			while((fgets(line,A->maxl,fin))!=NULL){
 				memset(pag->S,0,A->maxl0*sizeof(char));
@@ -102,7 +104,7 @@ int joinsplists(int argc, char *argv[]){
 				//for(int t=0;t<6;t++){
 				//	p = strtok(NULL,",");
 				//}
-				sscanf(line,"%d,%*d,%*d,%*f,%*d,%*d,%2000s",&spno,seq);
+				sscanf(line,"%d,%*d,%*d,%*f,%*d,%*d,%s",&spno,seq);
 				if(spno!=spold){
 					spold = spno;
 					strncpy(pag->S,seq,strlen(seq));
@@ -159,9 +161,7 @@ int joinsplists(int argc, char *argv[]){
 }
 
 
-// Called by SmPm_AlifeXII
-// perhaps useful for debugging? 
-// cppcheck-suppress unusedFunction
+//Called by SmPm_AlifeXII
 void check_pop_dy(char *fn,stringPM *A,int it){
 
 	l_spp *s;
@@ -187,9 +187,7 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
 	s_ag *pag;
 
 	for(i=0;i<nag;i++){
-	    l_spp *species;
-        //TODO: species isn't defined before it is used when i==0, but we need to check that the next line doesn't cause issues: 
-        species = NULL;
+	l_spp *species;
 
 		pag = A->make_ag(symbol);//,1);
 
@@ -332,8 +330,6 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
 
 		for(i=0;i<nag;i++){
 			l_spp *s;
-            //TODO: cppcheck says s must be initialised - becuase when i==0 it isn't assigned before it is initialised: check this!
-            s = NULL;
 
 			pag = A->make_ag('A'+j);//,1);
 
@@ -418,15 +414,15 @@ int origlife(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NTRIALS to %u\n",rlim);
+			printf("Setting NTRIALS to %d\n",rlim);
 			break;
 		default:
-			printf("NTRIALS not specified;\nSetting NTRIALS to %u\n",rlim);
+			printf("NTRIALS not specified;\nSetting NTRIALS to %d\n",rlim);
 			break;
 		}
 		fclose(fp);
 	}
-	printf("NTRIALS = %u\n",rlim);
+	printf("NTRIALS = %d\n",rlim);
 
 
 
@@ -441,7 +437,7 @@ int origlife(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NSTEPS to %u\n",rlim);
+			printf("Setting NSTEPS to %d\n",rlim);
 			indefinite=0;
 			break;
 		default:
@@ -450,7 +446,7 @@ int origlife(int argc, char *argv[]){
 		}
 		fclose(fp);
 	}
-	printf("NSTEPS = %u\n",maxnsteps);
+	printf("NSTEPS = %d\n",maxnsteps);
 
 
 
@@ -458,7 +454,7 @@ int origlife(int argc, char *argv[]){
 
 	for(unsigned int rep=0;rep<rlim;rep++){
 
-		sprintf(fitfile,"rep%03ufitness.dat",rep);
+		sprintf(fitfile,"rep%03dfitness.dat",rep);
 		ftmp=fopen(fitfile,"w");
 		fclose(ftmp);
 		for(unsigned int rr=0;rr<rlim;rr++){
@@ -472,10 +468,10 @@ int origlife(int argc, char *argv[]){
 
 			test_adj(A.blosum);
 
-			sprintf(randfn,"rep%03uAgents%03u.conf",rep,rr);
+			sprintf(randfn,"rep%03dAgents%03d.conf",rep,rr);
 			if(rr){
 				ftmp=fopen(fitfile,"a");
-				fprintf(ftmp,"%u\t",rr-1);
+				fprintf(ftmp,"%d\t",rr-1);
 				fclose(ftmp);
 				biomass_config(&A, (char *) "bio.conf", 20, 20, &SP, fitfile);
 				//possibly put fewer random mols in, or bind sites can "mop up" all successful spp
@@ -490,11 +486,12 @@ int origlife(int argc, char *argv[]){
 			SP.print_spp_list(stdout);
 
 			A.run_number=rr;
-			sprintf(pfn,"rep%03upopdy%03d.dat",rep,A.run_number);
+			sprintf(pfn,"rep%03dpopdy%03d.dat",rep,A.run_number);
 			ftmp = fopen(pfn,"w");
 			fclose(ftmp);
 
-			int lastepoch=A.get_ecosystem(),nepochs=1;
+
+			int lastepoch=A.get_ecosystem(),thisepoch,nepochs=1;
 
 			A.domut=1;
 			nsteps=0;
@@ -510,7 +507,7 @@ int origlife(int argc, char *argv[]){
 					A.extit=i;//dummy line for breakpoint
 
 					//printf("Printing species list\n");
-					sprintf(fn,"rep%03usplist%03d.dat",rep,A.run_number);
+					sprintf(fn,"rep%03dsplist%03d.dat",rep,A.run_number);
 					if((fp = fopen(fn,"w"))!=NULL){
 						SP.print_spp_list(fp);
 						fclose(fp);
@@ -521,11 +518,12 @@ int origlife(int argc, char *argv[]){
 				}
 
 				if(!(i%1000)){
-					printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
+					printf("%03d At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
 					printsppct(&A,i);
 				}
 
-				int thisepoch = A.get_ecosystem();
+
+				thisepoch = A.get_ecosystem();
 
 				if(!(i%1000)){
 					if(thisepoch != lastepoch){
@@ -568,19 +566,24 @@ int origlife(int argc, char *argv[]){
  */
 int SmPm_AlifeXII(int argc, char *argv[]){
 
-	int i;
+	int i,div;
 
 	SMspp		SP;
 	stringPM	A(&SP);
+	FILE *fp;
 	int indefinite=1;
 
 	long rseed = initmyrand(-1);//437);//-1);//437);
 	//R.printasint();
 
+	unsigned int nsteps;// = (int) A.nsteps;
+
 	//Prime the printout:
 	//FILE *fpo,*fpdiv;
 	FILE *fsumm,*ftmp;
 
+	//division values for summary
+	int divct,divit,diven;
 
 	char	fn[128],pfn[128];
 
@@ -624,8 +627,9 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 	for(unsigned int rr=0;rr<rlim;rr++){
 
-    	int div,divct,divit,diven;
-		div=divct = divit = diven = 0;
+		div=0;
+
+		divct = divit = diven = 0;
 
 		SP.clear_list();
 
@@ -656,11 +660,10 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 		fclose(ftmp);
 
 #ifdef DO_ANCESTRY
-		int lastepoch=A.get_ecosystem(),nepochs=1;
+		int lastepoch=A.get_ecosystem(),thisepoch,nepochs=1;
 #endif
-	    unsigned int nsteps;// = (int) A.nsteps;
-		
-        A.domut=1;
+
+		A.domut=1;
 		nsteps=0;
 		for(i=0;indefinite || nsteps <= maxnsteps;i++){
 
@@ -682,7 +685,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 			if(!(i%1000)){
 
-				printf("%d%02u At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\n",proc,rr,i,(int)A.energy,div,A.subrate,A.indelrate);
+				printf("%d%02d At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\n",proc,rr,i,(int)A.energy,div,A.subrate,A.indelrate);
 				//A.print_agents_count(stdout);
 
 				printsppct(&A,i);
@@ -691,28 +694,27 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 
 #ifdef DO_ANCESTRY
-			int thisepoch = A.get_ecosystem();
+			thisepoch = A.get_ecosystem();
 
 			if(!(i%1000)){
-
-	            FILE *fp;
-				
-                if(thisepoch != lastepoch){
+				if(thisepoch != lastepoch){
 					lastepoch = thisepoch;
 					nepochs++;
 
 					FILE *afp;
 
-					sprintf(fn,"ancestry%d%02u_%07d.txt",proc,rr,i);
+					sprintf(fn,"ancestry%d%02d_%07d.txt",proc,rr,i);
 					afp = fopen(fn,"w");
 					//A.print_spp_strings(NULL);
 					A.print_spp_strings(afp);
 					printf("Done ancestry printing\n");//afp is closed in this function
 
-					sprintf(fn,"ancestry%d%02u_%07d.dot",proc,rr,i);
+					sprintf(fn,"ancestry%d%02d_%07d.dot",proc,rr,i);
 					afp = fopen(fn,"w");
 					A.print_ancestry_dot(afp,i,10000);
+
 				}
+
 
 				//printf("Printing species list\n");
 				sprintf(fn,"splist%d%02d.dat",proc,A.run_number);
@@ -727,7 +729,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 			//PRINT OUT THE EPOCH DATA:
 			ftmp = fopen("epochs.dat","a");
-			fprintf(ftmp,"%u\t%d\t%d\t%d\n",rr,i,A.spp_count-1,nepochs);
+			fprintf(ftmp,"%d\t%d\t%d\t%d\n",rr,i,A.spp_count-1,nepochs);
 			fclose(ftmp);
 
 #endif
@@ -752,11 +754,12 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 			A.energy += A.estep;
 		}
 
-        //divct is always 0! delete it!		
-        //if(divct)
-		//	fprintf(fsumm,"%d\t%d\t%d\t%f\n",divct,divit,diven,(float) divct/divit);
-		//else
-		fprintf(fsumm,"%d\t%d\t%d\t%f\n",div,i,(int)A.energy,-1.);
+
+
+		if(divct)
+			fprintf(fsumm,"%d\t%d\t%d\t%f\n",divct,divit,diven,(float) divct/divit);
+		else
+			fprintf(fsumm,"%d\t%d\t%d\t%f\n",div,i,(int)A.energy,-1.);
 		fflush(fsumm);
 
 		//Terminate the printout
@@ -767,6 +770,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 		//fclose(fpdiv);
 
 		printf("Finished - alls well!\nclear out memory now:\n");
+
 
 		//printf("Printing species list\n");
 		sprintf(fn,"splist%d%02d.dat",proc,A.run_number);
@@ -805,7 +809,7 @@ void printmaxcode(FILE *fp, int *ct, stringPM *A){
 
 int comass_AlifeXII(int argc, char *argv[]){
 
-	int i;
+	int i,div;
 
 	SMspp		SP;
 	stringPM	A(&SP);
@@ -821,6 +825,8 @@ int comass_AlifeXII(int argc, char *argv[]){
 	//FILE *fpo,*fpdiv;
 	FILE *fsumm,*ftmp;
 
+	//division values for summary
+	int divct,divit,diven;
 
 	char	fn[128],pfn[128];
 
@@ -836,7 +842,6 @@ int comass_AlifeXII(int argc, char *argv[]){
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-    //Read ntrials (this and the block below are identical!)
 	unsigned int rerr=1,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
@@ -846,15 +851,15 @@ int comass_AlifeXII(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NTRIALS to %u\n",rlim);
+			printf("Setting NTRIALS to %d\n",rlim);
 			break;
 		default:
-			printf("NTRIALS not sepcified;\nSetting NTRIALS to %u\n",rlim);
+			printf("NTRIALS not sepcifid;\nSetting NTRIALS to %d\n",rlim);
 			break;
 		}
 		fclose(fp);
 	}
-	printf("NTRIALS = %u\n",rlim);
+	printf("NTRIALS = %d\n",rlim);
 
 
 
@@ -869,7 +874,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NSTEPS to %u\n",rlim);
+			printf("Setting NSTEPS to %d\n",rlim);
 			indefinite=0;
 			break;
 		default:
@@ -878,23 +883,21 @@ int comass_AlifeXII(int argc, char *argv[]){
 		}
 		fclose(fp);
 	}
-	printf("NSTEPS = %u\n",maxnsteps);
+	printf("NSTEPS = %d\n",maxnsteps);
 	fflush(stdout);
 
 	//counter for max no. symbols at any time step.
 	int *maxcode;
 
-  maxcode=NULL;
+
 	for(unsigned int rr=0;rr<rlim;rr++){
 
 		FILE *mc;
-		sprintf(fn,"maxcodes%03u.txt",rr);
+		sprintf(fn,"maxcodes%03d.txt",rr);
 		mc = fopen(fn,"w");
 		fclose(mc);
 
-	    //division values for summary
-	    int div,divct,divit,diven;
-		div=divct=divit=diven=0;
+		div= divct = divit = diven = 0;
 
 		SP.clear_list();
 
@@ -911,7 +914,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 			maxcode = (int *) malloc(A.blosum->N * sizeof(int));
 		memset(maxcode,0,A.blosum->N*sizeof(int));
 
-		int lastepoch=A.get_ecosystem(),nepochs=1;
+		int lastepoch=A.get_ecosystem(),thisepoch,nepochs=1;
 
 		A.domut=0;
 		nsteps=0;
@@ -921,6 +924,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 
 			A.comass_make_next();
 			A.update();
+
 
 			if(!(i%1000)){
 				A.print_spp_count(stdout,0,-1);
@@ -937,9 +941,10 @@ int comass_AlifeXII(int argc, char *argv[]){
 				}
 			}
 
+
 			if(!(i%1000)){
 				setmaxcode(&A,maxcode);
-				printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
+				printf("%03d At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
 				printsppct(&A,i);
 				for(int k=0;k<A.blosum->N;k++){
 					printf("%c:\t%d\t%d",A.blosum->key[k],A.mass[k],maxcode[k]);
@@ -951,7 +956,9 @@ int comass_AlifeXII(int argc, char *argv[]){
 				}
 			}
 
-			int thisepoch = A.get_ecosystem();
+
+			thisepoch = A.get_ecosystem();
+
 
 			if(!(i%1000)){
 				if(thisepoch != lastepoch){
@@ -1001,7 +1008,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 		*/
 
 		printmaxcode(stdout,maxcode,&A);
-		sprintf(fn,"maxcodes%03u.txt",rr);
+		sprintf(fn,"maxcodes%03d.txt",rr);
 		mc = fopen(fn,"a");
 		printmaxcode(mc,maxcode,&A);
 		fclose(mc);
@@ -1023,17 +1030,13 @@ float EAqnn_summary(int rr){
 	float score = 0;
 	FILE *fp;
 	char cp[256];
-  int sval = 0;
 
 	sprintf(cp,"cp popdy%03d.dat popdy.dat",rr);
-	sval = system(cp);
-  printf("EAqnn_summary: System call 1 returned %d\n",sval);
+	system(cp);
 
 
 	//printf("Calling R:\n");
-	sval = system("R -q -f file.R");
-  printf("EAqnn_summary: System call 2 returned %d\n",sval);
-
+	system("R -q -f file.R");
 
 	//printf("Calling ls:\n");
 	//system("ls -ltrh");
@@ -1043,19 +1046,12 @@ float EAqnn_summary(int rr){
 
 	fp = fopen("qnn.txt","r");
 
-
-  int fsv;
-	fsv = fscanf(fp,"%e",&score);
-  if(fsv == EOF){
-		printf("WARNING: fcanf retuned EOF in function EAqnn_summary\n");
-	}
-
+	fscanf(fp,"%e",&score);
 	printf("Read qnn, value is %f\n",score);
 	fclose(fp);
 
 	return score;
 }
-
 
 
 
@@ -1071,8 +1067,6 @@ void print_ga(FILE *fp, int n, int i, double *eval, int **params, int np, int li
 }
 
 
-
-
 int * paramsFromFile(char *fn, const int rr, const int N){
 	FILE *fp;
 	fp = fopen(fn,"r");
@@ -1080,22 +1074,16 @@ int * paramsFromFile(char *fn, const int rr, const int N){
 	char *ptr;
 	int *vals;
 	vals = (int *) malloc(N*sizeof(int));
-
 	//grab the line specified by rr
 	for(int i=0;i<=rr;i++){
-	    char *fgp;
-		fgp = fgets(line,2000,fp);
-		if(fgp == NULL){
-			printf("WARNING: fgets returned NULL in paramsFromFile\n");
-		}
+		fgets(line,2000,fp);
 	}
-	strtok(line,"\t");
+	ptr=strtok(line,"\t");
 	ptr=strtok(NULL,"\t");
 	for(int i=0;i<N;i++){
 		sscanf(ptr,"%d",&(vals[i]));
 		ptr=strtok(NULL,"\t");
 	}
-    fclose(fp);
 	return vals;
 }
 
@@ -1105,19 +1093,15 @@ double evalFromFile(char *fn, int rr){
 	fp = fopen(fn,"r");
 	char line[2000];
 	int ival;
+	double val;
 	//grab the line specified by rr
 	for(int i=0;i<=rr;i++){
-        char *fgp;
-		fgp=fgets(line,2000,fp);
-		if(fgp == NULL){
-			printf("WARNING: in evalFromFile, fgets returned NULL\n");
-		}
+		fgets(line,2000,fp);
 	}
 
 	sscanf(line,"%d",&ival);
-    fclose(fp);
-	//return val=ival;
-    return (double)ival;
+	return val=ival;
+
 }
 
 
@@ -1168,9 +1152,6 @@ int comass_GA(int argc, char *argv[]){
 	if((fpr=fopen(argv[2],"r"))!=NULL){
 		unsigned int stmp;
 		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
-        if(rerr == 1){
-            printf("No random seed found in config file\n");
-        }
 		//TODO: load the full RNG state using load_mt (RNGFILE in config)
 
 
@@ -1178,11 +1159,8 @@ int comass_GA(int argc, char *argv[]){
 		if(rerr)
 			qnnscoring=1;
 		seedin = stmp;
-	    fclose(fpr);
 	}
-    else{
-        printf("ERROR: unable to open file %s\n",argv[2]);
-    }
+	fclose(fpr);
 
 	unsigned long rseed = longinitmyrand(&seedin);//437);//-1);//437);
 	//unsigned long rseed = longinitmyrand(NULL);//437);//-1);//437);
@@ -1241,8 +1219,6 @@ int comass_GA(int argc, char *argv[]){
 
 			mutnet[rr] = randboolarray(A.blosum->N*A.blosum->N);
 			setmutnet(mutnet[rr],A.blosum);
-            //This may cause problems if mutnet[rr] is used below:
-            free(mutnet[rr]);
 
 			A.set_mass(params[rr]);
 			//A.print_agents(stdout,"NOW",0);
@@ -1261,6 +1237,8 @@ int comass_GA(int argc, char *argv[]){
 				eval[rr]=lifetime;
 			}
 
+
+
 		}
 		else{
 			params[rr] = paramsFromFile(argv[3],rr,A.blosum->N);
@@ -1276,8 +1254,6 @@ int comass_GA(int argc, char *argv[]){
 
 		A.clearout();
 	}
-
-    free(mutnet);
 
 	//printf("Seed Evaluations:\n");
 	//for(int e=0;e<POPN;e++){
@@ -1395,6 +1371,7 @@ float *generate_avg_conc(char *fn, int *en){
 			}
 		}
 
+
 		/*Calculate the averages*/
 		const char *opcodes="ABC$DEF%GH^IJK?LMN}OPQ>RST=UVWXYZ";
 		const int nops = strlen(opcodes);
@@ -1403,31 +1380,25 @@ float *generate_avg_conc(char *fn, int *en){
 		avg = (float *) malloc(nops*sizeof(float));
 		memset(avg,0,nops*sizeof(float));
 
+
 		for(int j=0;j<navg;j++){
 			rewind(fp);
 			int l=1;
-
-			// TODO: Can't quite get this right without the extra fgets after the while - 
-			// this'll fail - line_number[j]==1 (unlikely)
-			char *fgr;
-			while(l!=line_number[j]){
-				fgr = fgets(line,2000,fp);
+			while(l!=line_number[j]){//TODO: Can't quite get this right without the extra fgets after the while - this'll fail - line_number[j]==1 (unlikely)
+				fgets(line,2000,fp);
 				l++;
 			}
-			fgr = fgets(line,2000,fp);
-      if(fgr == NULL){
-				printf("WARNING: fgets is NULL in function generate_avg_conc\n");
-			}
-
+			fgets(line,2000,fp);
 			char *lptr,*p;
 			lptr = line;
 			//Tokenize the line
 			p = strtok(lptr, "\t");
 			//skip through the data to get to the concs
 			printf("Parsing run %s, on line %d, fitness %f\n",p,line_number[j],fitness[j]);
-			strtok(NULL, "\t");
-			strtok(NULL, "\t");
-			strtok(NULL, "\t");
+			p = strtok(NULL, "\t");
+			p = strtok(NULL, "\t");
+			p = strtok(NULL, "\t");
+			//p = strtok(NULL, "\t");
 			for(int c = 0;c<nops;c++){
 				int tconc;
 				p = strtok(NULL, "\t");
@@ -1580,7 +1551,7 @@ int comass_GA_boostwinners(int argc, char *argv[]){
 
 int energetic_AlifeXII(int argc, char *argv[]){
 
-	int i;
+	int i,div;
 
 	SMspp		SP;
 	stringPM	A(&SP);
@@ -1596,6 +1567,8 @@ int energetic_AlifeXII(int argc, char *argv[]){
 	//FILE *fpo,*fpdiv;
 	FILE *fsumm,*ftmp;
 
+	//division values for summary
+	int divct,divit,diven;
 
 	char	fn[128],pfn[128];
 
@@ -1620,15 +1593,15 @@ int energetic_AlifeXII(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NTRIALS to %u\n",rlim);
+			printf("Setting NTRIALS to %d\n",rlim);
 			break;
 		default:
-			printf("NTRIALS not sepcified;\nSetting NTRIALS to %u\n",rlim);
+			printf("NTRIALS not sepcifid;\nSetting NTRIALS to %d\n",rlim);
 			break;
 		}
 		fclose(fp);
 	}
-	printf("NTRIALS = %u\n",rlim);
+	printf("NTRIALS = %d\n",rlim);
 
 
 
@@ -1643,7 +1616,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NSTEPS to %u\n",rlim);
+			printf("Setting NSTEPS to %d\n",rlim);
 			indefinite=0;
 			break;
 		default:
@@ -1652,7 +1625,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 		}
 		fclose(fp);
 	}
-	printf("NSTEPS = %u\n",maxnsteps);
+	printf("NSTEPS = %d\n",maxnsteps);
 	fflush(stdout);
 
 
@@ -1660,9 +1633,9 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
 	for(unsigned int rr=0;rr<rlim;rr++){
 
-	    //division values for summary
-	    int div,divct,divit,diven;
-		div= divct = divit = diven = 0;
+		div=0;
+
+		divct = divit = diven = 0;
 
 		SP.clear_list();
 
@@ -1678,7 +1651,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 		fclose(ftmp);
 
 
-		int lastepoch=A.get_ecosystem(),nepochs=1;
+		int lastepoch=A.get_ecosystem(),thisepoch,nepochs=1;
 
 		A.domut=1;
 		nsteps=0;
@@ -1712,7 +1685,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
 			if(!(i%1000)){
 
-				printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
+				printf("%03d At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
 				//A.print_agents_count(stdout);
 
 				printsppct(&A,i);
@@ -1720,7 +1693,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 			}
 
 
-			int thisepoch = A.get_ecosystem();
+			thisepoch = A.get_ecosystem();
 
 			if(!(i%1000)){
 				if(thisepoch != lastepoch){
@@ -1762,14 +1735,14 @@ int energetic_AlifeXII(int argc, char *argv[]){
 		//PRINT OUT THE EPOCH DATA:
 
 		ftmp = fopen("epochs.dat","a");
-		fprintf(ftmp,"%u\t%d\t%d\t%d\n",rr,i,A.spp_count-1,nepochs);
+		fprintf(ftmp,"%d\t%d\t%d\t%d\n",rr,i,A.spp_count-1,nepochs);
 		fclose(ftmp);
 
-        //divct is always 0!		
-        //if(divct)
-		//	fprintf(fsumm,"%d\t%d\t%d\t%f\n",divct,divit,diven,(float) divct/divit);
-		//else
-		fprintf(fsumm,"%d\t%d\t%d\t%f\n",div,i,(int)A.energy,-1.);
+
+		if(divct)
+			fprintf(fsumm,"%d\t%d\t%d\t%f\n",divct,divit,diven,(float) divct/divit);
+		else
+			fprintf(fsumm,"%d\t%d\t%d\t%f\n",div,i,(int)A.energy,-1.);
 		fflush(fsumm);
 
 		printf("Finished - alls well!\nclear out memory now:\n");
@@ -1787,10 +1760,8 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
 
 
-// "Check sag linked list"
-// Let's check what the pointers are doing:
-// Used for diagnosis in some container runs...
-// cppcheck-suppress unusedFunction
+
+//Let's check what the pointers are doing:
 void check_sagll(stringPM *A,int gclock, int c){
 	FILE *fpx;
 	char xfn[128];
@@ -1837,10 +1808,8 @@ int SmPm_conpop(int argc, char *argv[]){
 	if((fpr=fopen(argv[2],"r"))!=NULL){
 		unsigned int stmp;
 		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
-        if(rerr == 1){
-            printf("No random seed found in config file\n");
-        }
 		//TODO: load the full RNG state using load_mt (RNGFILE in config)
+
 
 		seedin = stmp;
 
@@ -1849,11 +1818,9 @@ int SmPm_conpop(int argc, char *argv[]){
 		if(!rerr){
 			NCON = nctmp;
 		}
-	    fclose(fpr);
+
 	}
-    else{
-        printf("ERROR: unable to open file %s\n",argv[2]);
-    }
+	fclose(fpr);
 
 	unsigned long rseed;
 
@@ -1892,9 +1859,8 @@ int SmPm_conpop(int argc, char *argv[]){
 		printf("Coundln't open %s\n",fn);
 		getchar();
 	}
-	fprintf(fsumm,"Random seed is %lu\n",rseed);
+	fprintf(fsumm,"Random seed is %ld\n",rseed);
 	fflush(fsumm);
-    fclose(fsumm);
 
 
 	ftmp = fopen("epochs.dat","w");
@@ -1908,10 +1874,8 @@ int SmPm_conpop(int argc, char *argv[]){
 
 		//A[c]->signal = signal;
 		//A[c]->load(argv[2],NULL,0,1);
-		if(!arg_load(A[c], argc, argv)){
-            free(score);
+		if(!arg_load(A[c], argc, argv))
 			return 0;
-        }
 
 
 		A[c]->biomass=A[c]->bstart = 0;
@@ -2190,6 +2154,7 @@ void SmPm_1on1(int argc,char *argv[]){
 	int i = 0;
 	char c;
 	char fn[256];
+	FILE *fp;
 
 	if(!arg_load(&A, argc, argv))
 		return;
@@ -2213,9 +2178,7 @@ void SmPm_1on1(int argc,char *argv[]){
 	int N = maxn<A.nsteps?maxn:A.nsteps;
 
 	for(int n=0;n<N;n++){
-	    FILE *fp;
-		
-        A.energy = 50;
+		A.energy = 50;
 		A.extit = i++;
 
 		A.make_next();
@@ -2279,7 +2242,6 @@ void swdist(int argc, char *argv[]){
 	}
 	fprintf(fsumm,"Random seed is %ld\n",rseed);
 	fflush(fsumm);
-    fclose(fsumm);
 
 
 	ftmp = fopen("epochs.dat","w");
@@ -2294,15 +2256,17 @@ void swdist(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NTRIALS to %u\n",rlim);
+			printf("Setting NTRIALS to %d\n",rlim);
 			break;
 		default:
-			printf("NTRIALS not sepcified;\nSetting NTRIALS to %u\n",rlim);
+			printf("NTRIALS not sepcifid;\nSetting NTRIALS to %d\n",rlim);
 			break;
 		}
 		fclose(fp);
 	}
-	printf("NTRIALS = %u\n",rlim);
+	printf("NTRIALS = %d\n",rlim);
+
+
 
 	//Read nsteps:
 	unsigned int maxnsteps=0;
@@ -2314,7 +2278,7 @@ void swdist(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NSTEPS to %u\n",rlim);
+			printf("Setting NSTEPS to %d\n",rlim);
 			break;
 		default:
 			printf("NSTEPS not sepcified;\nEach trial will run to extinction\n");
@@ -2322,9 +2286,11 @@ void swdist(int argc, char *argv[]){
 		}
 		fclose(fp);
 	}
-	printf("NSTEPS = %u\n",maxnsteps);
+	printf("NSTEPS = %d\n",maxnsteps);
 
-	FILE *fin;
+	char ofn[512];
+	char line[3000];
+	FILE *fin, *outfile;
 
 	A.load(argv[2],NULL,0,1);
 	align sw;
@@ -2332,45 +2298,48 @@ void swdist(int argc, char *argv[]){
 	char s1[A.maxl0], s2[A.maxl0];
 
 	if((fin= fopen(argv[3], "r"))!=NULL){
-	    char ofn[512];
-	    char line[3000];
-        FILE *outfile;
-
 		sprintf(ofn,"%s.out",argv[3]);
+
 		if((outfile= fopen(ofn, "w"))==NULL){
 			printf("error opening %s",ofn);
 		}
 
-		if((fgets(line,A.maxl,fin))!=NULL){
-			printf("%s\n",line);
-			fprintf(outfile,"%s\n", line);
+		fgets(line,A.maxl,fin);
+		printf("%s\n",line);
+		fprintf(outfile,"%s\n", line);
 
-			while((fgets(line,A.maxl,fin))!=NULL){
+		while((fgets(line,A.maxl,fin))!=NULL){
 
-                //cppcheck-suppress invalidsscanf
-                //TODO: the %2001s in the below should link to maxl0 
-				sscanf(line,"%*s\t%*s\t%*s\t%2001s\%2001s",(char *) &s1, (char *) &s2);
-				printf("read %s and %s\n",s1,s2);
-				SmithWatermanV2(s1,s2,&sw,A.blosum,0);
+			sscanf(line,"%*s\t%*s\t%*s\t%s\t%s",(char *) &s1, (char *) &s2);
 
-				int l = strlen(line);
-				line[l-1]='\0';
+			printf("read %s and %s\n",s1,s2);
 
-				printf("sw score is %f\n",sw.score);
-				fprintf(outfile,"%s\t%f\t%d\t%d\n", line, sw.score,(int) strlen(s1), (int) strlen(s2));
-				fflush(outfile);
+			SmithWatermanV2(s1,s2,&sw,A.blosum,0);
 
-				fprintf(stdout,"%s\t%f\t%d\t%d\n", line, sw.score,(int) strlen(s1),(int) strlen(s2));
-				fflush(stdout);
-			}
-        }
 
-	    fclose(fin);
-	    fclose(outfile);
+			int l = strlen(line);
+			line[l-1]='\0';
+
+
+			printf("sw score is %f\n",sw.score);
+			fprintf(outfile,"%s\t%f\t%d\t%d\n", line, sw.score,(int) strlen(s1), (int) strlen(s2));
+			fflush(outfile);
+
+			fprintf(stdout,"%s\t%f\t%d\t%d\n", line, sw.score,(int) strlen(s1),(int) strlen(s2));
+			fflush(stdout);
+
+		}
+
+
+		fclose(fin);
+		fclose(outfile);
 	}
 	else{
 		printf("Couldn't open file %s",argv[2]);
 	}
+
+
+
 }
 
 
@@ -2385,8 +2354,6 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 	for(int i=0;i<nrep;i++){
 
 		l_spp *s;
-        //TODO: cppcheck says s must be initialised - becuase when i==0 it isn't assigned before it is initialised: check this!
-        s = NULL;
 
 		pag = A->make_ag('R');//,1);
 
@@ -2450,7 +2417,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 
 int speigmonst(int argc, char *argv[]){
 
-	int i;
+	int i,div;
 
 	SMspp		SP;
 	stringPM	A(&SP);
@@ -2465,6 +2432,9 @@ int speigmonst(int argc, char *argv[]){
 	//Prime the printout:
 	//FILE *fpo,*fpdiv;
 	FILE *fsumm,*ftmp;
+
+	//division values for summary
+	int divct,divit,diven;
 
 	char	fn[128],pfn[128];
 
@@ -2489,15 +2459,15 @@ int speigmonst(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NTRIALS to %u\n",rlim);
+			printf("Setting NTRIALS to %d\n",rlim);
 			break;
 		default:
-			printf("NTRIALS not sepcifid;\nSetting NTRIALS to %u\n",rlim);
+			printf("NTRIALS not sepcifid;\nSetting NTRIALS to %d\n",rlim);
 			break;
 		}
 		fclose(fp);
 	}
-	printf("NTRIALS = %u\n",rlim);
+	printf("NTRIALS = %d\n",rlim);
 
 
 
@@ -2512,7 +2482,7 @@ int speigmonst(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NSTEPS to %u\n",rlim);
+			printf("Setting NSTEPS to %d\n",rlim);
 			indefinite=0;
 			break;
 		default:
@@ -2521,7 +2491,7 @@ int speigmonst(int argc, char *argv[]){
 		}
 		fclose(fp);
 	}
-	printf("NSTEPS = %u\n",maxnsteps);
+	printf("NSTEPS = %d\n",maxnsteps);
 	fflush(stdout);
 
 	//counter for max no. symbols at any time step.
@@ -2530,17 +2500,13 @@ int speigmonst(int argc, char *argv[]){
 
 	char *repstring;
 	repstring = (char*)malloc(A.maxl0 * sizeof(char));
-
-  maxcode = NULL;
 	for(unsigned int rr=0;rr<rlim;rr++){
 
 		FILE *mc;
-		sprintf(fn,"maxcodes%03u.txt",rr);
+		sprintf(fn,"maxcodes%03d.txt",rr);
 		mc = fopen(fn,"w");
 		fclose(mc);
 
-	    //division values for summary
-	    int div,divct,divit,diven;
 		div= divct = divit = diven = 0;
 
 		if(!rr){
@@ -2565,7 +2531,7 @@ int speigmonst(int argc, char *argv[]){
 			maxcode = (int *) malloc(A.blosum->N * sizeof(int));
 		memset(maxcode,0,A.blosum->N*sizeof(int));
 
-		int lastepoch=A.get_ecosystem(),nepochs=1;
+		int lastepoch=A.get_ecosystem(),thisepoch,nepochs=1;
 
 		A.domut=1;
 
@@ -2597,9 +2563,10 @@ int speigmonst(int argc, char *argv[]){
 				}
 			}
 
+
 			if(!(i%1000)){
 				setmaxcode(&A,maxcode);
-				printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
+				printf("%03d At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
 				printsppct(&A,i);
 				for(int k=0;k<A.blosum->N;k++){
 					printf("%c:\t%d\t%d",A.blosum->key[k],A.mass[k],maxcode[k]);
@@ -2611,7 +2578,9 @@ int speigmonst(int argc, char *argv[]){
 				}
 			}
 
-			int thisepoch = A.get_ecosystem();
+
+			thisepoch = A.get_ecosystem();
+
 
 			if(!(i%1000)){
 				if(thisepoch != lastepoch){
@@ -2665,10 +2634,11 @@ int speigmonst(int argc, char *argv[]){
 		*/
 
 		printmaxcode(stdout,maxcode,&A);
-		sprintf(fn,"maxcodes%03u.txt",rr);
+		sprintf(fn,"maxcodes%03d.txt",rr);
 		mc = fopen(fn,"a");
 		printmaxcode(mc,maxcode,&A);
 		fclose(mc);
+
 
 		//A.clearout();
 	}
@@ -2676,8 +2646,16 @@ int speigmonst(int argc, char *argv[]){
 	A.print_propensity(fsumm);
 
 	fclose(fsumm);
-    free(repstring);
 	return 0;
+}
+
+
+int test_config(){
+
+
+
+	return 0;
+
 }
 
 

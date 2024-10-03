@@ -25,6 +25,22 @@
 /* This holds parameters */
 
 
+int read_flag(FILE *fp,const char *label, int verbose){
+
+	const int maxl = 128;
+	char line[maxl];
+
+	rewind(fp);
+	while((fgets(line,maxl,fp))!=NULL){
+		if(!strncmp(label,line,strlen(label))){
+			if(verbose)
+				printf("%s set\n",label);
+			return 0;
+		}
+	}
+
+	return 1;
+}
 
 
 void report_param_error(int error, int doexit){
@@ -45,7 +61,6 @@ void report_param_error(int error, int doexit){
 		exit(error);
 	}
 }
-
 
 
 

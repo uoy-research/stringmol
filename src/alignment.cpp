@@ -116,7 +116,6 @@ void free_swlist(s_sw **head){
 
 
 //public
-// cppcheck-suppress unusedFunction
 int LongestCommonSubsequence(char *s1, char *s2)
 {
 	int l1,l2;
@@ -266,8 +265,7 @@ float w(int a, int b){
 }
 
 
-/* Let's keep this in case we want to use 'messy' alignments etc. in future */
-// cppcheck-suppress unusedFunction
+
 int SmithWaterman(char *s1, char *s2, align *A, swt *T, int verbose){
 
 	//align *A;
@@ -831,11 +829,10 @@ int tab_idx(char X, swt *T){
 	return -1;
 }
 
-/* FUNCTIONS FOR ADAM NELLIS - DO NOT DELETE*/
-// cppcheck-suppress unusedFunction
+/* FUNCTIONS FOR ADAM NELLIS */
+
 float score_sw(char *s1, char *s2, swt *swT){
 	align A;
-  A.score = 0;
 	//SmithWatermanV2(char *s1, char *s2, align *A, swt *swT, int verbose)
 	SmithWatermanV2(s1,s2,&A,swT,0);
 	return A.score;

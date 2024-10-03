@@ -43,7 +43,7 @@
 #include "stringPM.h"
 
 //signal
-//#include "signalSM.h"
+#include "signalSM.h"
 
 //setup
 // Writing PNGs
@@ -51,15 +51,14 @@
 #include <iostream>
 #include "setupSM.h"
 
+
 #include "webapi_util.h"
 
 
 //TODO: this is defined in webapi_util.cpp
+const int MAXSTR = 5000;
 
 
-
-//TODO: this is also defined in webapi_step.cpp
-#define MAXSTR (5000)
 
 
 int main(int argc, char*argv[]){
@@ -81,9 +80,6 @@ int main(int argc, char*argv[]){
 	data = getenv("QUERY_STRING");
 
 #ifdef DEBUG
-	
-
-
 	printf("%s%c%c\n",
 	"Content-Type:text/html;charset=iso-8859-1",13,10);
 	printf("<TITLE>Multiplication results</TITLE>\n");
@@ -104,7 +100,7 @@ int main(int argc, char*argv[]){
 
 	/*Read the query string into string1 and string2, checking for data errors */
 	if(data!=NULL){
-		if(sscanf(data,"string1=(%MAXSTR[^)])&string2=(%MAXSTR[^)])",string1,string2)!=2){
+		if(sscanf(data,"string1=(%[^)])&string2=(%[^)])",string1,string2)!=2){
 				printf("<P>Error! Invalid data. Data must be numeric.</p>");
 				sprintf(string1,"ASDFADFASDFASDFASDFASDFASDFASDF");
 				sprintf(string2,"QWERQWERQWERQWERQWERQWERQWERQWER");
