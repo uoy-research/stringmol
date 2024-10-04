@@ -158,7 +158,7 @@ float ctspp(stringPM *A, const int spp){
 }
 
 
-void initpopdyfile(stringPM *A, bool overwrite = false){
+void initpopdyfile(stringPM *A, bool overwrite){// = false){
 	char pfn[128];
 	memset(pfn,0,128*sizeof(char));
 
@@ -174,7 +174,7 @@ void initpopdyfile(stringPM *A, bool overwrite = false){
 	ftmp = fopen(pfn,"w");
 	fclose(ftmp);
 
-	//Record the file name so we can ope
+	//Record the file name so we can append to it later
 	strcpy(A->popdyfn,pfn);
 
 }

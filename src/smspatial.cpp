@@ -74,8 +74,6 @@ int main(int argc, char *argv[]) {
 
 	printf("Hello spatial stringmol world\n");
 
-	int rtype = atoi(argv[1]);
-
 	SMspp		SP;
 	stringPM	A(&SP);
 

@@ -64,6 +64,9 @@
 	/* Print parameters of the trial */
 	void print_params(stringPM *A, int ntrials, int nsteps);
 
+	/* set up the popdy file for writing*/
+	void initpopdyfile(stringPM *A, bool overwrite = false);
+
 /************************************************************/
 
 

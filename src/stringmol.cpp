@@ -655,6 +655,8 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 		A.print_agents(stdout,"NOW",0);
 
 		A.run_number=rr;
+		initpopdyfile(&A);
+
 		sprintf(pfn,"popdy%d%02d.dat",proc,A.run_number);
 		ftmp = fopen(pfn,"w");
 		fclose(ftmp);

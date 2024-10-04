@@ -51,6 +51,8 @@ web_api: bind step
 # or "make all clean"
 clean:
 	rm -f *.o
+	rm -f ../debug/*.o
+	rm -f ../release/*.o
 	rm -f stringmol
 	rm -f stringmol_dbg
 	rm -f smspatial
