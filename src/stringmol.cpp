@@ -335,7 +335,8 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
 
 			pag->S =(char *) malloc(A->maxl0*sizeof(char));
 			memset(pag->S,0,A->maxl0*sizeof(char));
-			strncpy(pag->S,label,strlen(label));
+			//strncpy(pag->S,label,strlen(label));
+			memcpy(pag->S,label,strlen(label));
 			pag->len = strlen(pag->S);
 
 			//No parents for these initial agents!
@@ -856,7 +857,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 			printf("Setting NTRIALS to %d\n",rlim);
 			break;
 		default:
-			printf("NTRIALS not sepcifid;\nSetting NTRIALS to %d\n",rlim);
+			printf("NTRIALS not sepcified;\nSetting NTRIALS to %d\n",rlim);
 			break;
 		}
 		fclose(fp);
@@ -2174,6 +2175,24 @@ void SmPm_1on1(int argc,char *argv[]){
 		return;
 	}*/
 
+	//
+	unsigned int dont_interrupt = 0;
+	int gg = readordef_param_int(argv[2], "NOINTERRUPT", &dont_interrupt, -1, 1);
+	/*if(gg==1){
+		printf("GRANULAR was not specified. Simulations will use standard operators");
+		A.granular_1 = 0;
+	}
+	else{
+
+		printf("GRANULAR was specified. Simulations will use+standard operators");
+		A.granular_1 = 1;
+	}*/
+
+	if(dont_interrupt)
+		printf("flag NOINTERRUPT set - running continuously");
+	else
+		printf("flag NOINTERRUPT not set - press space to step, q to quit");
+
 	A.verbose_bind=1;
 
 	int maxn = 10000;
@@ -2214,11 +2233,13 @@ void SmPm_1on1(int argc,char *argv[]){
 		SP.print_spp_list(fp);
 		fclose(fp);
 
-		if(argc==3){
+		if(argc==3 && !dont_interrupt){
 			c=getchar();
 
 			if(c=='q')
 				return;
+			if(c=='r')
+				dont_interrupt = true;
 		}
 	}
 

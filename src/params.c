@@ -155,7 +155,7 @@ char * read_param_string(FILE **pfp,const char *label, int verbose){
 		//TODO: checking needed on size of string!
 		s = (char *) malloc(sizeof(char)*256);//(strlen(st)+1));
 		memset(s,0,256*sizeof(char));
-		strncpy(s,st,strlen(st));
+		memcpy(s,st,strlen(st));//strncpy gives a warning...
 		return s;
 	}
 }

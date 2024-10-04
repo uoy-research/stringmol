@@ -57,8 +57,8 @@
 
 typedef enum td_pic{
 	pic_spp,
-	pic_len,
-	pic_bound
+	pic_len
+	//pic_bound
 }pictype;
 
 
@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
 			//printf("Step %ld done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
 
 			FILE *fpp;
-			sprintf(fn,"out1_%05ld.conf",A.extit);
+			sprintf(fn,"out1_%05u.conf",A.extit);
 			fpp = fopen(fn,"w");
 			A.print_conf(fpp);
 			fclose(fpp);
@@ -181,7 +181,8 @@ int main(int argc, char *argv[]) {
 		image.resize(run->gridx * run->gridy * 4);
 
 
-	    pictype tp = pic_len;
+		pictype tp = pic_len;
+		
 		int x,y,val;
 		for(x=0;x<run->gridx;++x){
 			for (y=0;y<run->gridy;++y) {
@@ -254,16 +255,14 @@ int main(int argc, char *argv[]) {
 		}
 
 		//printf("sdl grid updated\n",A.extit);fflush(stdout);
-
-        SDL_UpdateRect(screen,0,0,0,0);//run->gridx,run->gridy);
-
+		SDL_UpdateRect(screen,0,0,0,0);//run->gridx,run->gridy);
 		//printf("sdl rect updated\n",A.extit);fflush(stdout);
 #endif
 
 	}
 
 	printf("FINISHED smspatial\n");
-//	fflush(stdout);
+	//fflush(stdout);
 	return 0;
 }
 
