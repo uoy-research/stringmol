@@ -64,19 +64,6 @@ class agents_base{
 		long energy;	//The initial energy present in the system
 		float nsteps;	//The number of steps (SHOULD BE AN INT!)
 
-		//division
-		//float divtime;	//The time to divide (SHOULD BE AN INT!)
-		//int	*adc;		//Agent division count  - if all these conditions are met, divide.
-		//int *aro;		//list of operons to replenish at division
-
-		//agent state tables
-		//int ntt;  		//number of agent types we are tracking.
-		//int *aat; 		//array of agent types
-		//int *aac; 		//array of agent counts
-		//int **btab; 	//table of binding pairs
-		//int **com; 		//table of agent complexes for replenishment at division
-		//int **dcom;		//table of agent complexes for division counts
-
 		//diagnostics
 		int ict;		//count of influx rules
 		int *irt;		//influx rule tested
@@ -137,11 +124,6 @@ class agents_base{
 
 		//Cell division
 		int divide_conditions(int time);
-		//void divide();
-		//void replenish_operons();
-
-		//Death!
-		int hasdied();
 
 };
 

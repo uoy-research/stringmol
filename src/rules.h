@@ -38,7 +38,6 @@ public:
 	//Finding etc
 	int found(const char *side, int label);
 	int maxlhs(int label);
-	int getrule(const char *side,int l1, int l2);
 
 	//diagnostics:
 	void printasint();

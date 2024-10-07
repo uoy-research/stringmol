@@ -161,25 +161,7 @@ int joinsplists(int argc, char *argv[]){
 }
 
 
-//Called by SmPm_AlifeXII
-void check_pop_dy(char *fn,stringPM *A,int it){
 
-	l_spp *s;
-	FILE *fout;
-	fout=fopen(fn,"a");
-
-
-	A->get_ecosystem();
-
-	fprintf(fout,"%d :",it);
-	s=A->spl->species;
-	while(s!=NULL){
-		fprintf(fout,"\t%d",s->pf);
-		s=s->next;
-	}
-	fprintf(fout,"\n");
-	fclose(fout);
-}
 
 
 void add_spp(const int nag, stringPM *A, char *label, char symbol){
@@ -1759,33 +1741,6 @@ int energetic_AlifeXII(int argc, char *argv[]){
 	fclose(fsumm);
 	return 0;
 
-}
-
-
-
-
-//Let's check what the pointers are doing:
-void check_sagll(stringPM *A,int gclock, int c){
-	FILE *fpx;
-	char xfn[128];
-	int y;
-	sprintf(xfn,"list%03d_%02d.dat",gclock,c);
-	fpx = fopen(xfn,"w");
-	s_ag *pa;
-
-
-	fprintf(fpx,"\nT %d CELL %d:\n",gclock,c);
-	printf("\nCELL %d:\n",c);
-	pa = A->nowhead;
-	y=0;
-	while(pa!=NULL){
-		fprintf(fpx,"%d,\t%p,\t%d,\t%d,\t%p,\t%p,\t%p,\t%p\n",++y,pa,pa->idx,pa->status,pa->prev,pa->next,pa->exec,pa->pass);
-		printf("%d,\t%p,\t%d,\t%d,\t%p,\t%p,\t%p,\t%p\n",y,pa,pa->idx,pa->status,pa->prev,pa->next,pa->exec,pa->pass);
-		pa=pa->next;
-	}
-
-	fflush(fpx);
-	fclose(fpx);
 }
 
 

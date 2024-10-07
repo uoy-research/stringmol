@@ -181,8 +181,8 @@ int main(int argc, char *argv[]) {
 		image.resize(run->gridx * run->gridy * 4);
 
 
+#ifdef USE_SDL		
 		pictype tp = pic_len;
-		
 		int x,y,val;
 		for(x=0;x<run->gridx;++x){
 			for (y=0;y<run->gridy;++y) {
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
 					}*/
 				}
 
-#ifdef USE_SDL
+//#ifdef USE_SDL
 				((uint8_t *)screen->pixels)[y + (x * sdlPitch)] = val;//getColor(grid[x][y]);
 
 				if(!(A.extit%10)){
@@ -230,10 +230,10 @@ int main(int argc, char *argv[]) {
 					image[4 * run->gridx * y + 4 * x + 2] = b;//x | y;
 					image[4 * run->gridx * y + 4 * x + 3] = 255;
 				}
-#endif
+//#endif
 			}
 		}
-
+#endif
 
 #ifdef USE_SDL
 		if(!(A.extit%10)){

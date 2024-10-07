@@ -12,5 +12,6 @@ rm -f  popdy*.dat
 rm -f  randseed.txt
 rm -f  reload_*.conf
 rm -f  splist*.dat
+rm -f  splist.dat
 rm -f  sppframe*.png
 rm -f  test_output.cfg

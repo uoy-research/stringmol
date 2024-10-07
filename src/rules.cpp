@@ -110,24 +110,6 @@ int rules::found(const char *side, int label){
 
 
 
-int rules::getrule(const char *side,int l1, int l2){
-	int i,sidecheck = 0;
-	if(!strncmp(side,"lhs",3)){
-		sidecheck = 1;
-		for(i=0;i<nr;i++){
-			if(rset[i][0]==l1 && rset[i][1]==l2)
-				return i;
-			else if (rset[i][1]==l1 && rset[i][0]==l2)
-				return i;
-		}
-	}
-
-	if(!sidecheck){
-		printf("\"%s\" is not a known specifer string. Use \"lhs\" or \"rhs\" instead\n",side);
-	}
-	return -1;
-}
-
 
 
 //Count the number of rules on the lhs (if 2, bonding rule, if 1, only decay or dissocn

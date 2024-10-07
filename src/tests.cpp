@@ -61,32 +61,39 @@ int test_rand(int verbose){
 	int failed = 0;
 	int rin = 436;
 
-	if(verbose)printf("Testing seeding using dev/rand... \n");fflush(stdout);
+	if(verbose)
+		printf("Testing seeding using dev/rand... \n");fflush(stdout);
 	int rout = initmyrand(-1);
 	if(rout == rin){
 		printf("FAILED - requested seed from dev/random, but got -1\n");
 	}
 	else
-		if(verbose)printf("PASSED - init set seed as %d (%u)\n",rout,(unsigned int) rout);
+		if(verbose)
+			printf("PASSED - init set seed as %d (%u)\n",rout,(unsigned int) rout);
 
-	if(verbose)printf("Testing seeding using dev/rand again... \n");fflush(stdout);
+	if(verbose)
+		printf("Testing seeding using dev/rand again... \n");fflush(stdout);
 	rout = rout - initmyrand(-1);
 	if(rout == 0 ){
 		printf("FAILED - requested new seed from dev/random, but got same one\n");
 	}
 	else
-		if(verbose)printf("PASSED - init set seed as %d\n",rout);
+		if(verbose)
+			printf("PASSED - init set seed as %d\n",rout);
 
-	if(verbose)printf("Testing seeding using ingeter %d... \n",rin);fflush(stdout);
+	if(verbose)
+		printf("Testing seeding using ingeter %d... \n",rin);fflush(stdout);
 	rout = initmyrand(rin);
 	if(rout != rin){
 		printf("FAILED - seed not set - different seed used\n");
 	}
 	else
-		if(verbose)printf("PASSED - init set seed as %d\n",rout);
+		if(verbose)
+			printf("PASSED - init set seed as %d\n",rout);
 
 
-	if(verbose)printf("Testing re-setting mt index... \n");fflush(stdout);
+	if(verbose)
+		printf("Testing re-setting mt index... \n");fflush(stdout);
 	int pos = 22;
 	set_mti(pos);
 	pos = get_mti();
@@ -161,15 +168,7 @@ int compare_config(stringPM *A, stringPM *B){
 	if(A->nsteps!=B->nsteps){
 		printf("ERROR - nsteps not saved properly\n");
 	}
-
-
-	/** Although agents_base contains a call to load_influx, Stringmol never uses it */
-	//TODO: test blosum - probably needs its own function
-	//load agents: load_table(_mtx); load_mut; load_decay
-	//if(A->blosum == NULL)
-	//	printf("BLOSUM      not set - needs to be loaded explicitly\n");
-	//else
-	//	printf("BLOSUM      %d size table loaded\n",A->blosum->N);
+	
 
 
 	if(A->indelrate-B->indelrate>FLT_MIN){

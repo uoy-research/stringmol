@@ -43,14 +43,6 @@ int ***	intarr3alloc(const int n1, const int n2, const int n3);
 void	intarr3free(int ***aaa, const int n1, const int n2, const int n3);
 
 
-float ***	fltarr3alloc(const int n1, const int n2, const int n3);
-void  fltarr3free(float ***aaa, const int n1, const int n2, const int n3);
-//void	fltarr3free(double ***aaa, const int n1, const int n2, const int n3);
-
-double ***	dblarr3alloc(const int n1, const int n2, const int n3);
-void	dblarr3free(double ***aaa, const int n1, const int n2, const int n3);
-
-
 int **** intarr4alloc(const int n1,const int n2,const int n3,const int n4);
 
 void intarr4free(int ****aa, const int n1,const int n2,const int n3,const int n4);

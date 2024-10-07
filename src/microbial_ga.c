@@ -86,40 +86,6 @@ int mutate_int (int val, int min, int max) {
 	return val;
 }
 
-/**
- * Microbial GA step.
- */
-//void step() {
-int ga_step(double **pop, double *eval, const int POPSIZE, const int PARAMETERS){
-	int w;
-	int l;
-	int i;
-	int a=randint()%POPSIZE;
-	int b=randint()%POPSIZE;
-	while (a==b) {
-		b=randint()%POPSIZE;
-	}
-	if (eval[a]<eval[b]) {//note the lower the value the fitter the individual!
-		w=a;
-		l=b;
-	}
-	else {
-		w=b;
-		l=a;
-	}
-	for (i=0; i<PARAMETERS; i++) {
-		//recombine
-		if (((randint()%1000)/1000.0)<REC) {
-			pop[l][i]=pop[w][i];
-		}
-		//mutate
-		if ((randint()%1000)/1000.0<MUT) {
-			pop[l][i]=mutate(pop[l][i]);
-		}
-	}
-	//eval[l] = evaluate(l);
-	return l;
-}
 
 
 
@@ -178,16 +144,6 @@ void recmut_bool(int **pop, const int winner, const int loser, const int L){
 
 
 
-
-
-
-/**
- * (returns euclidian distance to goal point)
- */
-double evaluate(int i) {
-	//do things with Player Stage
-	return 0.;
-}
 
 
 int * randinitint(const int N,const int min,const int upto){

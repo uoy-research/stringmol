@@ -155,65 +155,6 @@ void  intarr3free(int ***aaa, const int n1, const int n2, const int n3){
 
 
 
-float *** fltarr3alloc(const int n1, const int n2, const int n3){
-
-	int i,j;
-	float ***aa;
-
-	aa=(float ***) malloc(n1*sizeof(float **));
-	for(i=0;i<n1;i++){
-		aa[i]=(float **) malloc(n2*sizeof(float *));
-		for(j=0;j<n2;j++)
-			aa[i][j] = (float *) malloc(n3*sizeof(float));
-	}
-
-	return aa;
-}
-
-
-void  fltarr3free(float ***aaa, const int n1, const int n2, const int n3){
-
-	int i,j;
-
-	for(i=0;i<n1;i++){
-		for(j=0;j<n2;j++)
-			free(aaa[i][j]);
-		free(aaa[i]);
-	}
-	free(aaa);
-}
-
-void  arr3free(void ***aaa, const int n1, const int n2, const int n3){
-
-	int i,j;
-
-	for(i=0;i<n1;i++){
-		for(j=0;j<n2;j++)
-			free(aaa[i][j]);
-		free(aaa[i]);
-	}
-	free(aaa);
-}
-
-
-void	*** arr3alloc(const int n1, const int n2, const int n3, const int size){
-
-	int i,j;
-	void ***aa;
-
-	aa=(void  ***) malloc(n1*sizeof(void **));
-	for(i=0;i<n1;i++){
-		aa[i]=(void **) malloc(n2*sizeof(void *));
-		for(j=0;j<n2;j++)
-			aa[i][j] = (void *) malloc(n3*size);
-	}
-
-	return aa;
-}
-
-
-
-
 void	** arr2alloc(const int n1, const int n2, const int size){
 
 	int j;
@@ -227,45 +168,6 @@ void	** arr2alloc(const int n1, const int n2, const int size){
 }
 
 
-void  arr2free(void **aa, const int n1, const int n2){
-
-	int i;
-
-	for(i=0;i<n1;i++){
-		free(aa[i]);
-	}
-	free(aa);
-}
-
-
-
-double *** dblarr3alloc(const int n1, const int n2, const int n3){
-
-	int i,j;
-	double ***aa;
-
-	aa=(double ***) malloc(n1*sizeof(double **));
-	for(i=0;i<n1;i++){
-		aa[i]=(double **) malloc(n2*sizeof(double *));
-		for(j=0;j<n2;j++)
-			aa[i][j] = (double *) malloc(n3*sizeof(double));
-	}
-
-	return aa;
-}
-
-
-void  dblarr3free(double ***aaa, const int n1, const int n2, const int n3){
-
-	int i,j;
-
-	for(i=0;i<n1;i++){
-		for(j=0;j<n2;j++)
-			free(aaa[i][j]);
-		free(aaa[i]);
-	}
-	free(aaa);
-}
 
 
 

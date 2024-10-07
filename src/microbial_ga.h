@@ -27,9 +27,7 @@ extern "C" {
 #define SNIPPET_H_
 
 
-double evaluate(int i);
-int ga_step(double **pop, double *eval, const int POPSIZE, const int PARAMETERS);
-//same as above, but with integer values in the pop
+
 int ga_step_int(int **pop, double *eval, const int POPSIZE, const int PARAMETERS, const int minval, const int maxval, int *wn);
 
 int * randinitint(const int N,const int min,const int upto);

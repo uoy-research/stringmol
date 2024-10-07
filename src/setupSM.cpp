@@ -502,48 +502,6 @@ void print_swdt(FILE *fp, float **dt,  stringPM * A, stringPM * B){
 
 
 
-//get stats for evolution cf seed community
-void evostats(char * Afn, stringPM *B,s_sw **spp_matches, float *self, float *gvm){
-
-	//Create a copy of the seed replicase population
-
-	SMspp		SP;
-	stringPM A(&SP);
-	A.load(Afn,NULL,0,0);
-
-	//TODO: read this data from the config file somehow...
-	const int nseedspp = 6;
-	int *mol_class;//{0,0,0,1,1,1};
-	float *class_score;//{0.0,0.0};
-	mol_class = (int *)malloc(nseedspp * sizeof(int));
-	class_score = (float *)malloc(2 *sizeof(float));
-
-	memset(class_score,0,2 *sizeof(float));
-	for(int i=0;i<nseedspp;i++){
-		if(i<3)
-			mol_class[i]=0;
-		else
-			mol_class[i]=1;
-	}
-
-	//Get min dist from spp to spp
-	float ** dt;
-	dt = swdt(&A,B,spp_matches,mol_class,class_score,self);
-
-	//print_swdt(stdout,dt,&A,B);
-
-	//print_class_scores(stdout,class_score,2);
-
-	//printf("Species mapping in B is:\n");
-
-	//TODO: cleanup properly!
-	free(dt);
-	free(mol_class);
-	free(class_score);
-
-
-}
-
 
 
 float * self_stats(char * Afn){
@@ -867,7 +825,7 @@ s_ag * pick_partner(stringPM *A, smsprun *run,int x, int y){
 						if(run->status[xx][yy] == G_NOW){
 							if(count==it)
 								run->status[xx][yy] = G_NEXT;
-								return run->grid[xx][yy];
+							return run->grid[xx][yy];
 							count++;
 						}
 					}
@@ -1296,6 +1254,7 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 
 
 		s_ag *bag;
+		bag = NULL;//To prevend compiler "uninitialised" warning
 		switch(pag->status){
 		case B_UNBOUND:
 			bag = NULL;

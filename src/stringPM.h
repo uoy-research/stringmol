@@ -148,10 +148,6 @@ public:
 	//int load(char *fn);
 
 
-	//Aspatial testing:
-	int aspatial_coverage(int n);
-	int aspbind(rules *rset, s_ag *pag);
-
 	//Iteration
 	void make_next();
 	int testbind(s_ag *pag);
@@ -191,7 +187,6 @@ public:
 	void print_agents(FILE *fp, const char *spec, int verbose);
 	int print_agent_idx(FILE *fp, int det, int idx);
 	void testprop();
-	int countcomp(char E, char P);
 	void sanity_check();
 
 
@@ -218,7 +213,6 @@ public:
 
 	//String & alignment stuff
 	int 	h_pos(s_ag *pag, char head); 	//Find the position of a particular head.
-	void 	get_string_comp(s_ag *pag);
 	float 	get_sw(s_ag *a1, s_ag *a2, align *sw);
 	float 	get_bprob(align *sw);
 	void 	set_exec(s_ag *A, s_ag *B, align *sw);
@@ -260,9 +254,6 @@ public:
 	void 		print_lineage_dot(FILE *fp, int time,int step); //traces everything descending from the initial set.
 	void 		print_ancestry_dot(FILE *fp, int time,int step); //takes all current agents and traces them back
 	void 		print_spp_strings(FILE *fp);
-	//s_spp * 	make_spp(s_ag *a);
-	//l_spp * 	make_lspp(s_ag *a);
-	void 		free_lspp(l_spp *sp);
 	l_spp * 	get_spp(int n);
 	//int 		append_spp(s_spp *sp);
 	int 		append_lspp(l_spp *sp);
@@ -271,11 +262,6 @@ public:
 	void 		get_spp_count(int state);//Count the number of individuals of each species present in the system
 	//find a species that a molecule belongs to
 	int 		id_spp(l_spp *sp, s_ag *pag, int  aspno, char *spp_string);
-
-	//Network analysis
-	void 		get_spp_network(char *fn);
-	int 		Network_cleave(s_ag *act);
-	int 		Network_exec_step(s_ag *act, s_ag *pass);
 
 	//Epoch recording
 	void 		set_epochs();

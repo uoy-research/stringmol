@@ -30,7 +30,7 @@ echo ""
 
 echo "======================================"
 echo "Running Smoke Tests.      Please Wait."
-cd src
+cd output
 echo "---------------------------------"
 echo "Building!"
 make clean
@@ -38,9 +38,19 @@ make all
 
 echo "---------------------------------"
 echo "Checking TTYPE 0 (1 on 1) runs ok"
-../release/stringmol 0 ../config/quicktest0.conf
-
-
+../release/stringmol 0 ../config/quick_test0.conf > tmp_stdout.txt
+rm tmp_stdout.txt
+sh ../util/rm_runfiles.sh
+echo "---------------------------------"
+echo "Checking TTYPE 1 (ALIFE XII) runs ok"
+../release/stringmol 1 ../config/quick_test1.conf > tmp_stdout.txt
+rm tmp_stdout.txt
+sh ../util/rm_runfiles.sh
+echo "---------------------------------"
+echo "Checking TTYPE 33 (Spatial Stringmol) runs ok"
+../release/stringmol 33 ../config/quick_test33.conf > tmp_stdout.txt
+rm tmp_stdout.txt
+sh ../util/rm_runfiles.sh
 cd ../
 
 
