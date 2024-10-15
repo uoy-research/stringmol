@@ -42,7 +42,7 @@
 #include "stringPM.h"
 
 //signal
-#include "signalSM.h"
+//#include "signalSM.h"
 
 //TODO: Sort out this dependency nightmare!
 // Writing PNGs
@@ -107,7 +107,7 @@ int joinsplists(int argc, char *argv[]){
 				sscanf(line,"%d,%*d,%*d,%*f,%*d,%*d,%s",&spno,seq);
 				if(spno!=spold){
 					spold = spno;
-					strncpy(pag->S,seq,strlen(seq));
+					strncpy(pag->S,seq,strlen(pag->S));
 					pag->len = strlen(pag->S);
 					printf("adding string %s\n",pag->S);
 
@@ -175,7 +175,7 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
 
 		pag->S =(char *) malloc(A->maxl0*sizeof(char));
 		memset(pag->S,0,A->maxl0*sizeof(char));
-		strncpy(pag->S,label,strlen(label));
+		strncpy(pag->S,label,strlen(pag->S));
 		pag->len = strlen(pag->S);
 
 		//No parents for these initial agents!
@@ -242,7 +242,7 @@ int biomass_config(stringPM *A, char *fout, const int nbio, const int nag, SMspp
 		}
 		str[ls->spp] = (char *) malloc(A->maxl0*sizeof(char));
 		memset(str[ls->spp],0,A->maxl0*sizeof(char));
-		strncpy(str[ls->spp],ls->S,strlen(ls->S));
+		strncpy(str[ls->spp],ls->S,strlen(str[ls->spp]));
 
 		ls = ls->next;
 	}
@@ -873,6 +873,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 
 	//counter for max no. symbols at any time step.
 	int *maxcode;
+	maxcode = NULL;
 
 
 	for(unsigned int rr=0;rr<rlim;rr++){
@@ -1017,11 +1018,18 @@ float EAqnn_summary(int rr){
 	char cp[256];
 
 	sprintf(cp,"cp popdy%03d.dat popdy.dat",rr);
-	system(cp);
+	
+	if(system(cp)){
+		printf("system(cp) returned non-zero status in EAqnn_summary... exiting..\n");
+		exit(99);
+	}
 
 
 	//printf("Calling R:\n");
-	system("R -q -f file.R");
+	if(system("R -q -f file.R")){
+		printf("system(\"R -q -f file.R\") returned non-zero status in EAqnn_summary... exiting..\n");
+		exit(98);
+	}
 
 	//printf("Calling ls:\n");
 	//system("ls -ltrh");
@@ -1031,7 +1039,11 @@ float EAqnn_summary(int rr){
 
 	fp = fopen("qnn.txt","r");
 
-	fscanf(fp,"%e",&score);
+
+	if(fscanf(fp,"%e",&score)==EOF){
+		printf("ERROR reading qnn score from qnn.txt");
+	}
+	
 	printf("Read qnn, value is %f\n",score);
 	fclose(fp);
 
@@ -1061,7 +1073,9 @@ int * paramsFromFile(char *fn, const int rr, const int N){
 	vals = (int *) malloc(N*sizeof(int));
 	//grab the line specified by rr
 	for(int i=0;i<=rr;i++){
-		fgets(line,2000,fp);
+		if(fgets(line,2000,fp)==NULL){
+			printf("ERROR in reading line during paramsFromFile() in stringmol.cpp");
+		}
 	}
 	ptr=strtok(line,"\t");
 	ptr=strtok(NULL,"\t");
@@ -1081,7 +1095,9 @@ double evalFromFile(char *fn, int rr){
 	double val;
 	//grab the line specified by rr
 	for(int i=0;i<=rr;i++){
-		fgets(line,2000,fp);
+		if(fgets(line,2000,fp)==NULL){
+			printf("ERROR in reading line during evalFromFile() in stringmol.cpp\n");
+		}
 	}
 
 	sscanf(line,"%d",&ival);
@@ -1370,10 +1386,14 @@ float *generate_avg_conc(char *fn, int *en){
 			rewind(fp);
 			int l=1;
 			while(l!=line_number[j]){//TODO: Can't quite get this right without the extra fgets after the while - this'll fail - line_number[j]==1 (unlikely)
-				fgets(line,2000,fp);
+				if(fgets(line,2000,fp)==NULL){
+					printf("ERROR in reading line during generate_avg_conc() in stringmol.cpp");
+				}
 				l++;
 			}
-			fgets(line,2000,fp);
+			if(fgets(line,2000,fp)==NULL){
+					printf("ERROR in reading line during generate_avg_conc() in stringmol.cpp");
+			}
 			char *lptr,*p;
 			lptr = line;
 			//Tokenize the line
@@ -2133,7 +2153,7 @@ void SmPm_1on1(int argc,char *argv[]){
 	//
 	unsigned int dont_interrupt = 0;
 	int gg = readordef_param_int(argv[2], "NOINTERRUPT", &dont_interrupt, -1, 1);
-	/*if(gg==1){
+	if(gg==1){
 		printf("GRANULAR was not specified. Simulations will use standard operators");
 		A.granular_1 = 0;
 	}
@@ -2141,7 +2161,7 @@ void SmPm_1on1(int argc,char *argv[]){
 
 		printf("GRANULAR was specified. Simulations will use+standard operators");
 		A.granular_1 = 1;
-	}*/
+	}
 
 	if(dont_interrupt)
 		printf("flag NOINTERRUPT set - running continuously");
@@ -2282,7 +2302,9 @@ void swdist(int argc, char *argv[]){
 			printf("error opening %s",ofn);
 		}
 
-		fgets(line,A.maxl,fin);
+		if(fgets(line,A.maxl,fin)==NULL){
+			printf("ERROR in reading line during swdist() in stringmol.cpp");
+		}
 		printf("%s\n",line);
 		fprintf(outfile,"%s\n", line);
 
@@ -2338,7 +2360,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 		pag->S =(char *) malloc(A->maxl0*sizeof(char));
 		pag->label = 'R';
 		memset(pag->S,0,A->maxl0*sizeof(char));
-		strncpy(pag->S,repstring,replen);
+		strncpy(pag->S,repstring,strlen(pag->S));
 		pag->len = strlen(pag->S);
 
 		//No parents for these initial agents!
@@ -2474,6 +2496,7 @@ int speigmonst(int argc, char *argv[]){
 
 	//counter for max no. symbols at any time step.
 	int *maxcode;
+	maxcode = NULL;
 
 
 	char *repstring;
