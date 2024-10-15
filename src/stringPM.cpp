@@ -261,7 +261,9 @@ int stringPM::load_table_matrix(const char *fn){
 	int i,j;
 	printf("File name is %s",fn);
 	if((fp=fopen(fn,"r"))!=NULL){
-		fgets(line,maxl,fp);
+		if(fgets(line,maxl,fp)==NULL){
+			printf("ERROR in reading line during load_table_matrix() in stringPM.cpp");
+		}
 		memset(label,0,maxl);
 		sscanf(line,"%s",label);
 
@@ -278,7 +280,9 @@ int stringPM::load_table_matrix(const char *fn){
 		}
 
 		for(i=0;i<blosum->N+1;i++){
-			fgets(line,maxl,fp);
+			if(fgets(line,maxl,fp)==NULL){
+				printf("ERROR in reading line during load_table_matrix() in stringPM.cpp");
+			}
 			p=strtok(line,", \t");
 			for(j=0;j<blosum->N;j++){
 				sscanf(p,"%f",&(blosum->T[i][j]));
@@ -291,7 +295,9 @@ int stringPM::load_table_matrix(const char *fn){
 			blosum->adj[i] = (int *) malloc(blosum->N * sizeof(int));
 		}
 		for(i=0;i<blosum->N;i++){
-			fgets(line,maxl,fp);
+			if(fgets(line,maxl,fp)==NULL){
+				printf("ERROR in reading line during load_table_matrix() in stringPM.cpp\n");
+			}
 			p=strtok(line,", \t");
 			for(j=0;j<blosum->N;j++){
 				sscanf(p,"%d",&(blosum->adj[i][j]));
@@ -538,7 +544,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 				pag = make_ag('X');//TODO: fix this need for ascii codes... we have species numbers now!
 				pag->S =(char *) malloc(maxl0*sizeof(char));
 				memset(pag->S,0,maxl0*sizeof(char));
-				strncpy(pag->S,active_string,strlen(active_string));
+				strncpy(pag->S,active_string,strlen(pag->S));//active_string));
 				pag->len = strlen(pag->S);
 
 				if(grid){
@@ -559,7 +565,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 				bag = make_ag('X');//TODO: fix this need for ascii codes... we have species numbers now!
 				bag->S =(char *) malloc(maxl0*sizeof(char));
 				memset(bag->S,0,maxl0*sizeof(char));
-				strncpy(bag->S,passive_string,strlen(passive_string));
+				strncpy(bag->S,passive_string,strlen(bag->S));//passive_string));
 				bag->len = strlen(bag->S);
 
 				if(grid){
@@ -740,7 +746,7 @@ s_ag * stringPM::read_active_agent(FILE **fp, char line[], const int llen, int &
 	pag = make_ag('X');//TODO: fix this need for ascii codes... we have species numbers now!
 	pag->S =(char *) malloc(maxl0*sizeof(char));
 	memset(pag->S,0,maxl0*sizeof(char));
-	strncpy(pag->S,active_string,strlen(active_string));
+	strncpy(pag->S,active_string,strlen(pag->S));//active_string));
 	pag->len = strlen(pag->S);
 
 	if(grid){
@@ -815,7 +821,7 @@ s_ag * stringPM::read_passive_agent(FILE **fp, char line[], const int llen){
 	bag = make_ag('X');//TODO: fix this need for ascii codes... we have species numbers now!
 	bag->S =(char *) malloc(maxl0*sizeof(char));
 	memset(bag->S,0,maxl0*sizeof(char));
-	strncpy(bag->S,passive_string,strlen(passive_string));
+	strncpy(bag->S,passive_string,strlen(bag->S));//passive_string));
 	bag->len = strlen(bag->S);
 
 	if(grid){
@@ -881,6 +887,9 @@ int stringPM::load_replicable(const char *fn){
 	s_ag **agarray;
 	int *parray;
 	int pidx;
+	
+	agarray = NULL;
+	parray = NULL;
 
 	if((fp = fopen(fn,"r"))!=NULL){
 
@@ -1662,6 +1671,7 @@ s_ag * stringPM::make_ag(int alab){
 void stringPM::print_agents(FILE *fp, const char *spec, int verbose){
 
 	s_ag *pag;
+	pag = NULL;
 
 	if(!strncmp("NOW",spec,strlen("NOW"))){
 		pag = nowhead;
@@ -2051,6 +2061,8 @@ int stringPM::h_pos(s_ag *pag, char head){
 
 	char *ph;
 	char *ps;
+	ps = NULL;
+	ph = NULL;
 
 	if(pag->status != B_ACTIVE)
 		printf("ERROR: attempting head position for inactive string");
@@ -4347,6 +4359,7 @@ int stringPM::share_agents(s_ag **hp){
 	tmphead = *hp;
 	pa = tmphead;
 	*hp = NULL;
+	aa = NULL;
 
 	while(pa !=NULL){
 		ntot++;
@@ -4747,7 +4760,7 @@ int stringPM::print_conf(FILE *fp){
 		//No mutation rate needs to be set: the hard-wired alife values will be loaded.
 	}
 
-	fprintf(fp,"\n%%% REPORTING PARAMETERS %%%\n");
+	fprintf(fp,"\n%%%%%% REPORTING PARAMETERS %%%%%%\n");
 	fprintf(fp,"REPORTEVERY %d\n",(int) report_every);
 	fprintf(fp,"IMAGEEVERY	%d\n",(int) image_every);
 
