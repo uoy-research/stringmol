@@ -91,7 +91,6 @@ s_parent * SMspp::make_parents(l_spp * paspp, l_spp * ppspp){
 
 l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const int spno){
 
-	int l;
 	l_spp *sp;
 
 	//TODO: check for malloc fails here...
@@ -100,9 +99,7 @@ l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const i
 
 	memset(sp->S,0,maxl0*sizeof(char));
 
-	//TODO: what if l > maxl0 ??
-	l = strlen(S);
-	strncpy(sp->S,S,l);
+	strncpy(sp->S,S,strlen(sp->S));//l);
 
 	sp->pp = NULL;
 	if(spno>-1){
