@@ -30,11 +30,12 @@ echo ""
 
 echo "======================================"
 echo "Running Smoke Tests.      Please Wait."
-cd output
 echo "---------------------------------"
 echo "Building!"
+cd src
 make clean
 make all
+cd ../output
 
 echo "---------------------------------"
 echo "Checking TTYPE 0 (1 on 1) runs ok"
