@@ -2439,7 +2439,7 @@ char * set_seq(char *S){
 	int len = 1+strlen(S);
 	out = (char *) malloc((len)*sizeof(char));
 	memset(out,0,len*sizeof(char));
-	strncpy(out,S,len);
+	strncpy(out,S,strlen(out));//len);
 	return out;
 
 }

@@ -1,0 +1,13 @@
+Hello There! Let's run stringmol!
+Argc = 3
+CELLRAD = 1.000000
+AGRAD = 1.000000
+ENERGY = 0.000000
+NSTEPS = 300.000000
+No MIS or MTX file name found - using default values
+Number of agents not specified - impossible to configure using repclicable method...
+Reverting to original load method (pre 2017)...
+Setting NOINTERRUPT to 1
+NOINTERRUPT = 1
+GRANULAR was specified. Simulations will use+standard operatorsflag NOINTERRUPT set - running continuouslyCode 74 (J) not found in SWT key
+Code 87 (W) not found in SWT key
