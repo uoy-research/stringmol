@@ -28,33 +28,8 @@ extern "C" {
 void memerror();
 void * mymalloc(const int number, const int size);
 
-//void ***arr3alloc(const int size, const int n1, const int n2, const int n3);
-void	arr3free(void ***aaa, const int n1, const int n2, const int n3);
-void	*** arr3alloc(const int n1, const int n2, const int n3, const int size);
-
 void	** arr2alloc(const int n1, const int n2, const int size);
-void	arr2free(void **aa, const int n1, const int n2);
-
-int ** intarr2alloc(const int n1, const int n2);
-void  intarr2free(int **aa, const int n1, const int n2);
-
-
-int ***	intarr3alloc(const int n1, const int n2, const int n3);
-void	intarr3free(int ***aaa, const int n1, const int n2, const int n3);
-
-
-int **** intarr4alloc(const int n1,const int n2,const int n3,const int n4);
-
-void intarr4free(int ****aa, const int n1,const int n2,const int n3,const int n4);
-
-
-
-//not strictly memutil - but util nevertheless...
-
-float maxfinarr(float *arr, const int len);
-double maxdinarr(double *arr, const int len, int *idx);
-
-
+//void	arr2free(void **aa, const int n1, const int n2);
 
 #endif /*MEMUTIL_H_*/
 
