@@ -67,6 +67,7 @@ int test_rand(int verbose){
 	int rout = initmyrand(-1);
 	if(rout == rin){
 		printf("FAILED - requested seed from dev/random, but got -1\n");
+		failed = 1;
 	}
 	else
 		if(verbose){
@@ -80,6 +81,7 @@ int test_rand(int verbose){
 	rout = rout - initmyrand(-1);
 	if(rout == 0 ){
 		printf("FAILED - requested new seed from dev/random, but got same one\n");
+		failed = 1;
 	}
 	else
 		if(verbose){
@@ -92,6 +94,7 @@ int test_rand(int verbose){
 	rout = initmyrand(rin);
 	if(rout != rin){
 		printf("FAILED - seed not set - different seed used\n");
+		failed = 1;
 	}
 	else
 		if(verbose){
@@ -101,12 +104,12 @@ int test_rand(int verbose){
 	if(verbose){
 		printf("Testing re-setting mt index... \n");fflush(stdout);
 	}
+	
+	/*TODO: this looks like a test that is never tested! 
 	int pos = 22;
 	set_mti(pos);
 	pos = get_mti();
-
-
-
+	*/
 
 	if(!failed)
 		printf("ALL RNG TESTS PASSED\n\n");
@@ -240,6 +243,7 @@ int test_loadsave(int argc, char *argv[]){
 	B = test_config_settings(argc,argv2,1);
 
 	int csc = compare_config(A,B);
+	printf("csc for (A,B) is %d\n",csc);
 
 	//Run the Trial forward
 
@@ -260,6 +264,7 @@ int test_loadsave(int argc, char *argv[]){
 
 
 	csc = compare_config(A,C);
+	printf("csc for (A,C) is %d\n",csc);
 
 
 	return csc;
@@ -277,6 +282,10 @@ int test_all(int argc, char *argv[]){
 
 	printf("Testing rng\n");
 	failed = test_rand(0);
+	if(failed){
+		printf("test_rand failed\n");
+		return failed;
+	}
 
 
 	failed = test_loadsave(argc,argv);
