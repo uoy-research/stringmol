@@ -41,18 +41,7 @@ double pop[POPSIZE][PARAMETERS];
 double eval[POPSIZE];
 */
 
-/*
- * "Mutates" a double value, i.e. adds or subtracts MDIST to/from the value.
- */
-double mutate (double f) {
-	if (randint()%2 == 0){
-		f = (f + MDIST);
-	}
-	else{
-		f = (f - MDIST);
-	}
-	return f;
-}
+
 
 /*
  * "Mutates" an integer value, by doing the equivalent of a bitflip...
@@ -123,58 +112,3 @@ int ga_step_int(int **pop, double *eval, const int POPSIZE, const int PARAMETERS
 		*wn = winner;
 	return loser;
 }
-
-void recmut_bool(int **pop, const int winner, const int loser, const int L){
-	int p;
-	for(p=0;p<L;p++){
-		//recombine
-		if (((randint()%1000)/1000.0)<REC) {
-			pop[loser][p]=pop[winner][p];
-		}
-		//mutate
-		if ((randint()%1000)/1000.0<MUT) {
-			pop[loser][p]=1-pop[loser][p];
-		}
-	}
-}
-
-
-
-
-
-
-
-
-
-int * randinitint(const int N,const int min,const int upto){
-
-	int i,*A;
-	A = (int *) malloc(N*sizeof(int));
-
-	for(i=0;i<N;i++){
-		A[i] = min + (upto*rand0to1());
-	}
-
-	return A;
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
