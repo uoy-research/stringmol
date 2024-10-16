@@ -528,7 +528,7 @@ int load_table(char *fn,swt *T){
 					T->N = strlen(fn2);
 					T->key = (char *)malloc((T->N+1) * sizeof(char));
 					memset(T->key,0,(T->N+1)*sizeof(char));
-					strncpy(T->key,fn2,strlen(T->key));//T->N);
+					strncpy(T->key,fn2,T->N);
 
 					T->T = (float **) malloc((T->N +1) * sizeof(float *));
 					for(i=0;i<T->N+1;i++)
@@ -725,7 +725,7 @@ swt * default_table(){
 	table->key = (char *)malloc((table->N+1) * sizeof(char));
 	memset(table->key,0,(table->N+1)*sizeof(char));
 
-	strncpy(table->key,"ABC$DEF%GH^IJK?LMN}OPQ>RST=UVWXYZ",strlen(table->key));
+	strncpy(table->key,"ABC$DEF%GH^IJK?LMN}OPQ>RST=UVWXYZ",table->N);
 
 	//Set up the data structure
 	table->T = (float **) malloc((table->N +1) * sizeof(float *));

@@ -573,8 +573,9 @@ void agents_base::clearout(int verbose){
 
 	s_ix	*ixp,*ixp2;
 
-	if(verbose)printf("Starting agents_base clearout..");fflush(stdout);
-
+	if(verbose){
+		printf("Starting agents_base clearout..");fflush(stdout);
+	}
 	ixp=ifxhead;
 	while(ixp!=NULL){
 		ixp2=ixp->next;
@@ -619,7 +620,9 @@ void agents_base::clearout(int verbose){
 
 	preset();
 
-	if(verbose)printf("....finished\n");fflush(stdout);
+	if(verbose){
+		printf("....finished\n");fflush(stdout);
+	}
 }
 
 
