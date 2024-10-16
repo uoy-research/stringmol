@@ -37,12 +37,7 @@ public:
 
 	//Finding etc
 	int found(const char *side, int label);
-	int maxlhs(int label);
-
-	//diagnostics:
-	void printasint();
-	void printrulesfor(const char * side, int rule);
-
+	
 private:
 
 	int findinrange(int row, int min, int max, int label);
