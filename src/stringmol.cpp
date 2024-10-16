@@ -169,7 +169,8 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
 	s_ag *pag;
 
 	for(i=0;i<nag;i++){
-	l_spp *species;
+		l_spp *species;
+		species = NULL;
 
 		pag = A->make_ag(symbol);//,1);
 
@@ -181,7 +182,7 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
 		//No parents for these initial agents!
 		pag->pp = A->spl->make_parents(NULL,NULL);
 
-		if(!i){
+		if(i==0){
 			//int stringPM::update_lineage(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
 			A->update_lineage(pag,'I',1,NULL,NULL,0);
 			species = A->spl->getspp(pag,0,A->maxl0);
@@ -312,6 +313,7 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
 
 		for(i=0;i<nag;i++){
 			l_spp *s;
+			s = NULL;
 
 			pag = A->make_ag('A'+j);//,1);
 
@@ -809,9 +811,6 @@ int comass_AlifeXII(int argc, char *argv[]){
 	//Prime the printout:
 	//FILE *fpo,*fpdiv;
 	FILE *fsumm,*ftmp;
-
-	//division values for summary
-	int divct,divit,diven;
 
 	char	fn[128],pfn[128];
 
@@ -1572,8 +1571,6 @@ int energetic_AlifeXII(int argc, char *argv[]){
 	//FILE *fpo,*fpdiv;
 	FILE *fsumm,*ftmp;
 
-	//division values for summary
-	int divct,divit,diven;
 
 	char	fn[128],pfn[128];
 
@@ -1640,7 +1637,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
 		div=0;
 
-		divct = divit = diven = 0;
+		int divct = 0,divit = 0,diven = 0;
 
 		SP.clear_list();
 
@@ -1656,7 +1653,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 		fclose(ftmp);
 
 
-		int lastepoch=A.get_ecosystem(),thisepoch,nepochs=1;
+		int lastepoch=A.get_ecosystem(),nepochs=1;
 
 		A.domut=1;
 		nsteps=0;
@@ -1698,7 +1695,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 			}
 
 
-			thisepoch = A.get_ecosystem();
+			int thisepoch = A.get_ecosystem();
 
 			if(!(i%1000)){
 				if(thisepoch != lastepoch){
@@ -2131,7 +2128,6 @@ void SmPm_1on1(int argc,char *argv[]){
 	int i = 0;
 	char c;
 	char fn[256];
-	FILE *fp;
 
 	if(!arg_load(&A, argc, argv))
 		return;
@@ -2203,6 +2199,8 @@ void SmPm_1on1(int argc,char *argv[]){
 
 		printf("Printing species list\n");
 		sprintf(fn,"splist.dat");
+		
+		FILE *fp;
 		fp = fopen(fn,"w");
 		SP.print_spp_list(fp);
 		fclose(fp);
@@ -2285,9 +2283,7 @@ void swdist(int argc, char *argv[]){
 	}
 	printf("NSTEPS = %d\n",maxnsteps);
 
-	char ofn[512];
-	char line[3000];
-	FILE *fin, *outfile;
+	FILE *fin;
 
 	A.load(argv[2],NULL,0,1);
 	align sw;
@@ -2295,8 +2291,11 @@ void swdist(int argc, char *argv[]){
 	char s1[A.maxl0], s2[A.maxl0];
 
 	if((fin= fopen(argv[3], "r"))!=NULL){
+	
+		char ofn[512];
+		char line[3000];
 		sprintf(ofn,"%s.out",argv[3]);
-
+		FILE *outfile;
 		if((outfile= fopen(ofn, "w"))==NULL){
 			printf("error opening %s",ofn);
 		}
@@ -2353,6 +2352,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 	for(int i=0;i<nrep;i++){
 
 		l_spp *s;
+		s = NULL;
 
 		pag = A->make_ag('R');//,1);
 
@@ -2416,7 +2416,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 
 int speigmonst(int argc, char *argv[]){
 
-	int i,div;
+	int i;
 
 	SMspp		SP;
 	stringPM	A(&SP);
@@ -2504,7 +2504,7 @@ int speigmonst(int argc, char *argv[]){
 		mc = fopen(fn,"w");
 		fclose(mc);
 
-		div= 0;
+		int div= 0;
 
 		if(!rr){
 			A.load(argv[2],NULL,0,1);
@@ -2528,7 +2528,7 @@ int speigmonst(int argc, char *argv[]){
 			maxcode = (int *) malloc(A.blosum->N * sizeof(int));
 		memset(maxcode,0,A.blosum->N*sizeof(int));
 
-		int lastepoch=A.get_ecosystem(),thisepoch,nepochs=1;
+		int lastepoch=A.get_ecosystem(),nepochs=1;
 
 		A.domut=1;
 
@@ -2576,7 +2576,7 @@ int speigmonst(int argc, char *argv[]){
 			}
 
 
-			thisepoch = A.get_ecosystem();
+			int thisepoch = A.get_ecosystem();
 
 
 			if(!(i%1000)){
