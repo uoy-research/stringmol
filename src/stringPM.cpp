@@ -56,22 +56,6 @@
 //extern const int maxl0 = maxl+1; //allow room for a terminating 0
 
 
-void print_status(FILE *fp,s_bind st){
-	switch(st){
-	case B_UNBOUND:
-		fprintf(fp,"UNBOUND");
-		break;
-	case B_ACTIVE:
-		fprintf(fp,"ACTIVE");
-		break;
-	case B_PASSIVE:
-		fprintf(fp,"PASSIVE");
-		break;
-	default:
-		fprintf(fp,"UNDEFINED STATUS");
-	}
-	fflush(fp);
-}
 
 
 stringPM::stringPM(SMspp * pSP){
@@ -1406,7 +1390,7 @@ void stringPM::print_spp_count(FILE *fp,int style, int state){
 
 
 
-
+/*TODO: Delete when we have found this functionality elsewhere in the code
 void stringPM::get_spp_count(int state){
 
 	int nag,*done;
@@ -1436,9 +1420,7 @@ void stringPM::get_spp_count(int state){
 			p->spp->count++;
 		}
 	}
-
-
-}
+}*/
 
 
 
@@ -1506,13 +1488,14 @@ int stringPM::extract_ag(s_ag **list, s_ag *ag){
 }
 
 
+/*
 int stringPM::hasdied(){
 
 	if(nowhead == NULL)
 		return 1;
 	else
 		return 0;
-}
+}*/
 
 
 
@@ -2779,8 +2762,8 @@ void stringPM::make_next(){
 }
 
 
-
-
+/*
+//TODO: see where this differs from other versions of hcopy! 
 int stringPM::speig_hcopy(s_ag *act){
 
 	//s_ag *pass;
@@ -2907,7 +2890,7 @@ int stringPM::speig_hcopy(s_ag *act){
 	act->biomass++;
 	biomass++;
 	return 0;
-}
+}*/
 
 
 /////////////////////////////////////////////////////////start of comass stuff
@@ -3993,6 +3976,9 @@ void stringPM::clearout(int verbose){
 }
 
 
+
+//written to check buffer overruns on strings - potentially useful! 
+/*
 void stringPM::sanity_check(){
 	s_ag *pag;
 	pag = nowhead;
@@ -4007,7 +3993,7 @@ void stringPM::sanity_check(){
 		pag=pag->next;
 
 	}
-}
+}*/
 
 //SPECIES ANALYSIS FUNCTIONS
 
@@ -4341,13 +4327,14 @@ void stringPM::print_spp_strings(FILE *fp){
 
 
 
-
+/*
+//Related to early runs where an 'epoch' was a period of dominance of one species
 void stringPM::set_epochs(){
 
 	lastepoch=get_ecosystem();
 	thisepoch=lastepoch;
 	nepochs=1;
-}
+}*/
 
 
 int stringPM::share_agents(s_ag **hp){
@@ -4924,7 +4911,7 @@ int stringPM::print_conf(FILE *fp){
 }
 
 
-void stringPM::print_grid(FILE *fp){
+/*void stringPM::print_grid(FILE *fp){
 
 	for(int j = 0; j< grid->gridy; j++){
 		for(int i=0;i<grid->gridx;i++){
@@ -4947,7 +4934,6 @@ void stringPM::print_grid(FILE *fp){
 		fprintf(fp,"|\n");
 	}
 
-
-}
+}*/
 
 

@@ -55,9 +55,6 @@
 	int arg_load(stringPM *A, int argc, char *argv[], int verbose=0);
 
 
-	float * self_stats(char * Afn);
-
-
 	/* Standard initialisation of random number seed */
 	void init_randseed_config(int argc, char *argv[]);
 

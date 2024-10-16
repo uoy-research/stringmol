@@ -152,7 +152,7 @@ public:
 	void make_next();
 	int testbind(s_ag *pag);
 	int testdecay(s_ag *pag);
-	int hasdied();
+	//int hasdied();
 
 	void replenish_operons();
 	void divide();
@@ -187,7 +187,7 @@ public:
 	void print_agents(FILE *fp, const char *spec, int verbose);
 	int print_agent_idx(FILE *fp, int det, int idx);
 	void testprop();
-	void sanity_check();
+	//void sanity_check();
 
 
 	//Distance calcs
@@ -198,7 +198,7 @@ public:
 	smsprun *grid;
 	smsprun * init_smprun(const int gridx, const int gridy);
 	void free_grid();
-	void print_grid(FILE *fp);
+	//void print_grid(FILE *fp);
 
 	//Loading from config file (see also agents_base)
 	int 	load_table(const char *fn);
@@ -243,8 +243,7 @@ public:
 	int 	comass_hcopy(s_ag *act);
 
 	//Speigelman's monster
-
-	int 	speig_hcopy(s_ag *act);
+	//int 	speig_hcopy(s_ag *act);
 
 
 	//Molecular species analysis:
@@ -259,12 +258,12 @@ public:
 	int 		append_lspp(l_spp *sp);
 	int 		count_spp();
 	void 		print_spp_count(FILE *fp,int style, int state);
-	void 		get_spp_count(int state);//Count the number of individuals of each species present in the system
+	//void 		get_spp_count(int state);//Count the number of individuals of each species present in the system
 	//find a species that a molecule belongs to
 	int 		id_spp(l_spp *sp, s_ag *pag, int  aspno, char *spp_string);
 
 	//Epoch recording
-	void 		set_epochs();
+	//void 		set_epochs();
 
 	//Container functions
 	int 		share_agents(s_ag **head); //Copies a set of agents onto nowhead;
