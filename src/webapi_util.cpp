@@ -42,9 +42,6 @@
 #include "SMspp.h"
 #include "stringPM.h"
 
-//signal
-#include "signalSM.h"
-
 //setup
 // Writing PNGs
 #include "lodepng.h"

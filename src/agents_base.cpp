@@ -38,9 +38,8 @@ extern "C" {
 #include "agents_base.h"
 
 
-void agents_base::test2(){
-	printf("Bollocks\n");
-}
+
+
 
 int agents_base::eqn_prop(const int n){
 
@@ -69,23 +68,8 @@ int agents_base::eqn_prop(const int n){
 }
 
 
-int agents_base::proper_prop(const int n){
-	int k;
-	float x1,y1,x2,y2;
-	float dist,rad = (float) vcellrad-(move * 2);//400-(9.9*2);
 
 
-	//rad = 400-(9.9*2);
-	rand_in_rad(rad,&x1,&y1);
-	for(k=0;k<n;k++){
-		rand_in_rad(rad,&x2,&y2);
-		dist = sqrt(pow(x1-x2,2)+pow(y1-y2,2));
-		if(dist<agrad){
-			return 1;
-		}
-	}
-	return 0;
-}
 
 //creators and destructors
 agents_base::agents_base(){
@@ -209,56 +193,6 @@ void agents_base::load(const char *fn, char *fninput, int test=0, int verbose=0)
 }
 
 
-/*
-void agents_base::load(char *fn, int test, int verbose){
-
-	load_params(fn,test,verbose);
-	load_influx(fn);
-
-	load_agents(fn,test,verbose);
-}*/
-
-//also make fr
-void agents_base::makefr(int nr){
-	if(fr==NULL){
-		fr = (int *) malloc(nr * sizeof(int));
-		memset(fr,0,nr * sizeof(int));
-		tr = (int *) malloc(nr * sizeof(int));
-		memset(tr,0,nr * sizeof(int));
-
-		s_ix *px;
-		px = ifxhead;
-		ict = 0;
-		while(px!=NULL){
-			ict++;
-			px = px->next;
-		}
-		irt = (int *) malloc(ict * sizeof(int));
-		memset(irt,0,ict * sizeof(int));
-		irf = (int *) malloc(ict * sizeof(int));
-		memset(irf,0,ict * sizeof(int));
-		irl = (int *) malloc(ict * sizeof(int));
-		px = ifxhead;
-		int i=0;
-		while(px!=NULL){
-			irl[i++]=px->label;
-			px = px->next;
-		}
-	}
-}
-
-void agents_base::printfr(FILE *fp, rules *rset){
-	int i;
-
-	fprintf(fp,"\nINFLUX FIRINGS:\n");
-	for(i=0;i<ict;i++){
-		fprintf(fp,"%02d:\t%c:\t%d\t%d\t%f\n",i,irl[i],irt[i],irf[i],(float)irf[i]/irt[i]);
-	}
-	fprintf(fp,"\nRULE FIRINGS:\n");
-	for(int i=0;i<rset->nr;i++){
-		fprintf(fp,"%02d:\t%c+%c->%c+%c:\t%d\t%d\t%f\n",i,rset->rset[i][0],rset->rset[i][1],rset->rset[i][2],rset->rset[i][3],tr[i],fr[i],(float)fr[i]/tr[i]);
-	}
-}
 
 
 
@@ -576,6 +510,7 @@ void agents_base::clearout(int verbose){
 	if(verbose){
 		printf("Starting agents_base clearout..");fflush(stdout);
 	}
+	
 	ixp=ifxhead;
 	while(ixp!=NULL){
 		ixp2=ixp->next;
@@ -583,47 +518,7 @@ void agents_base::clearout(int verbose){
 		ixp=ixp2;
 	}
 
-
-	/* These are never allocated in stringmol - so they shouldn't be part of agents_base!
-	int i;
-	for(i=0;i<ntt;i++){
-		if(com!=NULL)
-			if(com[i]!=NULL)
-				free(com[i]);
-		if(dcom!=NULL)
-			if(dcom[i]!=NULL)
-				free(dcom[i]);
-	}
-	if(com!=NULL)	free(com);
-	if(dcom!=NULL)	free(dcom);
-
-
-	if(adc!=NULL){
-		free(adc);
-		adc=NULL;
-	}
-	if(aro!=NULL){
-		free(aro);
-		aro=NULL;
-	}
-	if(aat!=NULL){
-		free(aat);
-		aat=NULL;
-	}
-	if(aac!=NULL){
-		free(aac);
-		aac=NULL;
-	}
-	*/
-
-
-
 	preset();
 
-	if(verbose){
-		printf("....finished\n");fflush(stdout);
-	}
+	if(verbose){printf("....finished\n");fflush(stdout);}
 }
-
-
-
