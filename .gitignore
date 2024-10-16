@@ -19,3 +19,6 @@ release/stringmol
 
 #Doxygen stuff: 
 docs/**/*
+
+#tests
+tests/test

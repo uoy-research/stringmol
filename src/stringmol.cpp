@@ -2651,15 +2651,6 @@ int speigmonst(int argc, char *argv[]){
 }
 
 
-int test_config(){
-
-
-
-	return 0;
-
-}
-
-
 
 
 

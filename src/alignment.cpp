@@ -524,11 +524,16 @@ int load_table(char *fn,swt *T){
 				sscanf(line,"%s",label);
 				//printf("line = %s",line);
 				if(!strncmp(line,"SET",3)){
+
+					memset(fn2,0,maxl * sizeof(char));
 					sscanf(line,"%*s %s",fn2); //using fn2 to temporarily hold the alphabet...
 					T->N = strlen(fn2);
 					T->key = (char *)malloc((T->N+1) * sizeof(char));
 					memset(T->key,0,(T->N+1)*sizeof(char));
-					strncpy(T->key,fn2,T->N);
+					//strncpy(T->key,fn2,T->N);
+					memcpy(T->key,fn2,T->N*sizeof(char));
+
+
 
 					T->T = (float **) malloc((T->N +1) * sizeof(float *));
 					for(i=0;i<T->N+1;i++)
@@ -724,8 +729,9 @@ swt * default_table(){
 	table->N = 33;
 	table->key = (char *)malloc((table->N+1) * sizeof(char));
 	memset(table->key,0,(table->N+1)*sizeof(char));
-
-	strncpy(table->key,"ABC$DEF%GH^IJK?LMN}OPQ>RST=UVWXYZ",table->N);
+	//strncpy(table->key,"ABC$DEF%GH^IJK?LMN}OPQ>RST=UVWXYZ",strlen(table->key));
+	memcpy(table->key,"ABC$DEF%GH^IJK?LMN}OPQ>RST=UVWXYZ",table->N *sizeof(char));
+	//sprintf(table->key,"%33s","ABC$DEF%GH^IJK?LMN}OPQ>RST=UVWXYZ");
 
 	//Set up the data structure
 	table->T = (float **) malloc((table->N +1) * sizeof(float *));
