@@ -153,9 +153,10 @@ int mt_get_mti(){
 	return mti;
 }
 
+/*TODO let's make this work!
 void mt_set_mti(int val){
 	mti = val;
-}
+}*/
 
 
 /*RECORDING FUNCTION*/

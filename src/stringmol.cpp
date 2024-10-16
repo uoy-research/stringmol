@@ -688,13 +688,14 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 					FILE *afp;
 
-					sprintf(fn,"ancestry%d%02d_%07d.txt",proc,rr,i);
+					sprintf(fn, "ancestry%d%02u_%07d.txt",
+						proc,rr,i);
 					afp = fopen(fn,"w");
 					//A.print_spp_strings(NULL);
 					A.print_spp_strings(afp);
 					printf("Done ancestry printing\n");//afp is closed in this function
 
-					sprintf(fn,"ancestry%d%02d_%07d.dot",proc,rr,i);
+					sprintf(fn,"ancestry%d%02u_%07d.dot",proc,rr,i);
 					afp = fopen(fn,"w");
 					A.print_ancestry_dot(afp,i,10000);
 
@@ -714,7 +715,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 			//PRINT OUT THE EPOCH DATA:
 			ftmp = fopen("epochs.dat","a");
-			fprintf(ftmp,"%d\t%d\t%d\t%d\n",rr,i,A.spp_count-1,nepochs);
+			fprintf(ftmp,"%u\t%d\t%d\t%d\n",rr,i,A.spp_count-1,nepochs);
 			fclose(ftmp);
 
 #endif
@@ -730,7 +731,6 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 				printf("At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\t",i,(int)A.energy,div,A.indelrate,A.subrate);
 				//A.print_agents_count(stdout);
 				A.print_spp_count(stdout,0,-1);
-				nsteps=i;
 
 				break;
 			}
@@ -827,7 +827,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	unsigned int rerr=1,rlim=20;
+	unsigned int rerr,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -883,7 +883,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 		mc = fopen(fn,"w");
 		fclose(mc);
 
-		div= divct = divit = diven = 0;
+		div = 0;
 
 		SP.clear_list();
 
@@ -971,7 +971,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 				printf("DEATH\n");
 				printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
 				A.print_spp_count(stdout,0,-1);
-				nsteps=i;
+				
 				break;
 			}
 			nsteps++;
@@ -1589,7 +1589,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	unsigned int rerr=1,rlim=20;
+	unsigned int rerr,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -1727,8 +1727,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 				printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
 				//A.print_agents_count(stdout);
 				A.print_spp_count(stdout,0,-1);
-				nsteps=i;
-
+				
 				break;
 			}
 			nsteps++;
@@ -2245,7 +2244,7 @@ void swdist(int argc, char *argv[]){
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	unsigned int rerr=1,rlim=20;
+	unsigned int rerr,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -2433,9 +2432,6 @@ int speigmonst(int argc, char *argv[]){
 	//FILE *fpo,*fpdiv;
 	FILE *fsumm,*ftmp;
 
-	//division values for summary
-	int divct,divit,diven;
-
 	char	fn[128],pfn[128];
 
 	sprintf(fn,"%s.spatial.summary.dat",argv[1]);
@@ -2450,7 +2446,7 @@ int speigmonst(int argc, char *argv[]){
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	unsigned int rerr=1,rlim=20;
+	unsigned int rerr,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -2508,7 +2504,7 @@ int speigmonst(int argc, char *argv[]){
 		mc = fopen(fn,"w");
 		fclose(mc);
 
-		div= divct = divit = diven = 0;
+		div= 0;
 
 		if(!rr){
 			A.load(argv[2],NULL,0,1);
@@ -2608,7 +2604,7 @@ int speigmonst(int argc, char *argv[]){
 				printf("DEATH\n");
 				printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
 				A.print_spp_count(stdout,0,B_UNBOUND);
-				nsteps=i;
+				
 				break;
 			}
 			nsteps++;
