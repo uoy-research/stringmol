@@ -25,6 +25,7 @@
 /* This holds parameters */
 
 
+/* TODO might be a sueful diagnostic... or add functionality to readordef_param...
 int read_flag(FILE *fp,const char *label, int verbose){
 
 	const int maxl = 128;
@@ -40,7 +41,7 @@ int read_flag(FILE *fp,const char *label, int verbose){
 	}
 
 	return 1;
-}
+}*/
 
 
 void report_param_error(int error, int doexit){

@@ -65,13 +65,13 @@ void idx_hsort_int(int a[], int idx[], const int N){
 }
 
 
-
+/* TODO: might be a useful diagnostic in tests...
 void print_hsort_data(int a[], int idx[], const int N, FILE *out){
 	int i;
 	printf("i\tidx[i]\ta[idx[i]]\ta[i]\n");
 	for(i=0;i<N;i++){
 		printf("%d\t%d\t%d\t\t%d\n",i,idx[i],a[idx[i]],a[i]);
 	}
-}
+}*/
 
 

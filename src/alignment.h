@@ -78,7 +78,7 @@ typedef struct s_swt{
 
 s_sw * 	read_sw(s_sw *swlist, int sp1, int sp2);
 int 	store_sw(s_sw **swlist, align * sw,int sp1, int sp2);
-int		load_sw(s_sw *b, align *sw);
+int	load_sw(s_sw *b, align *sw);
 void 	free_swlist(s_sw **head);
 
 
@@ -86,35 +86,34 @@ void 	free_swlist(s_sw **head);
 enum sw_subs{swMATCH=1,swDEL=2,swINS=3};
 
 
-int LongestCommonSubsequence(char *s1, char *s2);
+int 	LongestCommonSubsequence(char *s1, char *s2);
 
-int SmithWaterman(char *s1, char *s2, align *A, swt *T, int verbose);
-int SmithWatermanV2(char *s1, char *s2, align *A, swt *swT, int verbose);
+int 	SmithWaterman(char *s1, char *s2, align *A, swt *T, int verbose);
+int 	SmithWatermanV2(char *s1, char *s2, align *A, swt *swT, int verbose);
 
-void align_prob(align *A);
-int align_event(align *A, int len);
+void 	align_prob(align *A);
+int 	align_event(align *A, int len);
 
 
-void print_swt(FILE *fp, swt *sss);
+void 	print_swt(FILE *fp, swt *sss);
 
-int load_table(char *fn,swt *T);
-void table_from_string(float **T, char *key, const int N);
-int tab_idx(char X, swt*T);
+int 	load_table(char *fn,swt *T);
+void 	table_from_string(float **T, char *key, const int N);
+int 	tab_idx(char X, swt*T);
 
 //Get an adjacent symbol in the mutation space
-char sym_from_adj(char X, swt *swt);
+char 	sym_from_adj(char X, swt *swt);
 
 
 /* Get score only and don't worry about anything else! */
-
-float score_sw(char *s1, char *s2, swt *swT);
+//float score_sw(char *s1, char *s2, swt *swT);
 
 //Create a default Blosum table with the "ALXII" values - this will be used if no alternative in the config
-swt * default_table();
+swt * 	default_table();
 
 
 /*TESTING:*/
-void test_adj(swt *swt);
+void 	test_adj(swt *swt);
 
 #endif /* ALIGNMENT_H_ */
 #ifdef __cplusplus
