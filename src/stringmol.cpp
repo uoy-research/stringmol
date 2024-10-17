@@ -103,7 +103,7 @@ int joinsplists(int argc, char *argv[]){
 
 				memset(pag->S,0,A->maxl0*sizeof(char));
 				
-				sscanf(line,"%d,%*d,%*d,%*f,%*d,%*d,%s"
+				sscanf(line,"%d,%*d,%*d,%*f,%*d,%*d,%2000s"
 						,&spno,seq);
 				if(spno!=spold){
 					spold = spno;
@@ -400,17 +400,15 @@ int origlife(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NTRIALS to %d\n",rlim);
+			printf("Setting NTRIALS to %u\n",rlim);
 			break;
 		default:
-			printf("NTRIALS not specified;\nSetting NTRIALS to %d\n",rlim);
+			printf("NTRIALS not specified;\nSetting NTRIALS to %u\n",rlim);
 			break;
 		}
 		fclose(fp);
 	}
-	printf("NTRIALS = %d\n",rlim);
-
-
+	printf("NTRIALS = %u\n",rlim);
 
 	//Read nsteps:
 	//unsigned int maxnsteps=0;
@@ -423,7 +421,7 @@ int origlife(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NSTEPS to %d\n",rlim);
+			printf("Setting NSTEPS to %u\n",rlim);
 			indefinite=0;
 			break;
 		default:
@@ -432,15 +430,11 @@ int origlife(int argc, char *argv[]){
 		}
 		fclose(fp);
 	}
-	printf("NSTEPS = %d\n",maxnsteps);
-
-
-
-
+	printf("NSTEPS = %u\n",maxnsteps);
 
 	for(unsigned int rep=0;rep<rlim;rep++){
 
-		sprintf(fitfile,"rep%03dfitness.dat",rep);
+		sprintf(fitfile,"rep%03ufitness.dat",rep);
 		ftmp=fopen(fitfile,"w");
 		fclose(ftmp);
 		for(unsigned int rr=0;rr<rlim;rr++){
@@ -454,10 +448,10 @@ int origlife(int argc, char *argv[]){
 
 			test_adj(A.blosum);
 
-			sprintf(randfn,"rep%03dAgents%03d.conf",rep,rr);
+			sprintf(randfn,"rep%03uAgents%03u.conf",rep,rr);
 			if(rr){
 				ftmp=fopen(fitfile,"a");
-				fprintf(ftmp,"%d\t",rr-1);
+				fprintf(ftmp,"%u\t",rr-1);
 				fclose(ftmp);
 				biomass_config(&A, (char *) "bio.conf", 20, 20, &SP, fitfile);
 				//possibly put fewer random mols in, or bind sites can "mop up" all successful spp
@@ -472,7 +466,7 @@ int origlife(int argc, char *argv[]){
 			SP.print_spp_list(stdout);
 
 			A.run_number=rr;
-			sprintf(pfn,"rep%03dpopdy%03d.dat",rep,A.run_number);
+			sprintf(pfn,"rep%03upopdy%03d.dat",rep,A.run_number);
 			ftmp = fopen(pfn,"w");
 			fclose(ftmp);
 
@@ -493,7 +487,8 @@ int origlife(int argc, char *argv[]){
 					A.extit=i;//dummy line for breakpoint
 
 					//printf("Printing species list\n");
-					sprintf(fn,"rep%03dsplist%03d.dat",rep,A.run_number);
+					sprintf(fn,"rep%03usplist%03d.dat",
+						rep,A.run_number);
 					if((fp = fopen(fn,"w"))!=NULL){
 						SP.print_spp_list(fp);
 						fclose(fp);
@@ -501,10 +496,9 @@ int origlife(int argc, char *argv[]){
 					else{
 						printf("Unable to write to %s\n",fn);
 					}
-				}
-
-				if(!(i%1000)){
-					printf("%03d At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
+				
+					printf("%03u At  time %d e=%d,div=%d\n",
+						rr,i,(int)A.energy,div);
 					printsppct(&A,i);
 				}
 
@@ -669,11 +663,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 			if(!(i%1000)){
 				A.print_spp_count(stdout,0,-1);
 
-			}
-
-			if(!(i%1000)){
-
-				printf("%d%02d At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\n",proc,rr,i,(int)A.energy,div,A.subrate,A.indelrate);
+				printf("%d%02u At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\n",proc,rr,i,(int)A.energy,div,A.subrate,A.indelrate);
 				//A.print_agents_count(stdout);
 
 				printsppct(&A,i);
@@ -837,15 +827,15 @@ int comass_AlifeXII(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NTRIALS to %d\n",rlim);
+			printf("Setting NTRIALS to %u\n",rlim);
 			break;
 		default:
-			printf("NTRIALS not sepcified;\nSetting NTRIALS to %d\n",rlim);
+			printf("NTRIALS not sepcified;\nSetting NTRIALS to %u\n",rlim);
 			break;
 		}
 		fclose(fp);
 	}
-	printf("NTRIALS = %d\n",rlim);
+	printf("NTRIALS = %u\n",rlim);
 
 
 
@@ -860,7 +850,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NSTEPS to %d\n",rlim);
+			printf("Setting NSTEPS to %u\n",rlim);
 			indefinite=0;
 			break;
 		default:
@@ -869,7 +859,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 		}
 		fclose(fp);
 	}
-	printf("NSTEPS = %d\n",maxnsteps);
+	printf("NSTEPS = %u\n",maxnsteps);
 	fflush(stdout);
 
 	//counter for max no. symbols at any time step.
@@ -880,7 +870,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 	for(unsigned int rr=0;rr<rlim;rr++){
 
 		FILE *mc;
-		sprintf(fn,"maxcodes%03d.txt",rr);
+		sprintf(fn,"maxcodes%03u.txt",rr);
 		mc = fopen(fn,"w");
 		fclose(mc);
 
@@ -926,12 +916,9 @@ int comass_AlifeXII(int argc, char *argv[]){
 				else{
 					printf("Unable to write to %s\n",fn);
 				}
-			}
-
-
-			if(!(i%1000)){
+			
 				setmaxcode(&A,maxcode);
-				printf("%03d At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
+				printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
 				printsppct(&A,i);
 				for(int k=0;k<A.blosum->N;k++){
 					printf("%c:\t%d\t%d",A.blosum->key[k],A.mass[k],maxcode[k]);
@@ -980,22 +967,8 @@ int comass_AlifeXII(int argc, char *argv[]){
 			A.energy += A.estep;
 		}
 
-		//PRINT OUT THE EPOCH DATA:
-		/*
-		ftmp = fopen("epochs.dat","a");
-		fprintf(ftmp,"%d\t%d\t%d\t%d\n",rr,i,A.spp_count-1,nepochs);
-		fclose(ftmp);
-		if(divct)
-			fprintf(fsumm,"%d\t%d\t%d\t%f\n",divct,divit,diven,(float) divct/divit);
-		else
-			fprintf(fsumm,"%d\t%d\t%d\t%f\n",div,i,(int)A.energy,-1.);
-		fflush(fsumm);
-		printf("Finished - alls well!\nclear out memory now:\n");
-		fflush(stdout);
-		*/
-
 		printmaxcode(stdout,maxcode,&A);
-		sprintf(fn,"maxcodes%03d.txt",rr);
+		sprintf(fn,"maxcodes%03u.txt",rr);
 		mc = fopen(fn,"a");
 		printmaxcode(mc,maxcode,&A);
 		fclose(mc);
@@ -1602,18 +1575,15 @@ int energetic_AlifeXII(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NTRIALS to %d\n",rlim);
+			printf("Setting NTRIALS to %u\n",rlim);
 			break;
 		default:
-			printf("NTRIALS not sepcifid;\nSetting NTRIALS to %d\n",rlim);
+			printf("NTRIALS not sepcified;\nSetting NTRIALS to %u\n",rlim);
 			break;
 		}
 		fclose(fp);
 	}
-	printf("NTRIALS = %d\n",rlim);
-
-
-
+	printf("NTRIALS = %u\n",rlim);
 
 	//Read nsteps:
 	unsigned int maxnsteps=0;
@@ -1625,7 +1595,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NSTEPS to %d\n",rlim);
+			printf("Setting NSTEPS to %u\n",rlim);
 			indefinite=0;
 			break;
 		default:
@@ -1634,7 +1604,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 		}
 		fclose(fp);
 	}
-	printf("NSTEPS = %d\n",maxnsteps);
+	printf("NSTEPS = %u\n",maxnsteps);
 	fflush(stdout);
 
 
@@ -1688,11 +1658,8 @@ int energetic_AlifeXII(int argc, char *argv[]){
 				else{
 					printf("Unable to write to %s\n",fn);
 				}
-			}
-
-			if(!(i%1000)){
-
-				printf("%03d At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
+			
+				printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
 				//A.print_agents_count(stdout);
 
 				printsppct(&A,i);
@@ -1741,7 +1708,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 		//PRINT OUT THE EPOCH DATA:
 
 		ftmp = fopen("epochs.dat","a");
-		fprintf(ftmp,"%d\t%d\t%d\t%d\n",rr,i,A.spp_count-1,nepochs);
+		fprintf(ftmp,"%u\t%d\t%d\t%d\n",rr,i,A.spp_count-1,nepochs);
 		fclose(ftmp);
 
 		//fprintf(fsumm,"%d\t%d\t%d\t%f\n",div,i,(int)A.energy,-1.);
@@ -1838,7 +1805,7 @@ int SmPm_conpop(int argc, char *argv[]){
 		getchar();
 		exit(EXIT_FILE_ERROR);
 	}
-	fprintf(fsumm,"Random seed is %ld\n",rseed);
+	fprintf(fsumm,"Random seed is %lu\n",rseed);
 	fflush(fsumm);
 
 
@@ -2258,15 +2225,15 @@ void swdist(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NTRIALS to %d\n",rlim);
+			printf("Setting NTRIALS to %u\n",rlim);
 			break;
 		default:
-			printf("NTRIALS not sepcifid;\nSetting NTRIALS to %d\n",rlim);
+			printf("NTRIALS not sepcifid;\nSetting NTRIALS to %u\n",rlim);
 			break;
 		}
 		fclose(fp);
 	}
-	printf("NTRIALS = %d\n",rlim);
+	printf("NTRIALS = %u\n",rlim);
 
 
 
@@ -2280,7 +2247,7 @@ void swdist(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NSTEPS to %d\n",rlim);
+			printf("Setting NSTEPS to %u\n",rlim);
 			break;
 		default:
 			printf("NSTEPS not sepcified;\nEach trial will run to extinction\n");
@@ -2288,7 +2255,7 @@ void swdist(int argc, char *argv[]){
 		}
 		fclose(fp);
 	}
-	printf("NSTEPS = %d\n",maxnsteps);
+	printf("NSTEPS = %u\n",maxnsteps);
 
 	FILE *fin;
 
@@ -2315,7 +2282,7 @@ void swdist(int argc, char *argv[]){
 
 		while((fgets(line,A.maxl,fin))!=NULL){
 
-			sscanf(line,"%*s\t%*s\t%*s\t%s\t%s",(char *) &s1, (char *) &s2);
+			sscanf(line,"%*s\t%*s\t%*s\t%2000s\t%2000s",(char *) &s1, (char *) &s2);
 
 			printf("read %s and %s\n",s1,s2);
 
@@ -2463,15 +2430,15 @@ int speigmonst(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NTRIALS to %d\n",rlim);
+			printf("Setting NTRIALS to %u\n",rlim);
 			break;
 		default:
-			printf("NTRIALS not sepcifid;\nSetting NTRIALS to %d\n",rlim);
+			printf("NTRIALS not sepcifid;\nSetting NTRIALS to %u\n",rlim);
 			break;
 		}
 		fclose(fp);
 	}
-	printf("NTRIALS = %d\n",rlim);
+	printf("NTRIALS = %u\n",rlim);
 
 
 
@@ -2486,7 +2453,7 @@ int speigmonst(int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NSTEPS to %d\n",rlim);
+			printf("Setting NSTEPS to %u\n",rlim);
 			indefinite=0;
 			break;
 		default:
@@ -2495,7 +2462,7 @@ int speigmonst(int argc, char *argv[]){
 		}
 		fclose(fp);
 	}
-	printf("NSTEPS = %d\n",maxnsteps);
+	printf("NSTEPS = %u\n",maxnsteps);
 	fflush(stdout);
 
 	//counter for max no. symbols at any time step.
@@ -2508,7 +2475,7 @@ int speigmonst(int argc, char *argv[]){
 	for(unsigned int rr=0;rr<rlim;rr++){
 
 		FILE *mc;
-		sprintf(fn,"maxcodes%03d.txt",rr);
+		sprintf(fn,"maxcodes%03u.txt",rr);
 		mc = fopen(fn,"w");
 		fclose(mc);
 
@@ -2566,12 +2533,9 @@ int speigmonst(int argc, char *argv[]){
 				else{
 					printf("Unable to write to %s\n",fn);
 				}
-			}
-
-
-			if(!(i%1000)){
+			
 				setmaxcode(&A,maxcode);
-				printf("%03d At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
+				printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
 				printsppct(&A,i);
 				for(int k=0;k<A.blosum->N;k++){
 					printf("%c:\t%d\t%d",A.blosum->key[k],A.mass[k],maxcode[k]);
@@ -2639,7 +2603,7 @@ int speigmonst(int argc, char *argv[]){
 		*/
 
 		printmaxcode(stdout,maxcode,&A);
-		sprintf(fn,"maxcodes%03d.txt",rr);
+		sprintf(fn,"maxcodes%03u.txt",rr);
 		mc = fopen(fn,"a");
 		printmaxcode(mc,maxcode,&A);
 		fclose(mc);
