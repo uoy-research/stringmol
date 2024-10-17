@@ -2246,7 +2246,6 @@ int stringPM::hcopy(s_ag *act){
 
 		act->i[act->it]++;
 
-		safe = 0;
 		return -1;
 	}
 	if(h_pos(act,'r')>=(int) maxl){
@@ -2254,9 +2253,9 @@ int stringPM::hcopy(s_ag *act){
 
 		act->i[act->it]++;
 
-		safe = 0;
 		return -2;
 	}
+	//TODO: see note on error check in "another" hcopy below
 
 
 
@@ -2439,7 +2438,6 @@ int stringPM::cleave(s_ag *act){
 int stringPM::exec_step(s_ag *act, s_ag *pass){
 
 	char *tmp;
-	int dac=0;
 	int safe_append=1;
 
 	switch(*(act->i[act->it])){//*iptr[it]){
@@ -2575,7 +2573,7 @@ int stringPM::exec_step(s_ag *act, s_ag *pass){
 	 *  CLEAVE  *
 	 ************/
 	case '%':
-			if((dac = cleave(act))){
+			if((/*dac =*/ cleave(act) )){
 
 				safe_append=0;	//extract_ag(&nowhead,p);
 			}
@@ -2936,16 +2934,14 @@ int stringPM::comass_hcopy(s_ag *act){
 			act->pass->S[maxl]='\0';
 
 		act->i[act->it]++;
-		safe = 0;
 		return -1;
 	}
 	if(h_pos(act,'r')>=(int) maxl){
 		printf("Read head out of bounds\n");
 		act->i[act->it]++;
-		safe = 0;
 		return -2;
 	}
-
+	//TODO: Are we handling the above errors ok?
 	//Check that we aren't off the end of the string, but within the allocated memory:
 	if(*(act->r[act->rt]) == 0){
 		//possibly return a negative value and initiate a b
@@ -3061,7 +3057,6 @@ int stringPM::comass_exec_step(s_ag *act, s_ag *pass){
 
 	int finished=0;
 	char *tmp;
-	int dac=0;
 	int safe_append=1;
 
 	switch(*(act->i[act->it])){
@@ -3155,7 +3150,7 @@ int stringPM::comass_exec_step(s_ag *act, s_ag *pass){
 	 *  CLEAVE  *
 	 ************/
 	case '%':
-			if((dac = cleave(act))){
+			if((/*dac =*/ cleave(act) )){
 				//unbind_ag(act);
 				//unbind_ag(pass);
 				finished = 1;
@@ -3206,7 +3201,7 @@ int stringPM::comass_exec_step(s_ag *act, s_ag *pass){
 int stringPM::load_comass(const char *fn, int verbose){
 	//int massval = 2000;
 	FILE *fp;
-	int finderr=0;
+	int finderr;
 	int i;
 	unsigned int massval;
 
@@ -3434,7 +3429,6 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 
 	int finished=0;
 	char *tmp;
-	int dac=0;
 	int safe_append=1;
 
 	if(energy>0){
@@ -3529,7 +3523,7 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 				 *  CLEAVE  *
 				 ************/
 				case '%':
-						if((dac = cleave(act))){
+						if((/*dac =*/ cleave(act) )){
 							finished = 1;
 							safe_append=0;	//extract_ag(&nowhead,p);
 						}
@@ -3590,9 +3584,7 @@ int stringPM::energetic_testbind(s_ag *pag){
 		rno;
 	s_ag *bag;
 	align sw;
-	float bprob =0.;
-
-	bag=nowhead;
+	float bprob;
 
 	count = nagents(nowhead,B_UNBOUND);
 
@@ -4533,12 +4525,6 @@ void stringPM::write_extant_spp(FILE *fp){
 		pag = pag->next;
 	}
 
-
-	/* Now go through NOWHEAD and do each thing at a time*/
-	/* Unbound first (keeps things tidy) */
-
-	pag = nowhead;
-	//while(pag != NULL){
 	for(int aa=0;aa<nag;aa++){
 
 		pag = agarray[aa];

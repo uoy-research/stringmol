@@ -496,7 +496,7 @@ int origlife(int argc, char *argv[]){
 					else{
 						printf("Unable to write to %s\n",fn);
 					}
-				
+					
 					printf("%03u At  time %d e=%d,div=%d\n",
 						rr,i,(int)A.energy,div);
 					printsppct(&A,i);
