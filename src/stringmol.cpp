@@ -61,6 +61,8 @@
 //Calculate the ancestry & epochs inline
 //#define DO_ANCESTRY
 
+//Exit codes
+#define EXIT_FILE_ERROR (5)
 
 
 //FORWARD FUNCTION DECLARATIONS
@@ -73,7 +75,6 @@ void printsppct(stringPM *A, int t);
 int joinsplists(int argc, char *argv[]){
 
 
-	FILE *fin;
 	int nlists = atoi(argv[3]);
 	char fn[256];
 	char seq[2001];
@@ -81,7 +82,7 @@ int joinsplists(int argc, char *argv[]){
 	SMspp		SP;
 	stringPM	oA(&SP),*A;
 	s_ag *pag;
-	int i,spno,spold;
+	int i,spno;
 	int tt,tottime=0;
 
 	A = &oA;
@@ -91,20 +92,19 @@ int joinsplists(int argc, char *argv[]){
 	pag->S =(char *) malloc(A->maxl0*sizeof(char));
 //First lets do the loading:
 	for(i=0;i<nlists;i++){
-		spold=-1;
 		sprintf(fn,"%s/splist%03d.dat",argv[2],i);
+
+		FILE *fin;
 		if((fin=fopen(fn,"r"))!=NULL){
 
 			while((fgets(line,A->maxl,fin))!=NULL){
+			
+				int spold=-1;
+
 				memset(pag->S,0,A->maxl0*sizeof(char));
-
-
-
-				//p=strtok(line,",");
-				//for(int t=0;t<6;t++){
-				//	p = strtok(NULL,",");
-				//}
-				sscanf(line,"%d,%*d,%*d,%*f,%*d,%*d,%s",&spno,seq);
+				
+				sscanf(line,"%d,%*d,%*d,%*f,%*d,%*d,%s"
+						,&spno,seq);
 				if(spno!=spold){
 					spold = spno;
 					strncpy(pag->S,seq,strlen(pag->S));
@@ -382,6 +382,7 @@ int origlife(int argc, char *argv[]){
 	if((fsumm=fopen(fn,"w"))==NULL){
 		printf("Coundlnt open %s\n",fn);
 		getchar();
+		exit(EXIT_FILE_ERROR);
 	}
 	fprintf(fsumm,"Random seed is %ld\n",rseed);
 	fflush(fsumm);
@@ -390,7 +391,7 @@ int origlife(int argc, char *argv[]){
 	ftmp = fopen("epochs.dat","w");
 	fclose(ftmp);
 
-	unsigned int rerr=1,rlim=20;
+	unsigned int rerr,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -476,7 +477,7 @@ int origlife(int argc, char *argv[]){
 			fclose(ftmp);
 
 
-			int lastepoch=A.get_ecosystem(),thisepoch,nepochs=1;
+			int lastepoch=A.get_ecosystem(),nepochs=1;
 
 			A.domut=1;
 			nsteps=0;
@@ -508,7 +509,7 @@ int origlife(int argc, char *argv[]){
 				}
 
 
-				thisepoch = A.get_ecosystem();
+				int thisepoch = A.get_ecosystem();
 
 				if(!(i%1000)){
 					if(thisepoch != lastepoch){
@@ -523,7 +524,6 @@ int origlife(int argc, char *argv[]){
 					printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
 					//A.print_agents_count(stdout);
 					A.print_spp_count(stdout,0,-1);
-					nsteps=i;
 
 					break;
 				}
@@ -576,6 +576,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 	if((fsumm=fopen(fn,"w"))==NULL){
 		printf("Coundlnt open %s\n",fn);
 		getchar();
+		exit(EXIT_FILE_ERROR);
 	}
 	fprintf(fsumm,"Random seed is %ld\n",rseed);
 	fflush(fsumm);
@@ -796,7 +797,7 @@ void printmaxcode(FILE *fp, int *ct, stringPM *A){
 
 int comass_AlifeXII(int argc, char *argv[]){
 
-	int i,div;
+	int i;
 
 	SMspp		SP;
 	stringPM	A(&SP);
@@ -818,6 +819,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 	if((fsumm=fopen(fn,"w"))==NULL){
 		printf("Coundlnt open %s\n",fn);
 		getchar();
+		exit(EXIT_FILE_ERROR);
 	}
 	fprintf(fsumm,"Random seed is %ld\n",rseed);
 	fflush(fsumm);
@@ -882,7 +884,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 		mc = fopen(fn,"w");
 		fclose(mc);
 
-		div = 0;
+		int div = 0;
 
 		SP.clear_list();
 
@@ -899,7 +901,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 			maxcode = (int *) malloc(A.blosum->N * sizeof(int));
 		memset(maxcode,0,A.blosum->N*sizeof(int));
 
-		int lastepoch=A.get_ecosystem(),thisepoch,nepochs=1;
+		int lastepoch=A.get_ecosystem(),nepochs=1;
 
 		A.domut=0;
 		nsteps=0;
@@ -942,7 +944,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 			}
 
 
-			thisepoch = A.get_ecosystem();
+			int thisepoch = A.get_ecosystem();
 
 
 			if(!(i%1000)){
@@ -1076,7 +1078,7 @@ int * paramsFromFile(char *fn, const int rr, const int N){
 			printf("ERROR in reading line during paramsFromFile() in stringmol.cpp");
 		}
 	}
-	ptr=strtok(line,"\t");
+	/*ptr=*/strtok(line,"\t");
 	ptr=strtok(NULL,"\t");
 	for(int i=0;i<N;i++){
 		sscanf(ptr,"%d",&(vals[i]));
@@ -1152,6 +1154,9 @@ int comass_GA(int argc, char *argv[]){
 	if((fpr=fopen(argv[2],"r"))!=NULL){
 		unsigned int stmp;
 		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
+		if(rerr){
+			printf("WARNING: read error %d loading RANDSEED\n",rerr);
+		}
 		//TODO: load the full RNG state using load_mt (RNGFILE in config)
 
 
@@ -1159,8 +1164,8 @@ int comass_GA(int argc, char *argv[]){
 		if(rerr)
 			qnnscoring=1;
 		seedin = stmp;
+		fclose(fpr);
 	}
-	fclose(fpr);
 
 	unsigned long rseed = longinitmyrand(&seedin);//437);//-1);//437);
 	//unsigned long rseed = longinitmyrand(NULL);//437);//-1);//437);
@@ -1168,6 +1173,7 @@ int comass_GA(int argc, char *argv[]){
 	if((frs=fopen("randseed.txt","w"))==NULL){
 		printf("Coundln't open randseed.txt\n");
 		getchar();
+		exit(EXIT_FILE_ERROR);
 	}
 	fprintf(frs,"(unsigned) random seed is %lu \n",rseed);
 	fflush(frs);
@@ -1399,9 +1405,9 @@ float *generate_avg_conc(char *fn, int *en){
 			p = strtok(lptr, "\t");
 			//skip through the data to get to the concs
 			printf("Parsing run %s, on line %d, fitness %f\n",p,line_number[j],fitness[j]);
-			p = strtok(NULL, "\t");
-			p = strtok(NULL, "\t");
-			p = strtok(NULL, "\t");
+			/*p = */strtok(NULL, "\t");
+			/*p = */strtok(NULL, "\t");
+			/*p = */strtok(NULL, "\t");
 			//p = strtok(NULL, "\t");
 			for(int c = 0;c<nops;c++){
 				int tconc;
@@ -1555,7 +1561,7 @@ int comass_GA_boostwinners(int argc, char *argv[]){
 
 int energetic_AlifeXII(int argc, char *argv[]){
 
-	int i,div;
+	int i;
 
 	SMspp		SP;
 	stringPM	A(&SP);
@@ -1578,6 +1584,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 	if((fsumm=fopen(fn,"w"))==NULL){
 		printf("Coundlnt open %s\n",fn);
 		getchar();
+		exit(EXIT_FILE_ERROR);
 	}
 	fprintf(fsumm,"Random seed is %ld\n",rseed);
 	fflush(fsumm);
@@ -1635,10 +1642,6 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
 	for(unsigned int rr=0;rr<rlim;rr++){
 
-		div=0;
-
-		int divct = 0,divit = 0,diven = 0;
-
 		SP.clear_list();
 
 		A.load(argv[2],NULL,0,1);
@@ -1658,6 +1661,8 @@ int energetic_AlifeXII(int argc, char *argv[]){
 		A.domut=1;
 		nsteps=0;
 		for(i=0;indefinite || nsteps <= maxnsteps;i++){
+
+			int div=0;
 
 			A.extit = i;
 
@@ -1739,12 +1744,8 @@ int energetic_AlifeXII(int argc, char *argv[]){
 		fprintf(ftmp,"%d\t%d\t%d\t%d\n",rr,i,A.spp_count-1,nepochs);
 		fclose(ftmp);
 
-
-		if(divct)
-			fprintf(fsumm,"%d\t%d\t%d\t%f\n",divct,divit,diven,(float) divct/divit);
-		else
-			fprintf(fsumm,"%d\t%d\t%d\t%f\n",div,i,(int)A.energy,-1.);
-		fflush(fsumm);
+		//fprintf(fsumm,"%d\t%d\t%d\t%f\n",div,i,(int)A.energy,-1.);
+		//fflush(fsumm);
 
 		printf("Finished - alls well!\nclear out memory now:\n");
 		fflush(stdout);
@@ -1782,6 +1783,9 @@ int SmPm_conpop(int argc, char *argv[]){
 	if((fpr=fopen(argv[2],"r"))!=NULL){
 		unsigned int stmp;
 		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
+		if(!rerr){
+			printf("Error %d reading randseed in SmPm_conpop(), stringmol.cpp\n",rerr);
+		}
 		//TODO: load the full RNG state using load_mt (RNGFILE in config)
 
 
@@ -1793,8 +1797,8 @@ int SmPm_conpop(int argc, char *argv[]){
 			NCON = nctmp;
 		}
 
+		fclose(fpr);
 	}
-	fclose(fpr);
 
 	unsigned long rseed;
 
@@ -1832,6 +1836,7 @@ int SmPm_conpop(int argc, char *argv[]){
 	if((fsumm=fopen(fn,"w"))==NULL){
 		printf("Coundln't open %s\n",fn);
 		getchar();
+		exit(EXIT_FILE_ERROR);
 	}
 	fprintf(fsumm,"Random seed is %ld\n",rseed);
 	fflush(fsumm);
@@ -2234,9 +2239,11 @@ void swdist(int argc, char *argv[]){
 	if((fsumm=fopen(fn,"w"))==NULL){
 		printf("Coundln't open %s\n",fn);
 		getchar();
+		exit(EXIT_FILE_ERROR);
 	}
 	fprintf(fsumm,"Random seed is %ld\n",rseed);
 	fflush(fsumm);
+	fclose(fsumm);
 
 
 	ftmp = fopen("epochs.dat","w");
@@ -2438,6 +2445,7 @@ int speigmonst(int argc, char *argv[]){
 	if((fsumm=fopen(fn,"w"))==NULL){
 		printf("Coundlnt open %s\n",fn);
 		getchar();
+		exit(EXIT_FILE_ERROR);
 	}
 	fprintf(fsumm,"Random seed is %ld\n",rseed);
 	fflush(fsumm);
