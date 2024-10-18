@@ -29,7 +29,7 @@ echo ""
 
 
 echo "======================================"
-echo "Running Smoke Tests.      Please Wait."
+echo "Running Smoke Tests"
 echo "---------------------------------"
 echo "Building!"
 cd src
@@ -62,8 +62,9 @@ sh ../util/rm_runfiles.sh
 cd ../
 
 
-
-echo "======================================"
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+echo "${GREEN}===============================================================================${NC}"
 echo "Running Catch.hpp Tests.  Please Wait."
 #g++ -Wall Shapes-Catch-Testing-Example/Source/Shapes-Catch-Testing-Example.cpp Shapes-Catch-Testing-Example/Source/Implementation/*.cpp -o main
 #g++ -Wall Shapes-Catch-Testing-Example/Test/*.cpp Shapes-Catch-Testing-Example/Source/Implementation/*.cpp -o test

@@ -163,7 +163,7 @@ public:
 	int 	nagents(s_ag *head, int state);
 	s_ag * 	rand_ag(s_ag *head, int state);
 	int 	free_ag(s_ag *pag);
-	bool 	ag_in_list(s_ag *list, s_ag *tag);
+	bool 	ag_in_list(s_ag *list,const s_ag *tag);
 
 	//First version works fine, but no species analysis...
 	//void 	unbind_ag(s_ag * pag,char sptype);
@@ -218,7 +218,7 @@ public:
 	void 	set_exec(s_ag *A, s_ag *B, align *sw);
 	int 	exec_step(s_ag *act, s_ag *pass);
 			//print string stuff
-	void 	print_ptr_offset(FILE *fp, char *S, char *p,int F, char c);
+	void 	print_ptr_offset(FILE *fp,const char *S,const char *p,int F, char c);
 	void 	print_exec(FILE *fp, s_ag *act, s_ag *pas);
 	void 	free_swt(swt *pSWT, int verbose);
 	int 	check_ptrs(s_ag* act);
@@ -234,7 +234,7 @@ public:
 
 	//Trying conservation of mass
 	int 	load_comass(const char *fn, int verbose); //load single value from a file
-	int 	set_mass(int *param);  //load a set of values from an array
+	int 	set_mass(const int *param);  //load a set of values from an array
 	void 	comass_make_next();
 	int 	comass_testdecay(s_ag *pag);
 	int 	comass_free_ag(s_ag *pag);

@@ -162,12 +162,11 @@ float stringPM::load_mut(const char *fn, int verbose){
 
 	FILE *fp;
 	float mut;
-	char *emsg;
-	int finderr=1;
 
 	if((fp=fopen(fn,"r"))!=NULL){
 
-		finderr=read_param_float(fp,"MUTATE",&mut,verbose);
+		char *emsg;
+		int finderr=read_param_float(fp,"MUTATE",&mut,verbose);
 		fclose(fp);
 
 		switch(finderr){
@@ -206,11 +205,10 @@ float stringPM::load_decay(const char *fn, int verbose){
 
 	FILE *fp;
 	float dec;
-	int finderr=1;
 
 	if((fp=fopen(fn,"r"))!=NULL){
 
-		finderr=read_param_float(fp,"DECAY",&dec,verbose);
+		int finderr=read_param_float(fp,"DECAY",&dec,verbose);
 		fclose(fp);
 
 		switch(finderr){
@@ -239,12 +237,13 @@ float stringPM::load_decay(const char *fn, int verbose){
 //TODO: This should be in alignment.cpp
 int stringPM::load_table_matrix(const char *fn){
 	FILE *fp;
-	char line[maxl];
-	char label[maxl];
-	char *p;
-	int i,j;
 	printf("File name is %s",fn);
 	if((fp=fopen(fn,"r"))!=NULL){
+		int i,j; 
+		char *p;
+		char line[maxl];
+		char label[maxl];
+		
 		if(fgets(line,maxl,fp)==NULL){
 			printf("ERROR in reading line during load_table_matrix() in stringPM.cpp");
 		}
@@ -301,15 +300,16 @@ int stringPM::load_table(const char *fn){
 
 
 	//const int maxl=256;
-	FILE *fp,*fp2;
-	char fn2[maxl];
-	char line[maxl];
-	char label[maxl];
-	int i,found,found2;
+	FILE *fp;
 
 
 	if((fp=fopen(fn,"r"))!=NULL){
-		found = 0;
+		int found = 0;
+		char line[maxl];
+		char label[maxl];
+		char fn2[maxl];
+		FILE *fp2;
+		
 		while((fgets(line,maxl,fp))!=NULL){
 			memset(label,0,maxl);
 			sscanf(line,"%s",label);
@@ -336,10 +336,9 @@ int stringPM::load_table(const char *fn){
 
 
 		switch(found){
-
 		case 1:
 			if((fp2=fopen(fn2,"r"))!=NULL){
-				found2 = 0;
+				int found2 = 0;
 				//BUG: For some reason, when we open this again, we aren't at the beginning of the file..
 				//can't understand why this is suddenly happening, but let's put a rewind in to fix it for now!
 				rewind(fp2);
@@ -355,13 +354,13 @@ int stringPM::load_table(const char *fn){
 						strncpy(blosum->key,fn2,blosum->N);
 
 						blosum->T = (float **) malloc((blosum->N +1) * sizeof(float *));
-						for(i=0;i<blosum->N+1;i++){
+						for(int i=0;i<blosum->N+1;i++){
 							blosum->T[i] = (float *) malloc(blosum->N * sizeof(float));
 						}
 
 						table_from_string(blosum->T,blosum->key,blosum->N);
 
-						found2 = 1;
+						//found2 = 1;
 						fclose(fp2);
 
 						//SUCCESS
@@ -466,11 +465,6 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 	const int llen = maxl0 + 256;
 	FILE *fp;
 	char line[llen];
-	char active_spp_string[llen];
-	char passive_spp_string[llen];
-	char active_string[llen];
-	char passive_string[llen];
-	int linecount = 0;
 
 	s_ag *pag,*bag;
 
@@ -490,8 +484,15 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 
 
 	if((fp=fopen(fn,"r"))!=NULL){
+		int linecount = 0;
 		while((fgets(line,llen,fp))!=NULL){
 			linecount++;
+			
+			char active_spp_string[llen];
+			char passive_spp_string[llen];
+			char active_string[llen];
+			char passive_string[llen];
+	
 			memset(active_spp_string,0,llen);
 			memset(active_string,0,llen);
 			memset(passive_string,0,llen);
@@ -656,9 +657,9 @@ s_ag * stringPM::read_unbound_agent(FILE **fp, char line[], const int llen){
 			if(!strncmp(line,"GRIDPOS",7)){
 				sscanf(line,"%*s %d %d ",&(pag->x),&(pag->y));
 			}
-			else{
-				getgridinfo = false;
-			}
+			//else{
+			//	getgridinfo = false;
+			//}
 		}
 	}
 
@@ -865,19 +866,17 @@ smsprun * stringPM::init_smprun(const int gridx, const int gridy){
 int stringPM::load_replicable(const char *fn){
 	int nag=0;
 	const int llen = maxl0 + 256;
-	char line[llen];
-	char label[llen];
 	FILE *fp;
 	s_ag **agarray;
 	int *parray;
-	int pidx;
 	
 	agarray = NULL;
 	parray = NULL;
 
 	if((fp = fopen(fn,"r"))!=NULL){
 
-
+		char line[llen];
+		char label[llen];
 		while((fgets(line,llen,fp))!=NULL){
 			memset(label,0,llen);
 			sscanf(line,"%s",label);
@@ -930,6 +929,7 @@ int stringPM::load_replicable(const char *fn){
 			}
 
 			if(found){
+				int pidx=0;
 				switch(bs){
 				case B_UNBOUND:
 					pag = read_unbound_agent(&fp, line,llen);
@@ -1055,11 +1055,9 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 
 
 	const int llen = maxl0 + 256;
-	FILE *fp;
-	char line[llen];
-	char label[llen];
+
 	char code;
-	int i,nag;
+	int nag;
 	s_ag *pag;
 	int ntt = 0;
 
@@ -1143,8 +1141,12 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 	/* This will only be called if we've reverted to the old method (or set it elsewhere) */
 	if(loadtype == L_EVOEVO){/*Only used for evoevo 2016 runs: */
 
-		//TODO: this is the actual agent-loading part of the function... rename / refactor needed....
+		//TODO: this is the actual agent-loading part of the function... rename / refactor needed...
+		FILE *fp;
+		
 		if((fp=fopen(fn,"r"))!=NULL){
+			char line[llen];
+			char label[llen];
 			while((fgets(line,llen,fp))!=NULL){
 				memset(label,0,llen);
 				sscanf(line,"%s",label);
@@ -1172,10 +1174,14 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 					}
 
 					getgridinfo = true;
+						
+						
+					l_spp *s;
+					s=NULL;
+						
 
 					//make the agents
-					for(i=0;i<nag;i++){
-						l_spp *s;
+					for(int i=0;i<nag;i++){
 
 
 						pag = make_ag(code);//,1);
@@ -1252,7 +1258,7 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 
 
 int stringPM::count_spp(){
-	int i,found,finished;
+	
 	int nag, *done;
 	s_ag *pa;
 	int spc;
@@ -1262,9 +1268,11 @@ int stringPM::count_spp(){
 	done = (int *) malloc(nag*sizeof(int));
 	memset(done,0,nag*sizeof(int));
 
+	int finished;
 	do{
-		i = 0;
-		found=0;
+		int i = 0;
+		int found=0;
+		
 		finished = 1;
 		for(i=0,pa=nowhead;i<nag;i++,pa=pa->next){
 			if(!done[i]){
@@ -1298,7 +1306,6 @@ void stringPM::print_spp_count(FILE *fp,int style, int state){
 	s_ag *pa;
 	int finished = 0;
 	int nag,*done;
-	int i,found;
 	int *spno, *spct, nspp = count_spp();
 
 	nag = nagents(nowhead,-1);
@@ -1313,8 +1320,8 @@ void stringPM::print_spp_count(FILE *fp,int style, int state){
 	int spidx=0;
 
 	do{
-		i = 0;
-		found=0;
+		int i = 0;
+		int found=0;
 		finished = 1;
 		for(i=0,pa=nowhead;i<nag;i++,pa=pa->next){
 			if(state==-1 || pa->status == state){
@@ -1356,21 +1363,21 @@ void stringPM::print_spp_count(FILE *fp,int style, int state){
 	switch(style){
 	case 0: //Horizontal
 		fprintf(fp,"-------");
-		for(i=0;i<nspp;i++){
+		for(int i=0;i<nspp;i++){
 			fprintf(fp,"-------");
 		}
 		fprintf(fp,"\n%d\t",(int) extit);
-		for(i=0;i<nspp;i++){
+		for(int i=0;i<nspp;i++){
 			fprintf(fp,"%03d\t",spno[spindx[i]]);
 		}
 		fprintf(fp,"\n%d\t",(int) extit);
-		for(i=0;i<nspp;i++){
+		for(int i=0;i<nspp;i++){
 			fprintf(fp,"%03d\t",spct[spindx[i]]);
 		}
 		fprintf(fp,"\n");
 		break;
 	case 1: //Vertical
-		for(i=0;i<nspp;i++){
+		for(int i=0;i<nspp;i++){
 			fprintf(fp,"%d,%d,%d\n",(int) extit,spno[spindx[i]],spct[spindx[i]]);
 		}
 		break;
@@ -1450,7 +1457,7 @@ int stringPM::append_ag(s_ag **list, s_ag *ag){
 
 
 
-bool stringPM::ag_in_list(s_ag *list, s_ag *tag){
+bool stringPM::ag_in_list(s_ag *list,const s_ag *tag){
 
 	s_ag *pag;
 
@@ -1812,7 +1819,6 @@ float stringPM::get_bprob(align *sw){
 float stringPM::get_sw(s_ag *a1, s_ag *a2, align *sw){
 
 	float bprob;
-	char *comp;
 	s_sw *swa;
 
 	//SUGGEST: pass in pointer to the species - not its index
@@ -1820,6 +1826,8 @@ float stringPM::get_sw(s_ag *a1, s_ag *a2, align *sw){
 
 	if(swa==NULL){
 
+		char *comp;
+	
 		//get_string_comp(a1);
 		comp = string_comp(a1->S);
 
@@ -1853,7 +1861,7 @@ float stringPM::get_sw(s_ag *a1, s_ag *a2, align *sw){
 }
 
 
-void stringPM::print_ptr_offset(FILE *fp, char *S, char *p,int F, char c){
+void stringPM::print_ptr_offset(FILE *fp,const char *S,const char *p,int F, char c){
 	int i,n=p-S;
 	if(n<0){
 		printf("Problem calculating pointer location\n");
@@ -1985,13 +1993,10 @@ int stringPM::testbind(s_ag *pag){
 
 	int found=0;
 	int count=0;
-	float
-		rno;
+	float rno;
 	s_ag *bag;
 	align sw;
-	float bprob =0.;
-
-	bag=nowhead;
+	float bprob;
 
 	count = nagents(nowhead,B_UNBOUND);
 
@@ -2231,8 +2236,8 @@ int stringPM::hcopy(s_ag *act){
 	act->len = strlen(act->S);
 	act->pass->len = strlen(act->pass->S);
 
-	int p;
-	if( (p = h_pos(act,'w'))>=(int) maxl){
+	
+	if( (h_pos(act,'w'))>=(int) maxl){
 
 //#ifdef DODEBUG
 //		printf("Write head out of bounds: %d\n",p);
@@ -2652,8 +2657,7 @@ int stringPM::exec_step(s_ag *act, s_ag *pass){
  */
 //A make_next that doesn't use the "rules" class
 void stringPM::make_next(){
-	s_ag *pag,*bag;
-	int changed;
+	s_ag *pag;
 
 	//SUGGEST: write function to count what's around (saves rechecking every time)
 	//countstates();
@@ -2670,7 +2674,6 @@ void stringPM::make_next(){
 
 		pag = rand_ag(nowhead,-1);
 		extract_ag(&nowhead,pag);
-		changed = 0;
 
 		//TODO: This is a debug option:
 		//if(0){//extit>=10){
@@ -2686,6 +2689,7 @@ void stringPM::make_next(){
 		//}
 
 		//extract any partner:
+		s_ag *bag;
 		bag = NULL;
 
 		switch(pag->status){
@@ -2725,6 +2729,7 @@ void stringPM::make_next(){
 			}
 		}
 		else{
+			int changed = 0;
 			if(energy>0){
 				switch(pag->status){
 				case B_UNBOUND:
@@ -3201,22 +3206,20 @@ int stringPM::comass_exec_step(s_ag *act, s_ag *pass){
 int stringPM::load_comass(const char *fn, int verbose){
 	//int massval = 2000;
 	FILE *fp;
-	int finderr;
-	int i;
 	unsigned int massval;
 
 	mass = (int*) malloc(blosum->N * sizeof(int));
 
 	if((fp=fopen(fn,"r"))!=NULL){
 
-		finderr=read_param_int(fp,"MASS",&massval,verbose);
+		int finderr=read_param_int(fp,"MASS",&massval,verbose);
 
 		report_param_error(finderr, 1);
 
 
 		fclose(fp);
 		//Load the massvalue into the mass table;
-		for(i=0;i<blosum->N;i++){
+		for(int i=0;i<blosum->N;i++){
 			mass[i]=massval;
 		}
 		s_ag *pag;
@@ -3228,7 +3231,7 @@ int stringPM::load_comass(const char *fn, int verbose){
 }
 
 
-int stringPM::set_mass(int *param){
+int stringPM::set_mass(const int *param){
 
 	int i;
 
@@ -3253,10 +3256,10 @@ int stringPM::set_mass(int *param){
 
 
 int stringPM::update_mass(char *S, int len, int val, const int doconcat){
-	int c;
+	
 	int updated=0;
 	for(int i=0;i<len;i++){
-		c = tab_idx(S[i],blosum);
+		int c = tab_idx(S[i],blosum);
 		mass[c] += val;
 		//Strategy: if there isn't the mass available for the string, delete the code
 		if(doconcat && mass[c]<0){
@@ -3316,9 +3319,8 @@ int stringPM::comass_testdecay(s_ag *pag){
 }
 
 void stringPM::comass_make_next(){
-	s_ag *pag,*bag;
+	s_ag *pag;
 
-	int changed;
 
 	//SUGGEST: write function to count what's around (saves rechecking every time)
 	//countstates();
@@ -3335,7 +3337,6 @@ void stringPM::comass_make_next(){
 
 		pag = rand_ag(nowhead,-1);
 		extract_ag(&nowhead,pag);
-		changed = 0;
 
 		//if(0){//extit>=10){
 		//	if(pag->status==B_PASSIVE)
@@ -3350,6 +3351,7 @@ void stringPM::comass_make_next(){
 		//}
 
 		//extract any partner:
+		s_ag *bag;
 		bag = NULL;
 
 		switch(pag->status){
@@ -3379,6 +3381,8 @@ void stringPM::comass_make_next(){
 			}
 		}
 		else{
+		
+			int changed = 0;
 			if(energy>0){
 				switch(pag->status){
 				case B_UNBOUND:
@@ -3631,15 +3635,15 @@ int stringPM::energetic_testbind(s_ag *pag){
 
 
 void stringPM::energetic_make_next(){
-	s_ag *pag,*bag;
-	int changed;
+	s_ag *pag;
+
 	while(nowhead!=NULL){
 
 		pag = rand_ag(nowhead,-1);
 		extract_ag(&nowhead,pag);
-		changed = 0;
 
 		//extract any partner:
+		s_ag *bag;
 		bag = NULL;
 		switch(pag->status){
 		case B_UNBOUND:
@@ -3668,7 +3672,7 @@ void stringPM::energetic_make_next(){
 			}
 		}
 		else{
-
+			int changed = 0;
 
 			switch(pag->status){
 			case B_UNBOUND:
@@ -3868,13 +3872,15 @@ void stringPM::free_swt(swt *pSWT, int verbose){
 
 
 	//print for debug.
-	int i,j;
+	int i;
 	if(verbose){
 		printf("   ");
 		for(i=0;i<pSWT->N;i++)
 			printf("%c   ",pSWT->key[i]);
 		printf("\n");
 		for(i=0;i<pSWT->N;i++){
+			int j;
+			
 			printf("%c  ",pSWT->key[i]);
 			for(j=0;j<pSWT->N;j++){
 				printf("%0.2f ",pSWT->T[i][j]);
@@ -3889,15 +3895,14 @@ void stringPM::free_swt(swt *pSWT, int verbose){
 		fflush(stdout);
 	}
 
-	float *pT;
-	int *pI;
-
 	//Free elements of pSWT
 	if(pSWT->T != NULL){
+	
 		free(pSWT->key);
 		pSWT->key= NULL;
-		int i;
+		
 		for(i=0;i<pSWT->N+1;i++){
+			float *pT;
 			pT = pSWT->T[i];
 			free(pT);
 		}
@@ -3905,6 +3910,7 @@ void stringPM::free_swt(swt *pSWT, int verbose){
 		pSWT->T=NULL;
 
 		for(i=0;i<pSWT->N;i++){
+			int *pI;
 			pI = pSWT->adj[i];
 			free(pI);
 		}
@@ -4333,7 +4339,6 @@ int stringPM::share_agents(s_ag **hp){
 
 	s_ag *pa,**head,*tmp,*aa,*tmphead;
 	int ntot=0,herect=0,therect=0;
-	float rno;
 
 	tmphead = *hp;
 	pa = tmphead;
@@ -4342,6 +4347,7 @@ int stringPM::share_agents(s_ag **hp){
 
 	while(pa !=NULL){
 		ntot++;
+		float rno;
 
 		//Work out where it's going:
 		if((rno = rand0to1()) < 0.5){
