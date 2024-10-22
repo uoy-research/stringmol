@@ -116,6 +116,7 @@ public:
 
 	SMspp();
 	virtual ~SMspp();
+	SMspp operator=(SMspp &SMspp_in);
 
 
 	l_spp * make_spp_from_string(char *S, int extit, const int maxl0, const int spno);

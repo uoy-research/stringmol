@@ -35,6 +35,22 @@ SMspp::~SMspp() {
 }
 
 
+SMspp SMspp::operator=(SMspp &SMspp_in){
+
+	SMspp SMspp_out;
+
+	spp_count = SMspp_in.spp_count;
+	if(SMspp_in.species !=NULL){
+		printf("Trying to copy a species but haven't written it yet!\n");
+		exit(2345);
+	}
+	else{
+		species = NULL;
+	}
+	
+	return(SMspp_out);
+}
+
 s_parent *SMspp::get_parents(l_spp * c, l_spp *paspp, l_spp  *ppspp){
 
 	s_parent *pp;
@@ -74,7 +90,7 @@ void SMspp::append_parents(l_spp *c, s_parent *pp){
 s_parent * SMspp::make_parents(l_spp * paspp, l_spp * ppspp){
 
 	s_parent *pp;
-	pp = (s_parent *) malloc(sizeof(s_parent));
+	pp = static_cast<s_parent *>(malloc(sizeof(s_parent)));
 
 	//if((pp->pa = getspp(paspp))==NULL)
 	//		printf("OOPS! bad active parent\n");
@@ -94,12 +110,14 @@ l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const i
 	l_spp *sp;
 
 	//TODO: check for malloc fails here...
-	sp = (l_spp *) malloc(sizeof(l_spp));
+	sp = static_cast<l_spp *>(malloc(sizeof(l_spp)))
+	
+	;
 	sp->S=(char *) malloc(maxl0+1*sizeof(char));
 
 	memset(sp->S,0,maxl0*sizeof(char));
-
-	strncpy(sp->S,S,strlen(sp->S));//l);
+	//TODO: check that this is ok ???
+	strncpy(sp->S,S,maxl0);//strlen(sp->S));//l);
 
 	sp->pp = NULL;
 	if(spno>-1){

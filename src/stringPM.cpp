@@ -107,6 +107,52 @@ stringPM::stringPM(SMspp * pSP){
 
 }
 
+//Copy constructor
+stringPM::stringPM(const stringPM& spm){
+	spl      = spm.spl;
+	dodecay  = spm.dodecay;
+	loadtype = spm.loadtype;
+
+	grid     = spm.grid;
+
+	swlist=spm.swlist;
+
+	blosum = NULL;
+	blosum = (swt *) malloc(sizeof(swt));
+	blosum->N=0;
+	blosum->T=NULL;
+	blosum->key=NULL;
+	
+	
+	preset();
+	
+	
+	agct = spm.agct;
+	spp_count= spm.agct;
+	verbose_bind= spm.verbose_bind;
+
+	//Set defaults:
+
+	maxl = spm.maxl;
+	maxl0 = spm.maxl0; //allow room for a terminating 0
+	estep = spm.estep;
+
+	signal = spm.signal;
+
+	/** This is a toggle to turn the '+' operator on and off
+	 *
+	 * It can be set using the 'GRANULAR' flag in the config file
+	 *
+	 */
+	granular_1=spm.granular_1;
+
+	splprint = spm.splprint;
+
+	report_every = spm.report_every;   //How often to write splists and configs
+	image_every  = spm.image_every;	   //How often to generate an image (spatial stringmol only)
+}
+
+
 
 stringPM::~stringPM() {
 	clearout(0);
@@ -248,7 +294,7 @@ int stringPM::load_table_matrix(const char *fn){
 			printf("ERROR in reading line during load_table_matrix() in stringPM.cpp");
 		}
 		memset(label,0,maxl);
-		sscanf(line,"%s",label);
+		sscanf(line,"%2000s",label);
 
 		//Set N and key:
 		blosum->N = strlen(label);
@@ -312,16 +358,16 @@ int stringPM::load_table(const char *fn){
 		
 		while((fgets(line,maxl,fp))!=NULL){
 			memset(label,0,maxl);
-			sscanf(line,"%s",label);
+			sscanf(line,"%2000s",label);
 			//printf("line = %s",line);
 			if(!strncmp(line,"USING",5)){
-				sscanf(line,"%*s %s",fn2);
+				sscanf(line,"%*s %2000s",fn2);
 				strcpy(swt_fn,fn2);
 				found = 1;
 				break;
 			}
 			if(!strncmp(line,"SUBMAT",6)){
-				sscanf(line,"%*s %s",fn2);
+				sscanf(line,"%*s %2000s",fn2);
 				strcpy(swt_fn,fn2);
 				found = 2;
 				break;
@@ -344,10 +390,10 @@ int stringPM::load_table(const char *fn){
 				rewind(fp2);
 				while((fgets(line,maxl,fp2))!=NULL){
 					memset(label,0,maxl);
-					sscanf(line,"%s",label);
+					sscanf(line,"%2000s",label);
 					//printf("line = %s",line);
 					if(!strncmp(line,"SET",3)){
-						sscanf(line,"%*s %s",fn2); //using fn2 to temporarily hold the alphabet...
+						sscanf(line,"%*s %2000s",fn2); //using fn2 to temporarily hold the alphabet...
 						blosum->N = strlen(fn2);
 						blosum->key = (char *)malloc((blosum->N+1) * sizeof(char));
 						memset(blosum->key,0,(blosum->N+1)*sizeof(char));
@@ -381,7 +427,6 @@ int stringPM::load_table(const char *fn){
 			break;
 		case 2:
 			return load_table_matrix(swt_fn);
-			return 0;
 			break;
 		case 3:
 			blosum =  default_table();
@@ -409,7 +454,7 @@ int stringPM::load_splist(const char *fn,int verbose){
 	if((fp=fopen(fn,"r"))!=NULL){
 		while((fgets(line,llen,fp))!=NULL){
 			memset(label,0,llen);
-			sscanf(line,"%s",label);
+			sscanf(line,"%2000s",label);
 			//printf("line = %s",line);
 			if(!strncmp(line,"SPECIES",6)){
 				nspp++;
@@ -424,13 +469,13 @@ int stringPM::load_splist(const char *fn,int verbose){
 
 		while((fgets(line,llen,fp))!=NULL){
 			memset(label,0,llen);
-			sscanf(line,"%s",label);
+			sscanf(line,"%2000s",label);
 			//printf("line = %s",line);
 			if(!strncmp(line,"SPECIES",6)){
 
 				//Scan the line for sequence and number...
 				memset(label,0,llen);
-				sscanf(line,"%*s %d %s",&spno,label);
+				sscanf(line,"%*s %d %2000s",&spno,label);
 				//TODO: make sure extit is set at this point
 				spl->getspp_from_string(label,extit,maxl0,spno);
 			}
@@ -497,7 +542,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 			memset(active_string,0,llen);
 			memset(passive_string,0,llen);
 			memset(passive_spp_string,0,llen);
-			sscanf(line,"%s",active_spp_string);
+			sscanf(line,"%2000s",active_spp_string);
 			//printf("line = %s",line);
 			if(!strncmp(line,"REACTION",8)){
 				/* We have a multi-line definition to deal with now... hold tight... */
@@ -505,7 +550,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 				/* First line is the species of the active molecule */
 				if((fgets(line,llen,fp))!=NULL){
 					linecount++;
-					sscanf(line,"%*s %d %s",&aspno, active_spp_string);
+					sscanf(line,"%*s %d %2000s",&aspno, active_spp_string);
 					//TODO: check that the species number and sequence are identical
 				}
 				else{
@@ -517,7 +562,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 				if((fgets(line,llen,fp))!=NULL){
 					linecount++;
 					gx = gy = -1;
-					sscanf(line,"%*s %d %s irwf: %d %d %d %d %d %d %d %d %d %d %d %d grid: %d %d",&ano, active_string,
+					sscanf(line,"%*s %d %2000s irwf: %d %d %d %d %d %d %d %d %d %d %d %d grid: %d %d",&ano, active_string,
 							&it,&iap,&ipp,&rt,&rap,&rpp,&wt,&wap,&wpp,&ft,&fap,&fpp,
 							&gx,&gy);
 				}
@@ -529,7 +574,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 				pag = make_ag('X');//TODO: fix this need for ascii codes... we have species numbers now!
 				pag->S =(char *) malloc(maxl0*sizeof(char));
 				memset(pag->S,0,maxl0*sizeof(char));
-				strncpy(pag->S,active_string,strlen(pag->S));//active_string));
+				strncpy(pag->S,active_string,maxl);//active_string));
 				pag->len = strlen(pag->S);
 
 				if(grid){
@@ -541,7 +586,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 				if((fgets(line,llen,fp))!=NULL){
 					linecount++;
 					gx = gy = -1;
-					sscanf(line,"%*s %d %s grid: %d %d",&pno, passive_string, &gx, &gy);
+					sscanf(line,"%*s %d %2000s grid: %d %d",&pno, passive_string, &gx, &gy);
 				}
 				else{
 					printf("ERROR READING REACTION (passive state) at line %d\n",linecount+1);
@@ -550,7 +595,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 				bag = make_ag('X');//TODO: fix this need for ascii codes... we have species numbers now!
 				bag->S =(char *) malloc(maxl0*sizeof(char));
 				memset(bag->S,0,maxl0*sizeof(char));
-				strncpy(bag->S,passive_string,strlen(bag->S));//passive_string));
+				strncpy(bag->S,passive_string,maxl);//passive_string));
 				bag->len = strlen(bag->S);
 
 				if(grid){
@@ -561,7 +606,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 				/* Fourth line is the species of the passive molecule */
 				if((fgets(line,llen,fp))!=NULL){
 					linecount++;
-					sscanf(line,"%*s %d %s",&pspno, passive_spp_string);
+					sscanf(line,"%*s %d %2000s",&pspno, passive_spp_string);
 					//TODO: check that the species number and sequence are identical
 				}
 				else{
@@ -625,9 +670,9 @@ s_ag * stringPM::read_unbound_agent(FILE **fp, char line[], const int llen){
 
 
 	memset(label,0,llen);
-	sscanf(line,"%*s %s %d %c",label,&nag,&code);
+	sscanf(line,"%*s %2000s %d %c",label,&nag,&code);
 
-	bool getgridinfo = true;
+	//bool getgridinfo = true;
 
 	//make the agent
 	//for(i=0;i<nag;i++){
@@ -652,7 +697,7 @@ s_ag * stringPM::read_unbound_agent(FILE **fp, char line[], const int llen){
 	 *
 	 *
 	 * */
-	if(grid && getgridinfo){
+	if(grid){// && getgridinfo){
 		if((fgets(line,llen,*fp))!=NULL){//sscanf(line,"%s",label);
 			if(!strncmp(line,"GRIDPOS",7)){
 				sscanf(line,"%*s %d %d ",&(pag->x),&(pag->y));
@@ -705,7 +750,7 @@ s_ag * stringPM::read_active_agent(FILE **fp, char line[], const int llen, int &
 	/* First line is the species of the active molecule */
 	if((fgets(line,llen,*fp))!=NULL){
 		linecount++;
-		sscanf(line,"%*s %d %s",&aspno, active_spp_string);
+		sscanf(line,"%*s %d %2000s",&aspno, active_spp_string);
 		//TODO: check that the species number and sequence are identical
 	}
 	else{
@@ -717,7 +762,7 @@ s_ag * stringPM::read_active_agent(FILE **fp, char line[], const int llen, int &
 	if((fgets(line,llen,*fp))!=NULL){
 		linecount++;
 		gx = gy = -1;
-		sscanf(line,"%*s %d %s irwf: %d %d %d %d %d %d %d %d %d %d %d %d grid: %d %d  pass_index: %d",
+		sscanf(line,"%*s %d %2000s irwf: %d %d %d %d %d %d %d %d %d %d %d %d grid: %d %d  pass_index: %d",
 				&ano, active_string,
 				&it,&iap,&ipp,&rt,&rap,&rpp,&wt,&wap,&wpp,&ft,&fap,&fpp,
 				&gx,&gy,
@@ -731,7 +776,7 @@ s_ag * stringPM::read_active_agent(FILE **fp, char line[], const int llen, int &
 	pag = make_ag('X');//TODO: fix this need for ascii codes... we have species numbers now!
 	pag->S =(char *) malloc(maxl0*sizeof(char));
 	memset(pag->S,0,maxl0*sizeof(char));
-	strncpy(pag->S,active_string,strlen(pag->S));//active_string));
+	strncpy(pag->S,active_string,maxl);//active_string));
 	pag->len = strlen(pag->S);
 
 	if(grid){
@@ -782,7 +827,7 @@ s_ag * stringPM::read_passive_agent(FILE **fp, char line[], const int llen){
 	if((fgets(line,llen,*fp))!=NULL){
 		linecount++;
 		gx = gy = -1;
-		sscanf(line,"%*s %d %s grid: %d %d",&pno, passive_string, &gx, &gy);
+		sscanf(line,"%*s %d %2000s grid: %d %d",&pno, passive_string, &gx, &gy);
 	}
 	else{
 		printf("ERROR READING REACTION (passive state) at line %d\n",linecount+1);
@@ -792,7 +837,7 @@ s_ag * stringPM::read_passive_agent(FILE **fp, char line[], const int llen){
 	/* Fourth line is the species of the passive molecule */
 	if((fgets(line,llen,*fp))!=NULL){
 		linecount++;
-		sscanf(line,"%*s %d %s",&pspno, passive_spp_string);
+		sscanf(line,"%*s %d %2000s",&pspno, passive_spp_string);
 		//TODO: check that the species number and sequence are identical
 	}
 	else{
@@ -806,7 +851,7 @@ s_ag * stringPM::read_passive_agent(FILE **fp, char line[], const int llen){
 	bag = make_ag('X');//TODO: fix this need for ascii codes... we have species numbers now!
 	bag->S =(char *) malloc(maxl0*sizeof(char));
 	memset(bag->S,0,maxl0*sizeof(char));
-	strncpy(bag->S,passive_string,strlen(bag->S));//passive_string));
+	strncpy(bag->S,passive_string,maxl);//passive_string));
 	bag->len = strlen(bag->S);
 
 	if(grid){
@@ -828,16 +873,6 @@ s_ag * stringPM::read_passive_agent(FILE **fp, char line[], const int llen){
 
 
 
-
-
-
-
-
-
-
-
-
-
 smsprun * stringPM::init_smprun(const int gridx, const int gridy){
 
 	grid = (smsprun *) malloc(sizeof(smsprun));
@@ -851,7 +886,8 @@ smsprun * stringPM::init_smprun(const int gridx, const int gridy){
 
 	for(int i=0;i<grid->gridx;i++){
 		grid->grid[i] = (s_ag **) malloc(grid->gridy*sizeof(s_ag *));
-		grid->status[i] = (s_gstatus *) malloc(grid->gridy*sizeof(s_gstatus));
+		//grid->status[i] = (s_gstatus *) malloc(grid->gridy*sizeof(s_gstatus));
+		grid->status[i] = static_cast<s_gstatus *> (malloc(grid->gridy*sizeof(s_gstatus)));
 
 		for(int j=0;j<grid->gridy;j++){
 			grid->grid[i][j]=NULL;
@@ -879,7 +915,7 @@ int stringPM::load_replicable(const char *fn){
 		char label[llen];
 		while((fgets(line,llen,fp))!=NULL){
 			memset(label,0,llen);
-			sscanf(line,"%s",label);
+			sscanf(line,"%2000s",label);
 			if(!strncmp(line,"NUMAGENTS",9)){
 				sscanf(line,"NUMAGENTS %d",&nag);
 				break;
@@ -906,7 +942,7 @@ int stringPM::load_replicable(const char *fn){
 
 		while((fgets(line,llen,fp))!=NULL){
 			memset(label,0,llen);
-			sscanf(line,"%s",label);
+			sscanf(line,"%2000s",label);
 
 			//Work out the bind state - different load methods for each.
 			s_bind bs;
@@ -1110,7 +1146,7 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 				exit(0);
 			}
 			if(gridy==0){
-				printf("ERROR: GRIDX is %d, but GRIDY is 0\n",gridx);
+				printf("ERROR: GRIDX is %u, but GRIDY is 0\n",gridx);
 				exit(0);
 			}
 			init_smprun(gridx,gridy);
@@ -1149,7 +1185,9 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 			char label[llen];
 			while((fgets(line,llen,fp))!=NULL){
 				memset(label,0,llen);
-				sscanf(line,"%s",label);
+				//TODO: We need a better way of limiting the chars 
+				//read into label - perhaps with a #define or two...
+				sscanf(line,"%2000s",label);
 				//printf("line = %s",line);
 				if(!strncmp(line,"AGENT",5)){
 					ntt++;
@@ -1163,11 +1201,11 @@ int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
 			while((fgets(line,llen,fp))!=NULL){
 
 				memset(label,0,llen);
-				sscanf(line,"%s",label);
+				sscanf(line,"%2000s",label);
 				if(!strncmp(line,"AGENT",5)){
 
 					memset(label,0,llen);
-					sscanf(line,"%*s %s %d %c",label,&nag,&code);
+					sscanf(line,"%*s %2000s %d %c",label,&nag,&code);
 
 					if(test){//todo -is this still necessary?
 						nag=1;
@@ -1483,11 +1521,13 @@ int stringPM::extract_ag(s_ag **list, s_ag *ag){
 			(*list)->prev = NULL;
 	}
 	else{
-		if(ag->prev==NULL)
+		if(ag->prev==NULL){
 			printf("Error in extract_ag: No previous member of the list!\n");
-		ag->prev->next = ag->next;
-		if(ag->next != NULL)
-			ag->next->prev = ag->prev;
+		}else{	
+			ag->prev->next = ag->next;
+			if(ag->next != NULL)
+				ag->next->prev = ag->prev;
+		}
 	}
 	ag->prev=NULL;
 	ag->next=NULL;
@@ -1544,7 +1584,7 @@ int stringPM::free_ag(s_ag *pag){
 	}
 
 	free(pag);
-	pag = NULL;
+	//pag = NULL;
 
 	return 0;
 }
@@ -1633,7 +1673,10 @@ s_ag * stringPM::make_ag(int alab){
 
 	//printf("Spatial make_ag called\n");fflush(stdout);
 
-	if((ag = (s_ag *) mymalloc(1,sizeof(s_ag)))!=NULL){
+	//ATTENTION! this is how you convert from C-style to C++-style casts
+	//https://embeddedartistry.com/blog/2017/03/15/c-casting-or-oh-no-they-broke-malloc/
+	//if((ag = (s_ag *) mymalloc(1,sizeof(s_ag)))!=NULL){
+	if(( ag = static_cast<s_ag *> (mymalloc(1, sizeof(s_ag))))!=NULL){
 		ag->label=alab;
 		ag->next = NULL;
 		ag->prev = NULL;
@@ -1781,7 +1824,7 @@ float stringPM::sigalign(char *str){
 	float bprob;
 
 	comp = string_comp(str);
-	bprob = SmithWatermanV2(comp,signal,&sw,blosum,0);
+	/*bprob =*/ SmithWatermanV2(comp,signal,&sw,blosum,0);
 	free(comp);
 	int l = L_str>L_sig?L_str:L_sig;
 	int la = sw.e1-sw.s1 < sw.e2-sw.s2 ? sw.e1-sw.s1 : sw.e2-sw.s2;
@@ -1828,19 +1871,15 @@ float stringPM::get_sw(s_ag *a1, s_ag *a2, align *sw){
 
 		char *comp;
 	
-		//get_string_comp(a1);
 		comp = string_comp(a1->S);
 
-		//
-
-		bprob = SmithWatermanV2(comp,a2->S,sw,blosum,0);
-		//bprob = SmithWaterman(comp,a2->S,sw,blosum,0);
+		/*bprob =*/ SmithWatermanV2(comp,a2->S,sw,blosum,0);
 
 		free(comp);
 
 		align sw2;
 
-		bprob = SmithWatermanV2(a1->S,a2->S,&sw2,blosum,0);
+		/*bprob =*/ SmithWatermanV2(a1->S,a2->S,&sw2,blosum,0);
 
 		//TODO: SUGGEST: pass in pointer to the species - not its index
 		store_sw(&swlist,sw,a1->spp->spp,a2->spp->spp);
@@ -3285,7 +3324,7 @@ int stringPM::comass_free_ag(s_ag *pag){
 	}
 
 	free(pag);
-	pag = NULL;
+	//pag = NULL;
 
 	return 0;
 }
@@ -4159,9 +4198,11 @@ void stringPM::print_ancestry_dot(FILE *fp, int time,int step){
 					}
 					//if(sp2->sptype){//This means its not a "start" type...
 						//if(!sp2->pf){
-					if(!sp2->anc){
-						sp2->anc=1;
-						finished=0;
+					else{	
+						if(!sp2->anc){
+							sp2->anc=1;
+							finished=0;
+						}
 					}
 				}
 					//}

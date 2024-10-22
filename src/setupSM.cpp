@@ -476,14 +476,11 @@ int run_one_AlifeXII_trial(stringPM *A){
 
 	int i;
 
-
-
 	A->print_agents(stdout,"NOW",0);
-
 	A->run_number=0;
 
 #ifdef DO_ANCESTRY
-	int lastepoch=A.get_ecosystem(),thisepoch,nepochs=1;
+	int lastepoch;//=A.get_ecosystem();
 #endif
 
 	int nsteps=0;
@@ -2244,7 +2241,8 @@ char * set_seq(char *S){
 	int len = 1+strlen(S);
 	out = (char *) malloc((len)*sizeof(char));
 	memset(out,0,len*sizeof(char));
-	strncpy(out,S,strlen(out));//len);
+	//strncpy(out,S,(len-1));
+	strcpy(out,S);
 	return out;
 
 }

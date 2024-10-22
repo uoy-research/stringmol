@@ -123,6 +123,8 @@ public:
 
 	//constructor
 	stringPM(SMspp * pSP);
+	//copy constructor
+	stringPM(const stringPM& spm);
 	//destructor
 	~stringPM();
 
