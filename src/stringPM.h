@@ -122,7 +122,7 @@ public:
 
 
 	//constructor
-	stringPM(SMspp * pSP);
+	explicit stringPM(SMspp * pSP);
 	//copy constructor
 	stringPM(const stringPM& spm);
 	//destructor
@@ -139,7 +139,7 @@ public:
 
 	//int load_agents(char *fn,                int test, int verbose);
 	// VJH version for youShare
-	int load_agents(const char *fn, char *fninput, int test, int verbose);
+	int load_agents(const char *fn, char *fninput, int test, int verbose) override;
 
 	float load_mut(const char *fn, int verbose); //load the mutation rate
 	float load_decay(const char *fn, int verbose); //load the decay rate
@@ -151,7 +151,7 @@ public:
 
 
 	//Iteration
-	void make_next();
+	void make_next() override;
 	int testbind(s_ag *pag);
 	int testdecay(s_ag *pag);
 	//int hasdied();
