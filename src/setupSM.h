@@ -42,7 +42,7 @@
 	int run_one_comass_trial(const int rr, stringPM *A, int * params, struct runparams *R);
 	int run_one_AlifeXII_trial(stringPM *A);
 
-	void setmutnet(int * mutnet, swt *blosum);
+	void setmutnet(const int * mutnet, swt *blosum);
 
 	//count species in a containers nowhead
 	float ctspp(stringPM *A, const int spp);
@@ -79,7 +79,7 @@
 	int smspatial_community(int argc, char *argv[]);
 	int smspatial_lengthpicsfromlogs(int argc, char *argv[]);
 
-	void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsigned width, unsigned height);
+	void encodeOneStep(const char* filename, const std::vector<unsigned char>& image, unsigned width, unsigned height);
 
 	enum smpic{
 		smpic_spp,

@@ -74,7 +74,7 @@ void setupSMol(struct runparams &RunPar, int argc, char *argv[]){
 
 	FILE *fp;
 
-	unsigned int rerr=1,rlim=20;
+	unsigned int rerr,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
 		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
@@ -83,10 +83,10 @@ void setupSMol(struct runparams &RunPar, int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NTRIALS to %d\n",rlim);
+			printf("Setting NTRIALS to %u\n",rlim);
 			break;
 		default:
-			printf("NTRIALS not specified;\nSetting NTRIALS to %d\n",rlim);
+			printf("NTRIALS not specified;\nSetting NTRIALS to %u\n",rlim);
 			break;
 		}
 		fclose(fp);
@@ -101,7 +101,7 @@ void setupSMol(struct runparams &RunPar, int argc, char *argv[]){
 			getchar();
 			exit(0);
 		case 0:
-			printf("Setting NSTEPS to %d\n",RunPar.maxnsteps);
+			printf("Setting NSTEPS to %u\n",RunPar.maxnsteps);
 			RunPar.indefinite=0; //TODO: fix the indefinite thing if NSTEPS is not specified..
 			break;
 		default:
@@ -193,7 +193,6 @@ void printsppct(stringPM *A, int t){
 	int spc,count;
 	int finished = 0;
 	int nag,*done;
-	int i,found;
 
 	nag = A->nagents(A->nowhead,-1);
 
@@ -211,8 +210,8 @@ void printsppct(stringPM *A, int t){
 	fp = fopen(A->popdyfn,"a");
 
 	do{
-		i = 0;
-		found=0;
+		int i = 0;
+		int found=0;
 		finished = 1;
 		for(i=0,pa=A->nowhead;i<nag;i++,pa=pa->next){
 			if(!done[i]){
@@ -301,7 +300,7 @@ int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runpar
 			printf("DEATH\n");
 			printf("At  time %d e=%d\t",i,(int)A->energy);
 			A->print_spp_count(stdout,0,-1);
-			nsteps=i;
+			//nsteps=i;
 			break;
 		}
 
@@ -341,7 +340,7 @@ void setmaxcode(stringPM *A, int *maxcode){
 //}
 
 
-void setmutnet(int * mutnet, swt *blosum){
+void setmutnet(const int * mutnet, swt *blosum){
 
 	int i,j;
 	for(i=0;i<blosum->N;i++)
@@ -403,8 +402,8 @@ void print_params(stringPM *A, int ntrials, int nsteps){
 		printf("BLOSUM      %d size table loaded\n",A->blosum->N);
 	printf("MUTATE      indelrate = %f; subrate = %f\n",A->indelrate,A->subrate);
 	printf("DECAY       %f\n",A->decayrate);
-	printf("MAXLEN      %d, (maxl0 = %d)\n",A->maxl, A->maxl0);
-	printf("ESTEP       %d\n",A->estep);
+	printf("MAXLEN      %u, (maxl0 = %u)\n",A->maxl, A->maxl0);
+	printf("ESTEP       %u\n",A->estep);
 
 
 }
@@ -435,6 +434,9 @@ void init_randseed_config(int argc, char *argv[]){
 		unsigned int stmp;
 		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
 		//TODO: load the full RNG state using load_mt (RNGFILE in config)
+		if(rerr){
+			printf("Error reading randseed\n");
+		}
 
 
 		rerr = read_param_int(fpr,"GAQNN",&qnnscoring,1);
@@ -450,10 +452,11 @@ void init_randseed_config(int argc, char *argv[]){
 	if((frs=fopen("randseed.txt","w"))==NULL){
 		printf("Coundln't open randseed.txt\n");
 		getchar();
+	}else{
+		fprintf(frs,"(unsigned) random seed is %lu \n",rseed);
+		fflush(frs);
+		fclose(frs);
 	}
-	fprintf(frs,"(unsigned) random seed is %lu \n",rseed);
-	fflush(frs);
-	fclose(frs);
 
 }
 
@@ -479,10 +482,6 @@ int run_one_AlifeXII_trial(stringPM *A){
 	A->print_agents(stdout,"NOW",0);
 	A->run_number=0;
 
-#ifdef DO_ANCESTRY
-	int lastepoch;//=A.get_ecosystem();
-#endif
-
 	int nsteps=0;
 	//TODO: Accommodate indefinitre runs, like this:
 	//for(i=0;indefinite || nsteps <= maxnsteps;i++){
@@ -497,9 +496,9 @@ int run_one_AlifeXII_trial(stringPM *A){
 
 		if(!(i%1000)){
 			A->print_spp_count(stdout,0,-1);
-		}
-
-		if(!(i%1000)){
+		//}
+		//
+		//if(!(i%1000)){
 			printf("At  time %d e=%d, mutrate = %0.9f & %0.9f\n",i,(int)A->energy,A->subrate,A->indelrate);
 			printsppct(A,i);
 		}
@@ -512,7 +511,7 @@ int run_one_AlifeXII_trial(stringPM *A){
 			printf("DEATH\n");
 			printf("At  time %d e=%d, mutrate = %0.9f & %0.9f\t",i,(int)A->energy,A->indelrate,A->subrate);
 			A->print_spp_count(stdout,0,-1);
-			nsteps=i;
+			//nsteps=i;
 			break;
 		}
 		nsteps++;
@@ -628,7 +627,7 @@ s_ag * pick_partner(stringPM *A, smsprun *run,int x, int y){
 							if(count==it)
 								run->status[xx][yy] = G_NEXT;
 							return run->grid[xx][yy];
-							count++;
+							//count++;
 						}
 					}
 				}
@@ -872,7 +871,6 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int x, int y){
 
 	char *tmp;
-	int dac=0;
 	int safe_append=1;
 
 	switch(*(act->i[act->it])){//*iptr[it]){
@@ -996,7 +994,7 @@ int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int 
 	 ************/
 	case '%':
 			//Decide where to put the cleaved molecule
-			if((dac = spatial_cleave(A,run,act))){//,x,y))){
+			if((/*dac = */spatial_cleave(A,run,act))){//,x,y))){
 				//TODO: Need to determine what safe_append is used for (after looking at cleave)
 				safe_append=0;	//extract_ag(&nowhead,p);
 			}
@@ -1097,7 +1095,6 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 void get_unused_fn(char *fn){
 
 	int found = 1;
-	FILE * fpr;
 	char *point_pos, *tmp_pos;
 	char tmp[128];
 	char ofn[128];
@@ -1110,6 +1107,7 @@ void get_unused_fn(char *fn){
 	point_pos = strchr(fn,'.');
 
 	while(found){
+		FILE * fpr;
 
 		if((fpr=fopen(ofn,"r"))!=NULL){
 			fclose(fpr);
@@ -1170,7 +1168,7 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 
 	bool foundrng{true};
 
-	FILE *fpr,*fprng;
+	FILE *fpr;
 	if((fpr=fopen(fn,"r"))!=NULL){
 		//TODO: load the full RNG state using load_mt (RNGFILE in config)
 		char *rngfn,*rngpath;
@@ -1193,8 +1191,10 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 			char *pp;
 			pp = &(rngpath[l+1]);
 			strcpy(pp,rngfn);
-
-			if((fprng=fopen(rngpath,"r"))!=NULL){
+			
+			//TODO: check the logic of the following! Write in the usr guide..!
+			FILE *fprng;
+			if((fprng = fopen(rngpath,"r"))!=NULL){
 				if(load_mt(rngpath) != load_mt_success){
 					printf("ERROR reading Random Number Generator config %s\n",rngfn);
 					foundrng = false;
@@ -1206,6 +1206,7 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 					print_mt(rfp);
 					fclose(rfp);
 				}
+				fclose(fprng);
 			}
 			else{
 				printf("ERROR reading Random Number Generator config %s\n",rngfn);
@@ -1270,29 +1271,10 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 int smspatial_step(stringPM *A, smsprun *run){
 
 	//again, we follow make_next, but are a little more careful with the binding and uncoupling
-	s_ag *pag,*bag;
-	int changed;
+	s_ag *pag;
 
 	//A->energy += A->estep;
 
@@ -1304,10 +1286,10 @@ int smspatial_step(stringPM *A, smsprun *run){
 	int ct=0;
 
 	while(A->nowhead!=NULL){
-
+ 
+ 		s_ag *bag;
 		pag = A->rand_ag(A->nowhead,-1);
 		A->extract_ag(&A->nowhead,pag);
-		changed = 0;
 
 		//For debugging RNG diffs.
 		if(A->extit == 90001){
@@ -1341,6 +1323,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 		}
 
 		if(!spatial_testdecay(A,run,pag)){
+			int changed = 0;
 			if(A->energy>0){
 				switch(pag->status){
 				case B_UNBOUND:
@@ -1446,7 +1429,8 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 
 	//TODO: It's a little perverse getting this run object out, but we have to decide whether the grid is 'core' stringmol...
 	*run = A->grid;
-	if(run == NULL){
+	//if(run == NULL){
+	if(*run == NULL){
 		printf("No grid data entered for spatial stringmol!\nexiting...");
 		exit(33);
 	}
@@ -1568,7 +1552,7 @@ int smspatial(int argc, char *argv[]) {
 	A.randseed = init_randseed(argv[2]);
 	smspatial_init(argv[2],&A,&run,1);
 
-	int bt{0},ct{0};
+	int bt,ct{0};
 	ct = A.nagents(A.nowhead,-1);
 	printf("Initialisation done, number of molecules is %d\n",ct);
 
@@ -1611,8 +1595,8 @@ int smspatial(int argc, char *argv[]) {
 		//		|| (A.extit%1000) == 99 || (A.extit%1000) == 100|| (A.extit%1000) == 101
 		//		|| (A.extit>90001 && A.extit <9000))
 		if(!(A.extit%A.report_every)){
-			FILE *fpp{};
-			char fn[128]{};
+			
+			
 			sprintf(fn,"out1_%05u.conf",A.extit);
 			fpp = fopen(fn,"w");
 
@@ -1620,7 +1604,7 @@ int smspatial(int argc, char *argv[]) {
 			fclose(fpp);
 
 			FILE *fp{};
-			sprintf(fn,"splist%d.dat",A.extit);
+			sprintf(fn,"splist%u.dat",A.extit);
 			fp = fopen(fn,"w");
 			SP.print_spp_list(fp);
 			fclose(fp);
@@ -1633,14 +1617,15 @@ int smspatial(int argc, char *argv[]) {
 		smspatial_step(&A,run);
 
 #ifdef DODEBUG
-		printf("Nowhead is %d, Nexthead is %d\n",A.nowhead,A.nexthead);
+		printf("Nowhead is %p, Nexthead is %p\n",A.nowhead,A.nexthead);
 		s_ag *p;
 		p=A.nowhead;
 		int mno=0;
 		while(p!=NULL){
 			int x,y;
 			find_ag_gridpos(p,run,&x,&y);
-			printf("%d, %d, [%d,%d]  status: %d, bound to %d / %d, prev = %d, next = %d\n",++mno,p,x,y,p->status,p->exec,p->pass,p->prev,p->next);
+			printf("%d, %p, [%d,%d]  status: %d, bound to %p / %p, prev = %p, next = %p\n",
+			++mno,p,x,y,p->status,p->exec,p->pass,p->prev,p->next);
 			p = p->next;
 		}
 #endif
@@ -1660,7 +1645,7 @@ int smspatial(int argc, char *argv[]) {
 //Example 1
 //Encode from raw pixels to disk with a single function call
 //The image argument has width * height RGBA pixels or width * height * 4 bytes
-void encodeOneStep(const char* filename, std::vector<unsigned char>& image, unsigned width, unsigned height)
+void encodeOneStep(const char* filename, const std::vector<unsigned char>& image, unsigned width, unsigned height)
 {
 	//Encode the image
 	unsigned error = lodepng::encode(filename, image, width, height);
@@ -1759,10 +1744,10 @@ int smspatial_pic(stringPM *A, smpic pt){
 	char filename[128];
 	switch(pt){
 	case smpic_len:
-		sprintf(filename,"lenframe%07d.png",A->extit);
+		sprintf(filename,"lenframe%07u.png",A->extit);
 		break;
 	case smpic_spp:
-		sprintf(filename,"sppframe%07d.png",A->extit);
+		sprintf(filename,"sppframe%07u.png",A->extit);
 		break;
 
 	}
@@ -1834,7 +1819,7 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 			std::vector<unsigned char> image;
 			image.resize(run->gridx * run->gridy * 4);
 
-			int x,y,val;
+			int x,y;
 
 			if(i==s){
 				for(x=0;x<run->gridx;++x){
@@ -1872,16 +1857,15 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 				int gmask = 0b00011100;
 				int bmask = 0b00000011;
 
-				int rbits,gbits,bbits;
-
+				
 				printf("Mask values are r:%d, g:%d, b:%d\n",rmask,gmask,bmask);
 
 				for(y=0;y<run->gridy;++y){
-					val = y;//((x+1) * 5) % 256;
+					int val = y;//((x+1) * 5) % 256;
 
-					rbits = (val & rmask);
-					gbits = (val & gmask);
-					bbits = (val & bmask);
+					int rbits = (val & rmask);
+					int gbits = (val & gmask);
+					int bbits = (val & bmask);
 
 					printf("y = %d, val = %d, \tRGB unscaled = r:%d, g:%d, b:%d \t scaled = r:%d g:%d b:%d\n",y,val,rbits,gbits,bbits,rbits>>5,gbits>>2,bbits);
 
@@ -1890,7 +1874,7 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 				for(x=0;x<run->gridx;++x){
 					for (y=0;y<run->gridy;++y) {
 
-						val = ((y+1)*5) % 256;
+						int val = ((y+1)*5) % 256;
 
 						image[4 * run->gridx * y + 4 * x + 0] = (32  * (1+((val & rmask) >> 5)))-1;
 						image[4 * run->gridx * y + 4 * x + 1] = (32  * (1+((val & gmask) >> 2)))-1;
@@ -1946,7 +1930,7 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 
 
 			char filename[128];
-			sprintf(filename,"lenframe%07d.png",A.extit);
+			sprintf(filename,"lenframe%07u.png",A.extit);
 			encodeOneStep(filename, image, run->gridx, run->gridy);
 
 			A.clearout();
@@ -1979,7 +1963,7 @@ struct anc_node{
 anc_node * alloc_anc_node(){
 	anc_node *node;
 
-	node = (anc_node *) malloc(sizeof(anc_node));
+	node = static_cast<anc_node *>(malloc(sizeof(anc_node)));
 
 	node->spno=0;
 	node->origintime=0;
@@ -2006,7 +1990,7 @@ anc_node * new_anc_node(int sp, int time){
 
 void find_parents(anc_node *aa, int timestep, int depth, char * ofn, int *found_spp){
 
-	FILE *fp,*ofp;
+	FILE *ofp;
 	const int llen = 3000;
 
 	char fn[128],line[llen],seq[llen];
@@ -2018,6 +2002,7 @@ void find_parents(anc_node *aa, int timestep, int depth, char * ofn, int *found_
 
 	while(!found){
 		sprintf(fn,"splist%d.dat",timestep);
+		FILE *fp;
 		if((fp=fopen(fn,"r"))==NULL){
 			printf("Cannot open file %s so cannot proceed\n",fn);
 			return;
@@ -2041,7 +2026,7 @@ void find_parents(anc_node *aa, int timestep, int depth, char * ofn, int *found_
 						if(!timestep){
 							printf("Line %d: Made it to the dawn of time!\nLUCA is:\n",lno);
 							//1,-1,-1,1,WWGEWLHHHRLUEUWJJJRJXUUUDYGRHJLRWWRE$BLUBO^B>C$=?>$$BLUBO%}OYHOB
-							sscanf(line,"%*d,%*d,%*d,%*d,%s",&(seq[0]));
+							sscanf(line,"%*d,%*d,%*d,%*d,%2000s",&(seq[0]));
 							printf("depth\ttime\tspp\tact\tpass\tsequence\n");
 							printf("%d\t1\t%d\t%d\t%d\t%s\n",depth,s1,a1,p1,seq);
 
@@ -2060,7 +2045,7 @@ void find_parents(anc_node *aa, int timestep, int depth, char * ofn, int *found_
 					}
 					else{
 						printf("Line %d: Ancestors of spp %d found! Active is %d, Passive is %d\n",lno,s1,a1,p1);
-						sscanf(line,"%*d,%*d,%*d,%*f,%d,%d,%*d,%s",&nr,&t1,&(seq[0]));
+						sscanf(line,"%*d,%*d,%*d,%*f,%d,%d,%*d,%2000s",&nr,&t1,&(seq[0]));
 						found = 1;
 						//fclose(fp);
 
@@ -2222,7 +2207,7 @@ struct comm_node{
 comm_node * alloc_comm_node(){
 	comm_node *node;
 
-	node = (comm_node *) malloc(sizeof(comm_node));
+	node = static_cast<comm_node *>(malloc(sizeof(comm_node)) );
 
 	node->aspno=0;
 	node->pspno=0;

@@ -53,6 +53,8 @@ clean:
 	rm -f *.o
 	rm -f ../debug/*.o
 	rm -f ../release/*.o
+	rm -f ../debug/stringmol
+	rm -f ../release/stringmol
 	rm -f stringmol
 	rm -f stringmol_dbg
 	rm -f smspatial

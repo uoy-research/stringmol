@@ -32,13 +32,16 @@ echo "======================================"
 echo "Running Smoke Tests"
 echo "---------------------------------"
 echo "Building!"
+
+
+# Stop execution on any error
+set -e
+
 cd src
 make clean
 make all
 cd ../output
 
-# Stop execution on any error
-set -e
 
 
 echo "---------------------------------"
