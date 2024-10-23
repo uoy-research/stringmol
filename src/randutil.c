@@ -47,7 +47,9 @@ int devrandomseed(){
 	// you now have a random integer!
 	close(randomData);
 
-	printf("in devrandomseed, seed is %d (%u)\n",sjhRandomInteger,sjhRandomInteger);
+	printf("in devrandomseed, seed is %d (%u)\n",
+		sjhRandomInteger,(unsigned int) sjhRandomInteger);
+		
 	return sjhRandomInteger;
 }
 
@@ -65,7 +67,7 @@ int initmyrand(int seed){
 #endif
 	}
 
-	printf("in initmyrand, seed is %d (%u)\n",seed,seed);
+	printf("in initmyrand, seed is %d (%u)\n",seed,(unsigned int) seed);
 
 #ifdef USING_MT
 	sgenrand(seed);
@@ -80,7 +82,7 @@ int initmyrand(int seed){
 
 
 
-unsigned long longinitmyrand(unsigned long *inseed){
+unsigned long longinitmyrand(const unsigned long *inseed){
 
 	unsigned long seed;
 	if(inseed==NULL){
@@ -155,10 +157,9 @@ int * randintarray(const int size,const int Min,const int max){
 /* Create an array of random integers between the range [min,max) */
 int * randboolarray(const int size){
 	int i, * array;
-	float v;
 	array = (int *) malloc(size*sizeof(int));
 	for(i=0;i<size;i++){
-		v=rand0to1();
+		float v=rand0to1();
 		if(v<0.5)
 			array[i] = 0;
 		else

@@ -27,7 +27,7 @@ extern "C" {
 #define SNIPPET_H_
 
 
-int ga_step_int(int **pop, double *eval, const int POPSIZE, const int PARAMETERS, const int minval, const int maxval, int *wn);
+int ga_step_int(int **pop, const double *eval, const int POPSIZE, const int PARAMETERS, const int minval, const int maxval, int *wn);
 
 
 #endif /* SNIPPET_H_ */

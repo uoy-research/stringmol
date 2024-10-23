@@ -27,12 +27,12 @@ void swap(int idx[], int a, int b){
 	idx[b]=tmp;
 }
 
-void sift_int(int a[], int idx[],int s, const int N){
-	int r = s;							//	var int root := start, child
-	int c;
+void sift_int(const int a[], int idx[],int s, const int N){
+	int r = s;		//	var int root := start, child
+	//int c;
 
-	while(((r*2)+1)<N){					//	while root * 2 + 1 < count {
-		c=(r*2)+1;
+	while(((r*2)+1)<N){	//	while root * 2 + 1 < count {
+		int c=(r*2)+1;
 		if(	(c<N-1)  &&
 			(a[idx[c]] < a[idx[c+1]])
 			){
@@ -50,13 +50,13 @@ void sift_int(int a[], int idx[],int s, const int N){
 
 void idx_hsort_int(int a[], int idx[], const int N){
 	int
-		s = (N/2)-1,   					//	var int   start := count ÷ 2 - 1,
-		e = N-1;    					//				end := count - 1
+		s = (N/2)-1,   	//	var int   start := count ÷ 2 - 1,
+		e = N-1;    	//				end := count - 1
 
 	//"HEAPIFY" in some descriptions:
-	while(s>=0){    					//	while start ≥ 0
-		sift_int(a,idx,s--,N);			//		sift(a, start, count)
-										//		start := start - 1
+	while(s>=0){    	//	while start ≥ 0
+		sift_int(a,idx,s--,N);	//		sift(a, start, count)
+					//		start := start - 1
 	}
 	while(e>0){
 		swap(idx,e,0);

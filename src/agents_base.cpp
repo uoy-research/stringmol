@@ -88,6 +88,8 @@ agents_base::agents_base(){
 	memset(bpp,0,bmax*sizeof(int));
 	fr= NULL;
 	tr = NULL;
+	
+	nsteps = 0;
 
 	/*
 	int i,j,k,found;
@@ -199,11 +201,11 @@ void agents_base::load(const char *fn, char *fninput, int test=0, int verbose=0)
 int agents_base::load_params(const char *fn, int test, int verbose){
 
 	FILE *fp;
-	int e,err = 0;
 
 	if((fp=fopen(fn,"r"))!=NULL){
 		float tmpen;
-		e=  read_param_float(fp,"CELLRAD",&cellrad, verbose);
+		int err = 0;
+		int e=  read_param_float(fp,"CELLRAD",&cellrad, verbose);
 		if(e>1)err++;
 
 		vcellrad = cellrad;
@@ -241,11 +243,12 @@ int agents_base::load_params(const char *fn, int test, int verbose){
 }
 
 
+
+
+
 int agents_base::load_influx(const char *fn){
 	const int maxl = 128;
 	FILE *fp;
-	char line[maxl];
-	char label[maxl];
 	s_ix *pix;
 	int n,start,stop;
 	float prob;
@@ -256,9 +259,12 @@ int agents_base::load_influx(const char *fn){
 	//ntt=0;
 
 	if((fp=fopen(fn,"r"))!=NULL){
+		char line[maxl];
+		char label[maxl];
+		
 		while((fgets(line,maxl,fp))!=NULL){
 			memset(label,0,maxl);
-			sscanf(line,"%s",label);
+			sscanf(line,"%127s",label);
 			//printf("line = %s",line);
 			if(!strncmp(line,"INFLUX",6)){
 				//sscanf(line,"%*s %c %d %d %d",&lab,&n,&start,&stop);
@@ -485,7 +491,7 @@ int agents_base::append_ix(s_ix **list, s_ix *ax){
 s_ix * agents_base::make_influx(int lab, int n, float prob, int start, int stop){
 	s_ix *ix;
 
-	if((ix = (s_ix *) mymalloc(1,sizeof(s_ix)))!=NULL){
+	if((ix = static_cast<s_ix *> (mymalloc(1,sizeof(s_ix))))!=NULL){
 		ix->n = n;
 		ix->prob = prob;
 		ix->start = start;

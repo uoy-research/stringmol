@@ -28,7 +28,7 @@
 
 rules::rules(char *fn){
 
-	const int maxl = 128;
+	const int maxl = 128;//TODO: this is a low-valued maxl compared with others... 
 	FILE *fp;
 
 	if((fp=fopen(fn,"r"))!=NULL){
@@ -39,7 +39,7 @@ rules::rules(char *fn){
 		
 		while((fgets(line,maxl,fp))!=NULL){
 			memset(label,0,maxl);
-			sscanf(line,"%2000s",label);
+			sscanf(line,"%127s",label);
 			printf("line = %s",line);
 			if(!strncmp(label,"RULE",4))
 				rulecount++;
@@ -55,7 +55,7 @@ rules::rules(char *fn){
 		rulecount = 0;
 		while((fgets(line,maxl,fp))!=NULL){
 			memset(label,0,maxl);
-			sscanf(line,"%2000s",label);
+			sscanf(line,"%127s",label);
 			if(!strncmp(label,"RULE",4)){//fill the rule data
 				sscanf(line,"%*s %c %c %c %c %f %f",(char * )&(rset[rulecount][0]),(char * )&(rset[rulecount][1]),(char * )&(rset[rulecount][2]),(char * )&(rset[rulecount][3]),&(rval[rulecount]),&(re[rulecount]));
 				printf("RULE: %c %c %c %c %f %f\n",(rset[rulecount][0]),(rset[rulecount][1]),(rset[rulecount][2]),(rset[rulecount][3]),(rval[rulecount]),(re[rulecount]));

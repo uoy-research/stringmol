@@ -179,7 +179,7 @@ int SmithWatermanV2(char *s1, char *s2, align *A, swt *swT, int verbose){
 	//align *A;
 	int l1,l2;
 	int i,j;
-	int si,sj;
+	int sj;
 	int
 		match,
 		endi=0,
@@ -209,7 +209,7 @@ int SmithWatermanV2(char *s1, char *s2, align *A, swt *swT, int verbose){
 
 	//Populate H
 	for(i=1;i<=l1;i++){
-		si=i-1;
+		int si=i-1;
 		for(j=1;j<=l2;j++){
 			sj=j-1;
 			//Calculate the three values:
@@ -249,8 +249,8 @@ int SmithWatermanV2(char *s1, char *s2, align *A, swt *swT, int verbose){
 
 	//OK - now we know the max score and the end posn. Need to track back from the end...
 
-	i=endi;
-	j=endj;
+	//i=endi;
+	//j=endj;
 	match = 0;
 
 	if(verbose){
@@ -409,10 +409,10 @@ void print_swt(FILE *fp, swt *sss){
 char sym_from_adj(char X, swt *swt){
 
 	int idx = tab_idx(X,swt);
-	int count=0,i;
 	float rno=rand0to1();
 
 	if(idx>-1){
+		int count=0,i;
 		for(i=0;i<swt->N;i++)
 			if(swt->adj[idx][i]==1)
 				count++;
@@ -486,24 +486,25 @@ void table_from_string(float **T, char *key, const int N){
 int load_table(char *fn,swt *T){
 
 	const int maxl=256;
-	FILE *fp,*fp2;
-	char fn2[maxl];
-	char line[maxl];
-	char label[maxl];
-	int i,j,found;
+	FILE *fp;
 
 	T->N=0;
 	T->T=NULL;
 	T->key=NULL;
 
 	if((fp=fopen(fn,"r"))!=NULL){
-		found = 0;
+		int found = 0;
+		char line[maxl];
+		char label[maxl];
+		char fn2[maxl];
+		FILE *fp2;
+		
 		while((fgets(line,maxl,fp))!=NULL){
 			memset(label,0,maxl);
-			sscanf(line,"%s",label);
+			sscanf(line,"%255s",label);
 			//printf("line = %s",line);
 			if(!strncmp(line,"USING",5)){
-				sscanf(line,"%*s %s",fn2);
+				sscanf(line,"%*s %255s",fn2);
 				found = 1;
 				fclose(fp);
 				break;
@@ -515,18 +516,16 @@ int load_table(char *fn,swt *T){
 			return 1;
 		}
 
-
-
 		if((fp2=fopen(fn2,"r"))!=NULL){
 			found = 0;
 			while((fgets(line,maxl,fp))!=NULL){
 				memset(label,0,maxl);
-				sscanf(line,"%s",label);
+				sscanf(line,"%255s",label);
 				//printf("line = %s",line);
 				if(!strncmp(line,"SET",3)){
-
+					int i,j;
 					memset(fn2,0,maxl * sizeof(char));
-					sscanf(line,"%*s %s",fn2); //using fn2 to temporarily hold the alphabet...
+					sscanf(line,"%*s %255s",fn2); //using fn2 to temporarily hold the alphabet...
 					T->N = strlen(fn2);
 					T->key = (char *)malloc((T->N+1) * sizeof(char));
 					memset(T->key,0,(T->N+1)*sizeof(char));
@@ -561,7 +560,7 @@ int load_table(char *fn,swt *T){
 					printf("\n");
 
 
-					found = 1;
+					//found = 1;
 					fclose(fp2);
 
 					//SUCCESS

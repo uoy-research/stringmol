@@ -65,10 +65,10 @@ class agents_base{
 		float nsteps;	//The number of steps (SHOULD BE AN INT!)
 
 		//diagnostics
-		int ict;		//count of influx rules
-		int *irt;		//influx rule tested
-		int *irf;   	//influx rule fired
-		int *irl;   	//influx rule label
+		//int ict;		//count of influx rules
+		//int *irt;		//influx rule tested
+		//int *irf;   	//influx rule fired
+		//int *irl;   	//influx rule label
 		int *tr; 		//count of the number times a rule has been tried
 		int *fr;		//count of the number times a rule has fired.
 

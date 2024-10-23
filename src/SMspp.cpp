@@ -35,7 +35,7 @@ SMspp::~SMspp() {
 }
 
 
-SMspp SMspp::operator=(SMspp &SMspp_in){
+SMspp SMspp::operator=(const SMspp &SMspp_in){
 
 	SMspp SMspp_out;
 
@@ -110,9 +110,7 @@ l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const i
 	l_spp *sp;
 
 	//TODO: check for malloc fails here...
-	sp = static_cast<l_spp *>(malloc(sizeof(l_spp)))
-	
-	;
+	sp = static_cast<l_spp *>(malloc(sizeof(l_spp)));
 	sp->S=(char *) malloc(maxl0+1*sizeof(char));
 
 	memset(sp->S,0,maxl0*sizeof(char));
@@ -141,6 +139,10 @@ l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const i
 	sp->next=NULL;
 	sp->tspp=extit;
 	sp->biomass=0;
+	
+	sp->pf = 0;
+	sp->anc = 0;
+	sp->sig_sc=0;
 
 	return sp;
 
@@ -234,9 +236,8 @@ s_spp * SMspp::getspp(int spno){
 
 void SMspp::free_parent_list(s_parent *pp){
 
-	s_parent *tmp;
-
 	while(pp !=NULL){
+		s_parent *tmp;
 		tmp=pp;
 		pp=pp->next;
 		free(tmp);

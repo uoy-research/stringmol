@@ -32,7 +32,7 @@ public:
 	float *re;
 
 	//creators and destructors
-	rules(char *fn);
+	explicit rules(char *fn);
 	~rules();
 
 	//Finding etc

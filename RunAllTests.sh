@@ -5,11 +5,6 @@
 #./travis_gcc_cpp98
 #cppcheck --quiet --error-exitcode=1 main.cpp
 
-echo "Should compile now, but.. it's a TODO!"
-
-
-
-
 echo "============================"
 echo "Checking with cppcheck"
 cd src
@@ -43,7 +38,6 @@ make all
 cd ../output
 
 
-
 echo "---------------------------------"
 echo "Checking TTYPE 0 (1 on 1) runs ok"
 ../release/stringmol 0 ../config/quick_test0.conf > tmp_stdout.txt
@@ -64,6 +58,8 @@ rm tmp_stdout.txt
 sh ../util/rm_runfiles.sh
 cd ../
 
+# unStop execution on any error
+unset -e
 
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color

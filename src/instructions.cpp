@@ -55,7 +55,7 @@ int LabLength(char *ip, const int maxl){
 ////////////////////
 // $: H-Search    //
 ////////////////////
-char * HSearch(char *iptr, char *sp, swt *T, int *itog, int *ftog,const int maxl){
+char * HSearch(char *iptr, char *sp, swt *T, const int *itog, int *ftog,const int maxl){
 
 	char *ip,*tp,tmp[maxl];
 	ip = iptr;
@@ -90,7 +90,7 @@ char * HSearch(char *iptr, char *sp, swt *T, int *itog, int *ftog,const int maxl
 	*/
 	len = LabLength(ip, maxl);
 	tp = iptr+len;
-	ip=iptr+1;
+	//ip=iptr+1;
 
 	if(!len){
 		//Ensure that the toggles are set:
@@ -105,21 +105,23 @@ char * HSearch(char *iptr, char *sp, swt *T, int *itog, int *ftog,const int maxl
 		tmp[i] = AlphaComp(tmp[i]);
 
 	//SmithWaterman(tmp,sp,&A,T,0);
-	float bprob = SmithWatermanV2(tmp,sp,&A,T,0);
+	/*float bprob =*/ SmithWatermanV2(tmp,sp,&A,T,0);
 
 	//TODO: this will always match if any symbols match. There is no stochastic element..
 #ifndef SOFT_SEARCH
 	if(A.match)
 #else
 	int l = A.e1-A.s1 < A.e2-A.s2 ? A.e1-A.s1 : A.e2-A.s2;
-	if(l<=2)
-		bprob=0;
-	else
-		bprob = pow(A.score,l)/pow(l,l);
+	
+	//TODO: various different permutations of bprob...! 
+	//if(l<=2)
+	//	bprob=0;
+	//else
+	//	bprob = pow(A.score,l)/pow(l,l);
 
 
 	float s = A.score<l-1.124? A.score : l-1.124;
-	bprob = s/(l-1.124);
+	float bprob = s/(l-1.124);
 
 	float rno = rand0to1();
 	if(rno<bprob)//search success!

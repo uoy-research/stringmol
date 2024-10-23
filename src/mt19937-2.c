@@ -75,7 +75,7 @@ double /* generating reals */
 genrand()
 {
     unsigned long y;
-    static unsigned long mag01[2]={0x0, MATRIX_A};
+    static const unsigned long mag01[2]={0x0, MATRIX_A};
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
     if (mti >= N) { /* generate N words at one time */
@@ -115,37 +115,38 @@ genrand()
 unsigned long genrandint()
 {
     unsigned long y;
-    static unsigned long mag01[2]={0x0, MATRIX_A};
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
-    if (mti >= N) { /* generate N words at one time */
-        int kk;
+	if (mti >= N) { /* generate N words at one time */
 
-        if (mti == N+1)   /* if sgenrand() has not been called, */
-            sgenrand(4357); /* a default initial seed is used   */
+		int kk;
+		static const unsigned long mag01[2]={0x0, MATRIX_A};
 
-        for (kk=0;kk<N-M;kk++) {
-            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
-            mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1];
-        }
-        for (;kk<N-1;kk++) {
-            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
-            mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1];
-        }
-        y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
-        mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1];
+		if (mti == N+1)   /* if sgenrand() has not been called, */
+			sgenrand(4357); /* a default initial seed is used   */
 
-        mti = 0;
-    }
+		for (kk=0;kk<N-M;kk++) {
+			y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
+			mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1];
+		}
+		for (;kk<N-1;kk++) {
+			y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
+			mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1];
+		}
+		y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
+		mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1];
 
-    y = mt[mti++];
-    y ^= TEMPERING_SHIFT_U(y);
-    y ^= TEMPERING_SHIFT_S(y) & TEMPERING_MASK_B;
-    y ^= TEMPERING_SHIFT_T(y) & TEMPERING_MASK_C;
-    y ^= TEMPERING_SHIFT_L(y);
+		mti = 0;
+	}
 
-    //*return ( (double)y * 2.3283064365386963e-10 ); /* reals: [0,1)-interval */
-     return y;  /* for integer generation */
+	y = mt[mti++];
+	y ^= TEMPERING_SHIFT_U(y);
+	y ^= TEMPERING_SHIFT_S(y) & TEMPERING_MASK_B;
+	y ^= TEMPERING_SHIFT_T(y) & TEMPERING_MASK_C;
+	y ^= TEMPERING_SHIFT_L(y);
+
+	//*return ( (double)y * 2.3283064365386963e-10 ); /* reals: [0,1)-interval */
+	return y;  /* for integer generation */
 }
 
 /*UTILITY FUNCTION FOR RE-SEEDING ON RESTART*/
@@ -202,16 +203,16 @@ int load_mt(const char *fn){
 
 	FILE *fp;
 	const int maxl = 128;
-	char line[maxl];
-	int mtival,args_read=0,ii=0;
+	int mtival,ii=0;
 	enum load_mt_errcode errcode = load_mt_success;
 	unsigned long mtval;
 
 	if((fp = fopen(fn,"r"))!=NULL){
 
+		char line[maxl];
 		//First line gets the position of mti
 		if((fgets(line,maxl,fp))!=NULL){
-			args_read = sscanf(line,"MTI %d",&mtival);
+			int args_read = sscanf(line,"MTI %d",&mtival);
 			if(args_read == 1){
 				mti = mtival;
 				//Now we can read the rest of the data;
