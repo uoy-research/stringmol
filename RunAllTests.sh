@@ -59,7 +59,7 @@ sh ../util/rm_runfiles.sh
 cd ../
 
 # unStop execution on any error
-unset -e
+#unset -e TODO: this doesn't recognise the "-e" option
 
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
@@ -67,12 +67,17 @@ echo "${GREEN}==================================================================
 echo "Running Catch.hpp Tests.  Please Wait."
 #g++ -Wall Shapes-Catch-Testing-Example/Source/Shapes-Catch-Testing-Example.cpp Shapes-Catch-Testing-Example/Source/Implementation/*.cpp -o main
 #g++ -Wall Shapes-Catch-Testing-Example/Test/*.cpp Shapes-Catch-Testing-Example/Source/Implementation/*.cpp -o test
-cd tests
+
 echo "  compiling..."
 
-RP="../release"
+cd src
+make clean
+make debug
+
+cd ../tests
+RP="../debug"
 #TODO: can't use wildcards e.g. ../release/*.o because of multiple 'main's... fix!
-g++ -std=gnu++11 -Wall -o test  *.cpp ${RP}/mt19937-2.o ${RP}/randutil.o \
+g++ -std=gnu++11 -Wall  -DDEBUG -g -o test  *.cpp ${RP}/mt19937-2.o ${RP}/randutil.o \
   ${RP}/SMspp.o ${RP}/stringPM.o ${RP}/agents_base.o ${RP}/rules.o ${RP}/alignment.o \
   ${RP}/params.o ${RP}/memoryutil.o ${RP}/instructions.o ${RP}/stringmanip.o \
   ${RP}/hsort.o

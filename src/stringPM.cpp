@@ -101,35 +101,35 @@ stringPM::stringPM(SMspp * pSP){
 
 	splprint = 10000;
 
-	report_every = 10000;			//How often to write splists and configs
-	image_every	 = 100;			//How often to generate an image (spatial stringmol only)
+	report_every = 10000;	//How often to write splists and configs
+	image_every	 = 100; //How often to generate an image (spatial stringmol only)
 
 
 }
 
 //Copy constructor
 stringPM::stringPM(const stringPM& spm){
-	spl      = spm.spl;
+
+	spl      = spm.spl; //TODO: make a copy of the spl properly!
+
 	dodecay  = spm.dodecay;
 	loadtype = spm.loadtype;
 
 	grid     = spm.grid;
 
-	swlist=spm.swlist;
+	swlist	 = spm.swlist;
 
 	blosum = NULL;
 	blosum = (swt *) malloc(sizeof(swt));
-	blosum->N=0;
-	blosum->T=NULL;
-	blosum->key=NULL;
-	
+	blosum->N   = 0;
+	blosum->T   = NULL;
+	blosum->key = NULL;
 	
 	preset();
 	
-	
 	agct = spm.agct;
-	spp_count= spm.agct;
-	verbose_bind= spm.verbose_bind;
+	spp_count = spm.agct;
+	verbose_bind = spm.verbose_bind;
 
 	//Set defaults:
 
