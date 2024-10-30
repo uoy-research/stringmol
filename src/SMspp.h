@@ -77,21 +77,25 @@ struct s_spp{//THIS DEFINES WHAT A MOLECULAR SPECIES IS - can be pointed to by a
 };
 */
 
+
+/***********************************************
+ * @brief struct for linked lists of species
+ ***********************************************/
 struct l_spp{//THIS IS THE LIST OF SPECIES THAT EVOLVE
 	//s_spp *sp;	//Pointer to details of the species
 	//int 	first;	//The first reported generation that the species appeared in...
 
-	int 	count;  //The number of individuals in the lineage
-	int	pf;		//processing flag = reset this when beginning an analysis!
-	l_spp 	*next;	//Pointer to next element in the list
-	int	tspp;	//Time of speciation - the first time the species was produced...
+	int 	count;  //! The number of individuals in the lineage
+	int	pf;		//! processing flag = reset this when beginning an analysis!
+	l_spp 	*next;	//! Pointer to next element in the list
+	int	tspp;	//! Time of speciation - the first time the species was produced...
 
 	//The following were from the s_spp typedef above
-	char 	*S;		//The string of the species
-	int  	spp;	//The index number
-	s_parent	*pp;	//Pointer to the set of parent reactions
-	char  	sptype;	//'A' = new from an active bind; 'P' = new from a passive bind; 'C' = new from a cleave bind
-	int 	anc;	//A processing flag, specifically to flag an ancestor - reset when beginning an analysis!
+	char 	*S;		//! The string of the species
+	int  	spp;	//! The index number
+	s_parent	*pp;	//! Pointer to the set of parent reactions
+	char  	sptype;	//! 'A' = new from an active bind; 'P' = new from a passive bind; 'C' = new from a cleave bind
+	int 	anc;	//! A processing flag, specifically to flag an ancestor - reset when beginning an analysis!
 
 	//A Score for the signal molecule
 	float 	sig_sc;
@@ -116,7 +120,7 @@ public:
 
 	SMspp();
 	virtual ~SMspp();
-	SMspp operator=(const SMspp &SMspp_in);
+	SMspp& operator=(const SMspp &SMspp_in);
 
 
 	l_spp * make_spp_from_string(char *S, int extit, const int maxl0, const int spno);

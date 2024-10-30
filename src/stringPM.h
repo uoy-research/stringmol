@@ -120,13 +120,19 @@ public:
 	//linecount variable for loading
 	int linecount;
 
-
+	/*********************************************************************/
 	//constructor
 	explicit stringPM(SMspp * pSP);
+	
+	//operator =
+	stringPM& operator=(const stringPM &spm);
+	
 	//copy constructor
 	stringPM(const stringPM& spm);
+
 	//destructor
 	~stringPM();
+	/*********************************************************************/
 
 	void preset();
 	void clearout(int verbose = 0);

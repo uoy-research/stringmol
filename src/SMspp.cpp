@@ -35,20 +35,43 @@ SMspp::~SMspp() {
 }
 
 
-SMspp SMspp::operator=(const SMspp &SMspp_in){
+SMspp& SMspp::operator=(const SMspp &SMspp_in){
 
-	SMspp SMspp_out;
+	//SMspp SMspp_out;
+	l_spp *pls,*pls2,*head2;
 
+	head2 = NULL;
+	//Straight copy of the variables
 	spp_count = SMspp_in.spp_count;
-	if(SMspp_in.species !=NULL){
-		printf("Trying to copy a species but haven't written it yet!\n");
-		exit(2345);
+
+	pls = SMspp_in.species;
+
+	if(pls == NULL){
+		species = NULL;
 	}
 	else{
 		species = NULL;
+		while(pls != NULL){
+			pls2 = make_spp_from_string(pls->S,pls->tspp,strlen(pls->S)+10,pls->spp);
+			if(species==NULL){
+				species = pls2;
+				head2 = species;
+			}
+			else{
+				head2->next = pls2;
+				head2 = head2->next;
+			}
+			pls = pls->next;
+		}
 	}
+
+	return *this;
+	//if(SMspp_in.species !=NULL){
+	//	printf("WARNING! Trying to copy a species but haven't written it yet!\n");
+	//	//exit(2345);
+	//}
 	
-	return(SMspp_out);
+	//return(SMspp_out);
 }
 
 s_parent *SMspp::get_parents(l_spp * c, l_spp *paspp, l_spp  *ppspp){
@@ -105,8 +128,20 @@ s_parent * SMspp::make_parents(l_spp * paspp, l_spp * ppspp){
 }
 
 
+
+
+
+/***********************************************
+ * @brief Create a species struct from a character string.
+ *
+ * @param[S] the sequence of the species
+ * @param[extit] the "tspp" variable
+ * @param[maxl0] the length of \p S:
+ * @param[spno] ambiguous: the species index number OR the species count
+ ***********************************************/
 l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const int spno){
 
+	//! pointer to the l_spp object
 	l_spp *sp;
 
 	//TODO: check for malloc fails here...
@@ -118,6 +153,7 @@ l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const i
 	strncpy(sp->S,S,maxl0);//strlen(sp->S));//l);
 
 	sp->pp = NULL;
+	//TODO: resolve what spp_count refers to
 	if(spno>-1){
 		//Todo - check that spno doesn't already exist:
 		l_spp *lsp;

@@ -125,4 +125,10 @@ TEST_CASE("save and load RNG to/from file"){
         REQUIRE(rnos1[rr] == rnos2[rr]);
     }    
     
+    //Delete the file
+    if((mtf=fopen(fn,"r"))!=NULL){
+    	fclose(mtf);
+    	remove(fn);
+    }
+    
 }

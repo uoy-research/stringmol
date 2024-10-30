@@ -107,10 +107,10 @@ stringPM::stringPM(SMspp * pSP){
 
 }
 
-//Copy constructor
-stringPM::stringPM(const stringPM& spm){
 
-	spl      = spm.spl; //TODO: make a copy of the spl properly!
+stringPM& stringPM::operator=(const stringPM &spm){
+
+	spl      = spm.spl;
 
 	dodecay  = spm.dodecay;
 	loadtype = spm.loadtype;
@@ -150,9 +150,16 @@ stringPM::stringPM(const stringPM& spm){
 
 	report_every = spm.report_every;   //How often to write splists and configs
 	image_every  = spm.image_every;	   //How often to generate an image (spatial stringmol only)
+
+
+	return *this;
 }
 
 
+//Copy constructor uses operator=
+stringPM::stringPM(const stringPM& spm){
+	*this = spm;
+}
 
 stringPM::~stringPM() {
 	clearout(0);
