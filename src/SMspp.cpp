@@ -137,7 +137,7 @@ s_parent * SMspp::make_parents(l_spp * paspp, l_spp * ppspp){
  * @param[S] the sequence of the species
  * @param[extit] the "tspp" variable
  * @param[maxl0] the length of \p S:
- * @param[spno] ambiguous: the species index number OR the species count
+ * @param[spno] if -1, use spp_count to generate a spno for this string, else try to assign spno - risk of error though!
  ***********************************************/
 l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const int spno){
 
@@ -161,6 +161,7 @@ l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const i
 			if(lsp->spp == spno){
 				printf("ERROR: species %d already exists! string is: %s\n",lsp->spp,lsp->S);
 				return NULL; //todo handle the error more gracefully!
+				//TODO: consider exit here as potential catastrophic consequences!
 			}
 		}
 		sp->spp = spno;

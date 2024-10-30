@@ -49,14 +49,16 @@ class stringPM: public agents_base
 private:
 
 public:
-	s_ag * make_ag(int alab);//, int randpos);
 
+	//! the head of the linked list for the 'now' timestep
 	s_ag *nowhead;
+	//! the head of the linked list for the 'next' timestep
 	s_ag *nexthead;
 
-	//l_spp *species;
+	//! the list of species
 	SMspp *spl;
 
+	//! the count of species - but see inside spl
 	int	spp_count;
 
 	swt	*blosum;
@@ -133,6 +135,8 @@ public:
 	//destructor
 	~stringPM();
 	/*********************************************************************/
+
+	s_ag * make_ag(int alab);//, int randpos);
 
 	void preset();
 	void clearout(int verbose = 0);
