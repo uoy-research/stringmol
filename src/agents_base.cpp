@@ -167,20 +167,6 @@ void agents_base::preset(){
 	vcellrad = 0;
 }
 
-//Load from a file - this should be common - but load agents can't be overwritten!!
-//int agents_base::load(char *fn){
-
-	//NB: Error checking required!!
-
-	//load_params(fn);
-	//load_influx(fn);
-
-	//Load Agents now!
-
-	//load_division(fn);
-	//load_replenish(fn);
-	//return 1;
-//}
 
 
 
@@ -188,7 +174,6 @@ void agents_base::preset(){
 void agents_base::load(const char *fn, char *fninput, int test=0, int verbose=0){
 
 	load_params(fn,test,verbose);
-	load_influx(fn);
 
 	// VJH load_agents(fn,test);
 	load_agents(fn,fninput,test);
@@ -241,60 +226,6 @@ int agents_base::load_params(const char *fn, int test, int verbose){
 	}
 
 }
-
-
-
-
-
-int agents_base::load_influx(const char *fn){
-	const int maxl = 128;
-	FILE *fp;
-	s_ix *pix;
-	int n,start,stop;
-	float prob;
-	char lab;
-
-	//WHY???
-	////reset the tracking count
-	//ntt=0;
-
-	if((fp=fopen(fn,"r"))!=NULL){
-		char line[maxl];
-		char label[maxl];
-		
-		while((fgets(line,maxl,fp))!=NULL){
-			memset(label,0,maxl);
-			sscanf(line,"%127s",label);
-			//printf("line = %s",line);
-			if(!strncmp(line,"INFLUX",6)){
-				//sscanf(line,"%*s %c %d %d %d",&lab,&n,&start,&stop);
-				//printf("INFLUX: %c %d %d %d\n",lab,n,start,stop);
-				//pix = make_influx(lab,n,start,stop);
-
-				sscanf(line,"%*s %c %d %f %d %d",&lab,&n,&prob,&start,&stop);
-				printf("INFLUX: %c %d %f %d %d\n",lab,n,prob,start,stop);
-				pix = make_influx(lab,n,prob,start,stop);
-
-				if(ifxhead == NULL){
-					ifxhead = pix;
-				}
-				else{
-					append_ix(&ifxhead,pix);
-					}
-
-			}
-		}
-		fclose(fp);
-		return 1;
-	}
-	else{
-		printf("Unable to open file %s\n",fn);
-		fflush(stdout);
-		return 0;
-	}
-
-}
-
 
 
 /*
@@ -488,23 +419,6 @@ int agents_base::append_ix(s_ix **list, s_ix *ax){
 
 
 
-s_ix * agents_base::make_influx(int lab, int n, float prob, int start, int stop){
-	s_ix *ix;
-
-	if((ix = static_cast<s_ix *> (mymalloc(1,sizeof(s_ix))))!=NULL){
-		ix->n = n;
-		ix->prob = prob;
-		ix->start = start;
-		ix->stop = stop;
-		ix->label = lab;
-		ix->next = NULL;
-		return ix;
-	}
-	else{
-		return NULL;
-	}
-
-}
 
 
 

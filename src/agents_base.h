@@ -85,7 +85,6 @@ class agents_base{
 		void load(const char *fn, int test, int verbose);
 
 		int load_params(const char *fn, int test, int verbose);
-		int load_influx(const char *fn);
 		int load_division(char *fn);
 		int load_replenish(char *fn);
 		//declaring this as virtual and calling it from load caused problems...
@@ -96,7 +95,6 @@ class agents_base{
 
 
 		//influx info
-		s_ix * make_influx(int lab, int n, float prob, int start, int stop);
 		//void influx(int i);
 		int append_ix(s_ix **list, s_ix *ax);
 		//void influx_special(int t);
