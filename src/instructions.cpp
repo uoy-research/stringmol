@@ -55,7 +55,7 @@ int LabLength(char *ip, const int maxl){
 ////////////////////
 // $: H-Search    //
 ////////////////////
-char * HSearch(char *iptr, char *sp, swt *T, const int *itog, int *ftog,const int maxl){
+char * OpcodeSearch(char *iptr, char *sp, swt *T, const int *itog, int *ftog,const int maxl){
 
 	char *ip,*tp,tmp[maxl];
 	ip = iptr;

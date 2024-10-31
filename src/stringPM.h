@@ -162,7 +162,7 @@ public:
 
 	//Iteration
 	void make_next() override;
-	int testbind(s_ag *pag);
+	int AttemptBind(s_ag *pag);
 	int testdecay(s_ag *pag);
 	//int hasdied();
 
@@ -184,7 +184,7 @@ public:
 	void update();
 
 	//INSTRUCTION SET:
-	int hcopy(s_ag *act); 	//	=	HCOPY
+	int OpcodeCopy(s_ag *act); 	//	=	HCOPY
 	int cleave(s_ag *act);  //	=	CLEAVE
 
     //Influx
@@ -240,7 +240,7 @@ public:
 	//Checking the energy model: (THIS RESULTS IN AN UNSTABLE SYSTEM)
 	void 	energetic_make_next();
 	int 	energetic_exec_step(s_ag *act, s_ag *pass);
-	int 	energetic_testbind(s_ag *pag);
+	int 	energetic_attempt_bind(s_ag *pag);
 
 
 

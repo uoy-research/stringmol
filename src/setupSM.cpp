@@ -393,8 +393,6 @@ void print_params(stringPM *A, int ntrials, int nsteps){
 	printf("ENERGY      %d\n",(int) A->energy);
 	printf("NSTEPS      %f\n",A->nsteps);
 
-	/** Although agents_base contains a call to load_influx, Stringmol never uses it */
-
 	//load agents: load_table(_mtx); load_mut; load_decay
 	if(A->blosum == NULL)
 		printf("BLOSUM      not set - needs to be loaded explicitly\n");
@@ -882,7 +880,7 @@ int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int 
 			cs = act->S;
 		else
 			cs = act->pass->S;
-		tmp = HSearch(act->i[act->it],cs,A->blosum,&(act->it),&(act->ft),A->maxl);
+		tmp = OpcodeSearch(act->i[act->it],cs,A->blosum,&(act->it),&(act->ft),A->maxl);
 		act->f[act->ft] = tmp;
 		act->i[act->it]++;
 		break;
@@ -922,7 +920,7 @@ int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int 
 	 *   HCOPY  *
 	 ************/
 	case '='://h-copy
-		if(A->hcopy(act)<0){
+		if(A->OpcodeCopy(act)<0){
 			A->unbind_ag(act,'A',1,act->spp,pass->spp);
 			A->unbind_ag(pass,'P',1,act->spp,pass->spp);
 		}

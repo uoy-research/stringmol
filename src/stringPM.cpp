@@ -179,7 +179,6 @@ void stringPM::preset(){
 int stringPM::load(char *fn){
 
 	load_params(fn);
-	load_influx(fn);
 
 	load_agents(fn);
 
@@ -2035,7 +2034,7 @@ int stringPM::unbind_ag(s_ag * pag, char sptype, int update, l_spp *pa, l_spp *p
 }
 
 
-int stringPM::testbind(s_ag *pag){
+int stringPM::AttemptBind(s_ag *pag){
 
 	int found=0;
 	int count=0;
@@ -2257,7 +2256,21 @@ int stringPM::check_ptrs(s_ag* act){
 }
 
 
-int stringPM::hcopy(s_ag *act){
+
+/******************************************************************************
+ * @brief Copy operator "\="
+ *
+ * @details writes the symbol at the read pointer to the position of the
+ *          write pointer, with mutation
+ *
+ * @param[in] act pointer to the active string (from which the partner string
+ *            can be accessed)
+ *
+ * @return 0 if successful;
+ *         -1 if attempt to write beyond maxl;
+ *         -2 if attempt to read beyond maxl;
+ *****************************************************************************/
+int stringPM::OpcodeCopy(s_ag *act){
 
 	//s_ag *pass;
 	//pass = act->pass;
@@ -2307,9 +2320,6 @@ int stringPM::hcopy(s_ag *act){
 		return -2;
 	}
 	//TODO: see note on error check in "another" hcopy below
-
-
-
 
 	if(*(act->r[act->rt]) == 0){
 		//possibly return a negative value and initiate a b
@@ -2500,7 +2510,7 @@ int stringPM::exec_step(s_ag *act, s_ag *pass){
 			cs = act->S;
 		else
 			cs = act->pass->S;
-		tmp = HSearch(act->i[act->it],cs,blosum,&(act->it),&(act->ft),maxl);
+		tmp = OpcodeSearch(act->i[act->it],cs,blosum,&(act->it),&(act->ft),maxl);
 		act->f[act->ft] = tmp;
 		act->i[act->it]++;
 		break;
@@ -2553,7 +2563,7 @@ int stringPM::exec_step(s_ag *act, s_ag *pass){
 	 *   HCOPY  *
 	 ************/
 	case '='://h-copy
-		if(hcopy(act)<0){
+		if(OpcodeCopy(act)<0){
 			unbind_ag(act,'A',1,act->spp,pass->spp);
 			unbind_ag(pass,'P',1,act->spp,pass->spp);
 		}
@@ -2780,7 +2790,7 @@ void stringPM::make_next(){
 				switch(pag->status){
 				case B_UNBOUND:
 					//seek binding partner, set binding states.
-					changed = testbind(pag);
+					changed = AttemptBind(pag);
 					//if(!changed)
 					//	changed = testdecay(pag);
 
@@ -3119,7 +3129,7 @@ int stringPM::comass_exec_step(s_ag *act, s_ag *pass){
 			cs = act->S;
 		else
 			cs = act->pass->S;
-		tmp = HSearch(act->i[act->it],cs,blosum,&(act->it),&(act->ft),maxl);
+		tmp = OpcodeSearch(act->i[act->it],cs,blosum,&(act->it),&(act->ft),maxl);
 		act->f[act->ft] = tmp;
 		act->i[act->it]++;
 		break;
@@ -3433,7 +3443,7 @@ void stringPM::comass_make_next(){
 				switch(pag->status){
 				case B_UNBOUND:
 					//seek binding partner, set binding states.
-					changed = testbind(pag);
+					changed = AttemptBind(pag);
 					//if(!changed)
 					//	changed = testdecay(pag);
 
@@ -3491,7 +3501,7 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 						cs = act->S;
 					else
 						cs = act->pass->S;
-					tmp = HSearch(act->i[act->it],cs,blosum,&(act->it),&(act->ft),maxl);
+					tmp = OpcodeSearch(act->i[act->it],cs,blosum,&(act->it),&(act->ft),maxl);
 					act->f[act->ft] = tmp;
 					act->i[act->it]++;
 					break;
@@ -3531,7 +3541,7 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 				 *   HCOPY  *
 				 ************/
 				case '='://h-copy
-					if(hcopy(act)<0){
+					if(OpcodeCopy(act)<0){
 						unbind_ag(act,'A',1,act->spp,pass->spp);
 						unbind_ag(pass,'P',1,act->spp,pass->spp);
 						finished = 1;
@@ -3625,7 +3635,7 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 
 
 
-int stringPM::energetic_testbind(s_ag *pag){
+int stringPM::energetic_attempt_bind(s_ag *pag){
 
 	int found=0;
 	int count=0;
@@ -3724,7 +3734,7 @@ void stringPM::energetic_make_next(){
 			case B_UNBOUND:
 				if(energy>0){
 					//seek binding partner, set binding states.
-					changed = energetic_testbind(pag);
+					changed = energetic_attempt_bind(pag);
 					//if(!changed)
 					//	changed = testdecay(pag);
 				}

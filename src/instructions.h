@@ -22,7 +22,7 @@
 #define INSTRUCTIONS_H_
 
 
-	char * HSearch(char *iptr, char *sp, swt *T, const int *itog, int *ftog, int maxl);
+	char * OpcodeSearch(char *iptr, char *sp, swt *T, const int *itog, int *ftog, int maxl);
 	char * IfLabel(char *ip, char *rp, char *sp, swt *T, const int maxl);
 
 #endif /* INSTRUCTIONS_H_ */

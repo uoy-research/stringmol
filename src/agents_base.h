@@ -83,8 +83,6 @@ class agents_base{
 		//fromfile stuff
 		void load(const char *fn, char *fninput, int test, int verbose);
 		void load(const char *fn, int test, int verbose);
-		int test(char *fn);
-		void test2();
 
 		int load_params(const char *fn, int test, int verbose);
 		int load_influx(const char *fn);
