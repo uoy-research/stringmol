@@ -270,7 +270,7 @@ int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runpar
 		A->extit = i;
 
 		A->comass_make_next();
-		A->update();
+		A->UpdateNowNext();
 
 
 		if(!(i%1000)){
@@ -490,7 +490,7 @@ int run_one_AlifeXII_trial(stringPM *A){
 		A->extit = i;
 
 		A->make_next();
-		A->update();
+		A->UpdateNowNext();
 
 		if(!(i%1000)){
 			A->print_spp_count(stdout,0,-1);
@@ -1387,7 +1387,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 		}
 	}
 
-	A->update();
+	A->UpdateNowNext();
 	update_grid(run);
 
 
@@ -1498,7 +1498,7 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 			}
 		}
 
-		A->update();
+		A->UpdateNowNext();
 	}
 	else{
 		//Fill the grid

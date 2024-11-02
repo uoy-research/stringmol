@@ -90,14 +90,7 @@ class agents_base{
 		//declaring this as virtual and calling it from load caused problems...
 		//the `=0' is key!
 		//virtual int load_agents(char *fn, int test, int verbose) = 0;
-		virtual int load_agents(const char *fn, char *fninput, int test=0, int verbose=0) = 0;// VJH - added this function
-
-
-
-		//influx info
-		//void influx(int i);
-		int append_ix(s_ix **list, s_ix *ax);
-		//void influx_special(int t);
+		virtual int AgentsLoad(const char *fn, char *fninput, int test=0, int verbose=0) = 0;// VJH - added this function
 
 		//Diagnoistics
 		//void print_agents(const char *spec);

@@ -149,7 +149,7 @@ public:
 
 	//int load_agents(char *fn,                int test, int verbose);
 	// VJH version for youShare
-	int load_agents(const char *fn, char *fninput, int test, int verbose) override;
+	int AgentsLoad(const char *fn, char *fninput, int test, int verbose) override;
 
 	float load_mut(const char *fn, int verbose); //load the mutation rate
 	float load_decay(const char *fn, int verbose); //load the decay rate
@@ -181,7 +181,7 @@ public:
 	//void 	unbind_ag(s_ag * pag,char sptype);
 	int 	unbind_ag(s_ag * pag, char sptype, int update, l_spp *pa, l_spp *pp);
 
-	void update();
+	void UpdateNowNext();
 
 	//INSTRUCTION SET:
 	int OpcodeCopy(s_ag *act); 	//	=	HCOPY
@@ -197,7 +197,7 @@ public:
 
 	//Diagnostics
 	void print_agents(FILE *fp, const char *spec, int verbose);
-	int print_agent_idx(FILE *fp, int det, int idx);
+	int PrintAgentWithIndex(FILE *fp, int det, int idx);
 	void testprop();
 	//void sanity_check();
 

@@ -480,7 +480,6 @@ int origlife(int argc, char *argv[]){
 				A.extit = i;
 
 				A.make_next();
-				A.update();
 
 				if(!(i%1000)){
 					A.print_spp_count(stdout,0,-1);
@@ -652,13 +651,6 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 			A.extit = i;
 
 			A.make_next();
-			A.update();
-
-			//A.sanity_check();
-			//if(!(i%10000)){
-			//	check_pop_dy(pfn,&A,i);
-			//}
-
 
 			if(!(i%1000)){
 				A.print_spp_count(stdout,0,-1);
@@ -900,7 +892,6 @@ int comass_AlifeXII(int argc, char *argv[]){
 			A.extit = i;
 
 			A.comass_make_next();
-			A.update();
 
 
 			if(!(i%1000)){
@@ -1637,7 +1628,6 @@ int energetic_AlifeXII(int argc, char *argv[]){
 			A.extit = i;
 
 			A.energetic_make_next();
-			A.update();
 
 			//A.sanity_check();
 			//if(!(i%10000)){
@@ -1857,7 +1847,6 @@ int SmPm_conpop(int argc, char *argv[]){
 
 		for(c=0;c<NCON;c++){
 			A[c]->make_next();
-			A[c]->update();
 			A[c]->extit++;
 			//Restore the 20-each model - we'll do selection on replenishment
 			A[c]->energy += A[c]->estep;
@@ -2145,7 +2134,6 @@ void SmPm_1on1(int argc,char *argv[]){
 		A.extit = i++;
 
 		A.make_next();
-		A.update();
 
 		p = A.nowhead;
 		while(p!=NULL){
@@ -2374,9 +2362,10 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 		count++;
 	}
 
+	//reset the now/next lists...
+	A->nowhead = A->nexthead;
+	A->nexthead = NULL;
 
-
-	A->update();
 	for(int i=0;i<A->blosum->N;i++){
 		A->mass[i]=massval;
 	}
@@ -2517,7 +2506,6 @@ int speigmonst(int argc, char *argv[]){
 			A.extit = i;
 
 			A.comass_make_next();
-			A.update();
 
 
 			if(!(i%1000)){

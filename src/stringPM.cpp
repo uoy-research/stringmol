@@ -1053,7 +1053,7 @@ int stringPM::load_replicable(const char *fn){
    else load_table_matrix(fntab)
 
 */
-int stringPM::load_agents(const char *fn, char *fntab, int test, int verbose){
+int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 
 
 	//Load the maximum permitted length of the molecules (or the default)
@@ -1751,7 +1751,23 @@ void stringPM::print_agents(FILE *fp, const char *spec, int verbose){
 	}
 }
 
-int stringPM::print_agent_idx(FILE *fp, int det, int idx){
+
+
+
+/******************************************************************************
+ * @brief Print the state of agent with index 'idx'
+ *
+ * @details
+ *
+ * @param[in] fp file pointer, can be stdout for print to screen etc. NB no error checking for file stats
+ *
+ * @param[in] detail flags the level of detail
+ *
+ * @param[in] idx the index of the agent
+ *
+ * @return 0 regardless of succes (todo: fix this)
+ *****************************************************************************/
+int stringPM::PrintAgentWithIndex(FILE *fp, int detail, int idx){
 	s_ag *pag;
 	pag = nowhead;
 	while(pag!=NULL){
@@ -1761,7 +1777,7 @@ int stringPM::print_agent_idx(FILE *fp, int det, int idx){
 				printf("Agent %6d,\texec=%4d\tnbind=%3d\tUNBOUND, %s\n",pag->idx,pag->ect,pag->nbind,pag->S);
 				return 1;
 			case B_ACTIVE:
-				if(det)
+				if(detail)
 					print_exec(stdout,pag,pag->pass);
 				else{
 					printf("Agent %6d, \texec=%4d\tnbind=%3d\tACTIVE,  %s\n",pag->idx,pag->ect,pag->nbind,pag->S);
@@ -1770,7 +1786,7 @@ int stringPM::print_agent_idx(FILE *fp, int det, int idx){
 				//print_exec(stdout,pag,pag->pass);
 				return 1;
 			case B_PASSIVE:
-				if(det){
+				if(detail){
 					print_exec(stdout,pag->exec,pag);
 				}
 				else{
@@ -2765,18 +2781,9 @@ void stringPM::make_next(){
 
 		//TODO: This looks like a debugging step - delete?
 		if(pag->label=='P' && pag->status != B_UNBOUND  ){
-			if(print_agent_idx(stdout,1,pag->idx))
+			if(PrintAgentWithIndex(stdout,1,pag->idx))
 				fflush(stdout);
 		}
-
-		/*
-		if(pag->idx == 354 || pag->idx == 214){
-			printf("%d ",(int) extit);
-			if(print_agent_idx(stdout,1,354))
-				fflush(stdout);
-			if(print_agent_idx(stdout,1,214))
-				fflush(stdout);
-		}*/
 
 		int dc = testdecay(pag);
 		if(dc){//we must check what else needs to be destroyed...
@@ -2818,6 +2825,10 @@ void stringPM::make_next(){
 			}
 		}
 	}
+
+	//This used to be update()...
+	nowhead = nexthead;
+	nexthead = NULL;
 }
 
 
@@ -3426,7 +3437,7 @@ void stringPM::comass_make_next(){
 		}
 
 		if(pag->label=='P' && pag->status != B_UNBOUND  ){
-			if(print_agent_idx(stdout,1,pag->idx))
+			if(PrintAgentWithIndex(stdout,1,pag->idx))
 				fflush(stdout);
 		}
 
@@ -3471,6 +3482,9 @@ void stringPM::comass_make_next(){
 			}
 		}
 	}
+
+	nowhead = nexthead;
+	nexthead = NULL;
 }
 
 
@@ -3717,7 +3731,7 @@ void stringPM::energetic_make_next(){
 		}
 
 		if(pag->label=='P' && pag->status != B_UNBOUND  ){
-			if(print_agent_idx(stdout,1,pag->idx))
+			if(PrintAgentWithIndex(stdout,1,pag->idx))
 				fflush(stdout);
 		}
 
@@ -3764,6 +3778,9 @@ void stringPM::energetic_make_next(){
 			}
 		}
 	}
+
+	nowhead = nexthead;
+	nexthead = NULL;
 }
 /////////////////////////////////////////////////////////end of energetic stuff
 
@@ -3778,151 +3795,20 @@ void stringPM::energetic_make_next(){
 
 
 
+/******************************************************************************
+ * @brief move "now" to "next" by pointer assignment
+ *
+ * @details nowhead = nexthead; nexthead = NULL;
+ *****************************************************************************/
+void stringPM::UpdateNowNext(){
 
-void stringPM::update(){
-	//s_ag *pag;
 	nowhead = nexthead;
 	nexthead = NULL;
-	//pag = nowhead;
-	//while(pag!=NULL){
-	//	//move_ag(pag);
-	//	pag = pag->next;
-	//}
-	//update_aac();
 }
 
 
 
-/*
-//INFLUX STUFF
-void stringPM::influx(int t){
 
-	s_ix *pix;
-	s_ag *pag;
-	float rno;
-
-	int irx=0;
-
-	pix = ifxhead;
-
-	while(pix!=NULL){
-
-		if(t>=pix->start && t<=pix->stop){
-			for(int i=0;i<pix->n;i++){
-				rno = rand0to1();
-				irt[irx]++;
-				if(rno<pix->prob){
-					irf[irx]++;
-					//pag = make_ag(pix->label,1);
-
-					pag = make_ag(pix->label,0);
-					//SUGGEST: load and write the string for the influx'd dudes
-
-					append_ag(&nowhead,pag);
-				}
-			}
-		}
-		pix=pix->next;
-	}
-	update_aac();
-}
-
-
-void stringPM::influx_special(int t){
-
-	//These are the variables we tinker with!
-	int step = 3.* log(0.5)/log(1-0.00004);//100000;
-	float gprob = 0.02;
-	float lprob = 0.0225;
-	s_ag *pag;
-	float prob;
-	int lab;
-
-
-	if((t/step)%2){
-		lab='I'; //may as well be something we can detect!
-
-		//starvation:
-		//prob=0;
-
-		//lactose
-		prob=lprob;
-		//lab='I';
-	}
-	else{
-		//glucose
-		prob=gprob;
-		lab='A';
-	}
-
-	float rno = rand0to1();
-	//int ct = aac_count(lab);
-	if(rno<prob){//&& ct<500){
-		//pag = make_ag(lab,1);
-
-
-		pag = make_ag(lab,0);
-
-		append_ag(&nowhead,pag);
-	}
-}
-
-
-
-void stringPM::replenish_operons(){
-	int i;
-	s_ag *pag;
-	pag=nowhead;
-
-	int Jc,Oc,qc,dc;
-	Jc=Oc=qc=dc=0;
-	int count,a,j;
-	update_aac();
-	for(i=0;i<ntt;i++){
-		if(aro[i]>-1){
-			//count operons
-			count=0;
-			for(j=0;j<ntt;j++)
-				if(com[i][j])
-					count+=aac[j];
-			if(aro[i]>count){
-				for(a=0;a<aro[i]-count;a++){
-					pag = make_ag(aat[i],1);
-					append_ag(&nowhead,pag);
-				}
-				//aac[i]+=aro[i]-count;
-			}
-		}
-	}
-
-	update_aac();
-}
-
-void stringPM::divide(){
-
-	float rand;
-	s_ag *pag,*pag2;
-	pag=nowhead;
-	while(pag!=NULL){
-		rand = rand0to1();
-		if(rand<0.5){//Delete it.
-			pag2=pag;
-			pag=pag->next;
-			extract_ag(&nowhead,pag2);
-			free_ag(pag2);
-		}
-		else{
-			//rand_in_rad(cellrad,&(pag->x),&(pag->y));
-			pag=pag->next;
-		}
-	}
-	printf("After div: ");
-	update_aac();
-	print_agents_count(stdout);
-	replenish_operons();
-	energy = energy/2.;
-}
-*/
 
 void stringPM::free_swt(swt *pSWT, int verbose){
 
