@@ -125,7 +125,7 @@ void record_spp(stringPM *A){
 	char fn[256];
 	FILE *fp;
 
-	A->print_spp_count(stdout,0,-1);
+	A->SpeciesPrintCount(stdout,0,-1);
 
 	//printf("Printing species list\n");
 	sprintf(fn,"splist%03d.dat",A->run_number);
@@ -194,7 +194,7 @@ void printsppct(stringPM *A, int t){
 	int finished = 0;
 	int nag,*done;
 
-	nag = A->nagents(A->nowhead,-1);
+	nag = A->AgentsCount(A->nowhead,-1);
 
 	done = (int *) malloc(nag*sizeof(int));
 	memset(done,0,nag*sizeof(int));
@@ -296,10 +296,10 @@ int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runpar
 			*/
 		}
 
-		if(!A->nagents(A->nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
+		if(!A->AgentsCount(A->nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
 			printf("DEATH\n");
 			printf("At  time %d e=%d\t",i,(int)A->energy);
-			A->print_spp_count(stdout,0,-1);
+			A->SpeciesPrintCount(stdout,0,-1);
 			//nsteps=i;
 			break;
 		}
@@ -493,7 +493,7 @@ int run_one_AlifeXII_trial(stringPM *A){
 		A->UpdateNowNext();
 
 		if(!(i%1000)){
-			A->print_spp_count(stdout,0,-1);
+			A->SpeciesPrintCount(stdout,0,-1);
 		//}
 		//
 		//if(!(i%1000)){
@@ -505,10 +505,10 @@ int run_one_AlifeXII_trial(stringPM *A){
 //#ifdef DO_ANCESTRY
 //#endif
 
-		if(!A->nagents(A->nowhead,-1)){
+		if(!A->AgentsCount(A->nowhead,-1)){
 			printf("DEATH\n");
 			printf("At  time %d e=%d, mutrate = %0.9f & %0.9f\t",i,(int)A->energy,A->indelrate,A->subrate);
-			A->print_spp_count(stdout,0,-1);
+			A->SpeciesPrintCount(stdout,0,-1);
 			//nsteps=i;
 			break;
 		}
@@ -768,7 +768,8 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 		if(!cpy){
 			printf("ERROR: Zero length molecule definitely being created!\nbail..\n");
-			A->free_ag(c);
+			A->AgentFree(c);
+			c=NULL;
 		}
 		else{
 
@@ -789,7 +790,8 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				A->append_ag(&(A->nexthead),c);
 			}
 			else{
-				A->free_ag(c);
+				A->AgentFree(c);
+				c=NULL;
 			}
 		}
 		//TODO: check string lens of act and pass?
@@ -823,7 +825,8 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				run->grid[act->x][act->y]=NULL;
 				run->status[act->x][act->y]=G_EMPTY;
 
-				A->free_ag(act);
+				A->AgentFree(act);
+				act = NULL;
 
 				break;
 			case 2://Destroy passive - only append active
@@ -837,14 +840,18 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				run->grid[pass->x][pass->y]=NULL;
 				run->status[pass->x][pass->y]=G_EMPTY;
 
-				A->free_ag(pass);
+				A->AgentFree(pass);
+				pass = NULL;
+
 				break;
 			case 3://Destroy both
 				printf("Destroying both parents after cleave!\nThis should never happen!\n");
 				A->unbind_ag(act,'A',1,act->spp,pass->spp);
 				A->unbind_ag(pass,'P',1,act->spp,pass->spp);
-				A->free_ag(act);
-				A->free_ag(pass);
+				A->AgentFree(act);
+				act = NULL;
+				A->AgentFree(pass);
+				pass = NULL;
 				break;
 			default://This can't be right can it?
 				if(act->ft == act->it){
@@ -1070,7 +1077,9 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 		run->grid[pag->x][pag->y]=NULL;
 		run->status[pag->x][pag->y]=G_EMPTY;
 
-		A->free_ag(pag);
+		A->AgentFree(pag);
+		//TODO: sort this null-ing of free'd agents out!
+		//pag = NULL;
 
 		if(bag!=NULL){
 
@@ -1078,7 +1087,8 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 			run->grid[bag->x][bag->y]=NULL;
 			run->status[bag->x][bag->y]=G_EMPTY;
 
-			A->free_ag(bag);
+			A->AgentFree(bag);
+			bag = NULL;
 		}
 
 		return 1;
@@ -1286,8 +1296,8 @@ int smspatial_step(stringPM *A, smsprun *run){
 	while(A->nowhead!=NULL){
  
  		s_ag *bag;
-		pag = A->rand_ag(A->nowhead,-1);
-		A->extract_ag(&A->nowhead,pag);
+		pag = A->AgentSelectRandomly(A->nowhead,-1);
+		A->AgentExtract(&A->nowhead,pag);
 
 		//For debugging RNG diffs.
 		if(A->extit == 90001){
@@ -1312,11 +1322,11 @@ int smspatial_step(stringPM *A, smsprun *run){
 			break;
 		case B_ACTIVE:
 			bag = pag->pass;
-			A->extract_ag(&(A->nowhead),bag);
+			A->AgentExtract(&(A->nowhead),bag);
 			break;
 		case B_PASSIVE:
 			bag = pag->exec;
-			A->extract_ag(&(A->nowhead),bag);
+			A->AgentExtract(&(A->nowhead),bag);
 			break;
 		}
 
@@ -1338,7 +1348,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 					if((bag = pick_partner(A,run,pag->x,pag->y))!=NULL){
 
 						//TODO: We need to make sure that bag is in nowhead first!
-						A->extract_ag(&(A->nowhead),bag);
+						A->AgentExtract(&(A->nowhead),bag);
 
 						//Now we've found a potential partner, we can see if it binds:
 						float bprob;
@@ -1348,7 +1358,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 						rno = rand0to1();
 						if(rno<bprob){//Binding success!
 							//figure out which is the executing string:
-							A->set_exec(pag,bag,&sw);
+							A->ReactionSetupExecution(pag,bag,&sw);
 							pag->nbind++;
 							bag->nbind++;
 
@@ -1439,8 +1449,8 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 	if(!A->extit){
 		while(A->nowhead!=NULL){
 			s_ag *pag;
-			pag = A->rand_ag(A->nowhead,-1);
-			A->extract_ag(&(A->nowhead),pag);
+			pag = A->AgentSelectRandomly(A->nowhead,-1);
+			A->AgentExtract(&(A->nowhead),pag);
 			int found = 0;
 
 			//Check to see if a position has been set for each molecule..
@@ -1486,9 +1496,9 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 							A->append_ag(&(A->nexthead),pag);
 
 							s_ag *bag;
-							bag = A->rand_ag(A->nowhead,-1);
+							bag = A->AgentSelectRandomly(A->nowhead,-1);
 							if(bag != NULL){
-								A->extract_ag(&(A->nowhead),bag);
+								A->AgentExtract(&(A->nowhead),bag);
 								place_mol(bag,*run,xx,yy);
 								A->append_ag(&(A->nexthead),bag);
 							}
@@ -1551,7 +1561,7 @@ int smspatial(int argc, char *argv[]) {
 	smspatial_init(argv[2],&A,&run,1);
 
 	int bt,ct{0};
-	ct = A.nagents(A.nowhead,-1);
+	ct = A.AgentsCount(A.nowhead,-1);
 	printf("Initialisation done, number of molecules is %d\n",ct);
 
 	//This used to be called here - but better to do it before smspatial_init()
@@ -1580,7 +1590,7 @@ int smspatial(int argc, char *argv[]) {
 		//if(!(A.extit%100) || A.extit==1){
 		//if(!(A.extit%100)){
 		if(!(A.extit%A.image_every)){
-			bt = ct - A.nagents(A.nowhead,B_UNBOUND);
+			bt = ct - A.AgentsCount(A.nowhead,B_UNBOUND);
 			printf("Step %u done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
 
 			smspatial_pic(&A, smpic_spp);
@@ -1629,7 +1639,7 @@ int smspatial(int argc, char *argv[]) {
 #endif
 
 		A.extit++;
-		ct = A.nagents(A.nowhead,-1);
+		ct = A.AgentsCount(A.nowhead,-1);
 
 	}
 

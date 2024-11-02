@@ -482,7 +482,7 @@ int origlife(int argc, char *argv[]){
 				A.make_next();
 
 				if(!(i%1000)){
-					A.print_spp_count(stdout,0,-1);
+					A.SpeciesPrintCount(stdout,0,-1);
 					A.extit=i;//dummy line for breakpoint
 
 					//printf("Printing species list\n");
@@ -512,11 +512,11 @@ int origlife(int argc, char *argv[]){
 				}
 
 
-				if(!A.nagents(A.nowhead,-1) || (!rr && nsteps >1500000) || nsteps >15000000){
+				if(!A.AgentsCount(A.nowhead,-1) || (!rr && nsteps >1500000) || nsteps >15000000){
 					printf("DEATH\n");
 					printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
 					//A.print_agents_count(stdout);
-					A.print_spp_count(stdout,0,-1);
+					A.SpeciesPrintCount(stdout,0,-1);
 
 					break;
 				}
@@ -653,7 +653,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 			A.make_next();
 
 			if(!(i%1000)){
-				A.print_spp_count(stdout,0,-1);
+				A.SpeciesPrintCount(stdout,0,-1);
 
 				printf("%d%02u At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\n",proc,rr,i,(int)A.energy,div,A.subrate,A.indelrate);
 				//A.print_agents_count(stdout);
@@ -705,17 +705,17 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 #endif
 
-			if(!A.nagents(A.nowhead,-1) || (!rr && nsteps >15000000) || nsteps >15000000){
+			if(!A.AgentsCount(A.nowhead,-1) || (!rr && nsteps >15000000) || nsteps >15000000){
 				printf("DEATH\n");
 				//fprintf(fpdiv,"%d\t%d\t%d",div,i,(int)A.energy);
 				//A.print_agents_count(fpdiv);
-				//A.print_spp_count(fpdiv,0,-1);
+				//A.SpeciesPrintCount(fpdiv,0,-1);
 				//fflush(fpdiv);
 
 
 				printf("At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\t",i,(int)A.energy,div,A.indelrate,A.subrate);
 				//A.print_agents_count(stdout);
-				A.print_spp_count(stdout,0,-1);
+				A.SpeciesPrintCount(stdout,0,-1);
 
 				break;
 			}
@@ -895,7 +895,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 
 
 			if(!(i%1000)){
-				A.print_spp_count(stdout,0,-1);
+				A.SpeciesPrintCount(stdout,0,-1);
 				A.extit=i;//dummy line for breakpoint
 
 				//printf("Printing species list\n");
@@ -946,10 +946,10 @@ int comass_AlifeXII(int argc, char *argv[]){
 			}
 
 
-			if(!A.nagents(A.nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
+			if(!A.AgentsCount(A.nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
 				printf("DEATH\n");
 				printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
-				A.print_spp_count(stdout,0,-1);
+				A.SpeciesPrintCount(stdout,0,-1);
 				
 				break;
 			}
@@ -1145,9 +1145,6 @@ int comass_GA(int argc, char *argv[]){
 
 	//fprintf(stdout,"(unsigned) random seed is %lu \n",rseed);
 
-
-
-
 	eval  = (double *)malloc(POPN * sizeof(double));
 	params = (int **) malloc(POPN * sizeof(int *));
 
@@ -1279,11 +1276,8 @@ int comass_GA(int argc, char *argv[]){
 				printf("%02d\t%f\n",e,eval[e]);
 			}
 		}
-
-
-
 	}
-	fclose(gafp);
+	//fclose(gafp);
 	return 0;
 }
 
@@ -1636,7 +1630,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
 
 			if(!(i%1000)){
-				A.print_spp_count(stdout,0,-1);
+				A.SpeciesPrintCount(stdout,0,-1);
 				A.extit=i;//dummy line for breakpoint
 
 				//printf("Printing species list\n");
@@ -1681,11 +1675,11 @@ int energetic_AlifeXII(int argc, char *argv[]){
 			}
 
 
-			if(!A.nagents(A.nowhead,-1) || (!rr && nsteps >1500000) || nsteps >15000000){
+			if(!A.AgentsCount(A.nowhead,-1) || (!rr && nsteps >1500000) || nsteps >15000000){
 				printf("DEATH\n");
 				printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
 				//A.print_agents_count(stdout);
-				A.print_spp_count(stdout,0,-1);
+				A.SpeciesPrintCount(stdout,0,-1);
 				
 				break;
 			}
@@ -1863,8 +1857,8 @@ int SmPm_conpop(int argc, char *argv[]){
 			}
 			printf("\nCount:");
 			for(c=0;c<NCON;c++){
-				printf("\t%d",A[c]->nagents(A[c]->nowhead,-1));
-				fprintf(fpdiv,"\t%d",A[c]->nagents(A[c]->nowhead,-1));
+				printf("\t%d",A[c]->AgentsCount(A[c]->nowhead,-1));
+				fprintf(fpdiv,"\t%d",A[c]->AgentsCount(A[c]->nowhead,-1));
 				printsppct(A[c],gclock);
 				score[c] = ctspp(A[c],3);
 			}
@@ -1938,7 +1932,7 @@ int SmPm_conpop(int argc, char *argv[]){
 		//}
 
 		for(c=0;c<NCON;c++){
-			if(!(A[c]->nagents(A[c]->nowhead,-1))){
+			if(!(A[c]->AgentsCount(A[c]->nowhead,-1))){
 
 				//Print the ancestry of this cell:
 				/*
@@ -2054,7 +2048,7 @@ int SmPm_conpop(int argc, char *argv[]){
 
 	//Print out the end of the ancestries
 	for(c=0;c<NCON;c++){
-		if(!(A[c]->nagents(A[c]->nowhead,-1))){
+		if(!(A[c]->AgentsCount(A[c]->nowhead,-1))){
 
 			//Print the ancestry of this cell:
 			FILE *afp;
@@ -2143,19 +2137,19 @@ void SmPm_1on1(int argc,char *argv[]){
 			case B_ACTIVE:
 				a = p;
 				b = p->pass;
-				A.print_exec(stdout,a,b);
+				A.ReactionPrintState(stdout,a,b);
 				break;
 			case B_PASSIVE:
 				//a = p->exec;
 				//b = p;
-				//A.print_exec(stdout,a,b);
+				//A.ReactionPrintState(stdout,a,b);
 				break;
 			}
 			p = p->next;
 		}
 
 
-		A.print_spp_count(stdout,0,-1);
+		A.SpeciesPrintCount(stdout,0,-1);
 
 		printf("Printing species list\n");
 		sprintf(fn,"splist.dat");
@@ -2342,18 +2336,20 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 
 
 	while(A->nowhead!=NULL && count < nmols){
-		pag = A->rand_ag(A->nowhead,-1);
-		A->extract_ag(&(A->nowhead),pag);
+		pag = A->AgentSelectRandomly(A->nowhead,-1);
+		A->AgentExtract(&(A->nowhead),pag);
 		A->update_lineage(pag,'R',1,NULL,NULL,0);
 
 		//safest & quickest to destroy the replicases and replenish.
 		if(!(strncmp(pag->spp->S,repstring,replen))){
-			A->free_ag(pag);
+			A->AgentFree(pag);
+			pag = NULL;
 			continue;
 		}
 		else{
 			if(pag->status!=B_UNBOUND){
-				A->free_ag(pag);
+				A->AgentFree(pag);
+				pag = NULL;
 				continue;
 			}
 		}
@@ -2509,7 +2505,7 @@ int speigmonst(int argc, char *argv[]){
 
 
 			if(!(i%1000)){
-				A.print_spp_count(stdout,0,-1);
+				A.SpeciesPrintCount(stdout,0,-1);
 				A.extit=i;//dummy line for breakpoint
 
 				//printf("Printing species list\n");
@@ -2560,10 +2556,10 @@ int speigmonst(int argc, char *argv[]){
 			}
 
 
-			if(!A.nagents(A.nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
+			if(!A.AgentsCount(A.nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
 				printf("DEATH\n");
 				printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
-				A.print_spp_count(stdout,0,B_UNBOUND);
+				A.SpeciesPrintCount(stdout,0,B_UNBOUND);
 				
 				break;
 			}
@@ -2573,7 +2569,7 @@ int speigmonst(int argc, char *argv[]){
 		}
 
 		printf("\n+++++++++++++++++\nUNBOUND SPECIES:");
-		A.print_spp_count(stdout,0,B_UNBOUND);
+		A.SpeciesPrintCount(stdout,0,B_UNBOUND);
 		printf("\n+++++++++++++++++\nUNBOUND SPECIES:");
 
 		//PRINT OUT THE EPOCH DATA:

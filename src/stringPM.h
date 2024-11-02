@@ -162,8 +162,8 @@ public:
 
 	//Iteration
 	void make_next() override;
-	int AttemptBind(s_ag *pag);
-	int testdecay(s_ag *pag);
+	int ReactionAttemptBind(s_ag *pag);
+	int AgentAttemptDecay(s_ag *pag);
 	//int hasdied();
 
 	void replenish_operons();
@@ -171,10 +171,10 @@ public:
 
 	//list stuff
 	int 	append_ag(s_ag **list, s_ag *ag);
-	int 	extract_ag(s_ag **list, s_ag *ag);
-	int 	nagents(s_ag *head, int state);
-	s_ag * 	rand_ag(s_ag *head, int state);
-	int 	free_ag(s_ag *pag);
+	int 	AgentExtract(s_ag **list, s_ag *ag);
+	int 	AgentsCount(s_ag *head, int state);
+	s_ag * 	AgentSelectRandomly(s_ag *head, int state);
+	int 	AgentFree(s_ag *pag);
 	bool 	ag_in_list(s_ag *list,const s_ag *tag);
 
 	//First version works fine, but no species analysis...
@@ -197,7 +197,7 @@ public:
 
 	//Diagnostics
 	void print_agents(FILE *fp, const char *spec, int verbose);
-	int PrintAgentWithIndex(FILE *fp, int det, int idx);
+	int AgentPrintWithIndex(FILE *fp, int det, int idx);
 	void testprop();
 	//void sanity_check();
 
@@ -227,11 +227,11 @@ public:
 	int 	h_pos(s_ag *pag, char head); 	//Find the position of a particular head.
 	float 	get_sw(s_ag *a1, s_ag *a2, align *sw);
 	float 	get_bprob(align *sw);
-	void 	set_exec(s_ag *A, s_ag *B, align *sw);
-	int 	exec_step(s_ag *act, s_ag *pass);
+	void 	ReactionSetupExecution(s_ag *A, s_ag *B, align *sw);
+	int 	ReactionExecuteOpcode(s_ag *act, s_ag *pass);
 			//print string stuff
-	void 	print_ptr_offset(FILE *fp,const char *S,const char *p,int F, char c);
-	void 	print_exec(FILE *fp, s_ag *act, s_ag *pas);
+	void 	PointerPrintOffset(FILE *fp,const char *S,const char *p,int F, char c);
+	void 	ReactionPrintState(FILE *fp, s_ag *act, s_ag *pas);
 	void 	free_swt(swt *pSWT, int verbose);
 	int 	check_ptrs(s_ag* act);
 	int 	rewind_bad_ptrs(s_ag* pag);
@@ -245,13 +245,13 @@ public:
 
 
 	//Trying conservation of mass
+	int 	comass_AgentAttemptDecay(s_ag *pag);
+	int 	comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass);
 	int 	load_comass(const char *fn, int verbose); //load single value from a file
 	int 	set_mass(const int *param);  //load a set of values from an array
 	void 	comass_make_next();
-	int 	comass_testdecay(s_ag *pag);
 	int 	comass_free_ag(s_ag *pag);
 	int 	update_mass(char *S, int len, int val, const int doconcat);
-	int 	comass_exec_step(s_ag *act, s_ag *pass);
 	int 	comass_hcopy(s_ag *act);
 
 	//Speigelman's monster
@@ -268,8 +268,8 @@ public:
 	l_spp * 	get_spp(int n);
 	//int 		append_spp(s_spp *sp);
 	int 		append_lspp(l_spp *sp);
-	int 		count_spp();
-	void 		print_spp_count(FILE *fp,int style, int state);
+	int 		SpeciesCount();
+	void 		SpeciesPrintCount(FILE *fp,int style, int state);
 	//void 		get_spp_count(int state);//Count the number of individuals of each species present in the system
 	//find a species that a molecule belongs to
 	int 		id_spp(l_spp *sp, s_ag *pag, int  aspno, char *spp_string);

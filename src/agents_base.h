@@ -48,10 +48,10 @@ class agents_base{
 		int  *bct; //count of times we've tried for a particular reagent count
 		int  *bpp; //count of times we've been closenough to run a bind...
 		int  bmax; //max reagents we are going to bother with.
-		void 	note_propensity(int N,int X);
+		void 	PropensityRecord(int N,int X);
 		void 	print_propensity(FILE *fp);
 		int 	proper_prop(const int n);
-		int 	eqn_prop(const int n);
+		int 	PropensityEquation(const int n);
 
 		s_ix *ifxhead;
 		//s_ag *nowhead;
@@ -84,7 +84,7 @@ class agents_base{
 		void load(const char *fn, char *fninput, int test, int verbose);
 		void load(const char *fn, int test, int verbose);
 
-		int load_params(const char *fn, int test, int verbose);
+		int ParametersLoad(const char *fn, int test, int verbose);
 		int load_division(char *fn);
 		int load_replenish(char *fn);
 		//declaring this as virtual and calling it from load caused problems...

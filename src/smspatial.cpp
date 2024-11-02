@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 	smspatial_init(argv[2],&A,&run,1);
 
 	int bt,ct=0;
-	ct = A.nagents(A.nowhead,-1);
+	ct = A.AgentsCount(A.nowhead,-1);
 	printf("Initialisation done, number of molecules is %d\n",ct);
 
 	/* Set up SDL if we're using it */
@@ -120,8 +120,8 @@ int main(int argc, char *argv[]) {
 	while(A.extit < 1000000){// && A.nagents(A.nowhead,-1)>0){
 
 		smspatial_step(&A,run);
-		ct = A.nagents(A.nowhead,-1);
-		bt = ct - A.nagents(A.nowhead,B_UNBOUND);
+		ct = A.AgentsCount(A.nowhead,-1);
+		bt = ct - A.AgentsCount(A.nowhead,B_UNBOUND);
 #ifdef DODEBUG
 		printf("Nowhead is %p, Nexthead is %p\n",A.nowhead,A.nexthead);
 		s_ag *p;

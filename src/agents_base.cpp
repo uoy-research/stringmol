@@ -41,7 +41,17 @@ extern "C" {
 
 
 
-int agents_base::eqn_prop(const int n){
+/******************************************************************************
+* @brief calculate the chances of two agents being close enough to bind
+*
+* @details propensity is aspatial-stringmol's way of calculating the likelihood
+*          of two molecules meeting - this function implements the equation
+*
+* @param[in] n number of agents
+*
+* @return 1 if reaction can happen; 0 if not
+*****************************************************************************/
+int agents_base::PropensityEquation(const int n){
 
 	float agarea = (float) M_PI*pow((float) agrad,2);
 	float cellarea = M_PI*pow((float) vcellrad-(2.*(float) move),2);
@@ -132,7 +142,18 @@ agents_base::~agents_base(){
 }
 
 
-void agents_base::note_propensity(int N,int X){
+
+/******************************************************************************
+* @brief keep a record of this propensity event
+*
+* @details propensity is aspatial-stringmol's way of calculaing the likelihood
+*          of two molecules meeting
+*
+* @param[in] N the number todo: what does it do?
+*
+* @param[in] X another number todo: what does it do?
+*****************************************************************************/
+void agents_base::PropensityRecord(int N,int X){
 	if(N<bmax){
 		bct[N]++;
 		if(X)
@@ -173,7 +194,7 @@ void agents_base::preset(){
 // VJH - added this function for youShare - some alterations on merge
 void agents_base::load(const char *fn, char *fninput, int test=0, int verbose=0){
 
-	load_params(fn,test,verbose);
+	ParametersLoad(fn,test,verbose);
 
 	// VJH load_agents(fn,test);
 	AgentsLoad(fn,fninput,test);
@@ -182,8 +203,20 @@ void agents_base::load(const char *fn, char *fninput, int test=0, int verbose=0)
 
 
 
-
-int agents_base::load_params(const char *fn, int test, int verbose){
+/******************************************************************************
+* @brief Load the parameters set from a config file
+*
+* @details loads the run parameters
+*
+* @param[in] fn name of the config file
+*
+* @param[in] test poorly designed test flag - todo: remove
+*
+* @param[in] verbose flag for verbose output
+*
+* @return 0 if error; 1 if success... todo reverse this
+*****************************************************************************/
+int agents_base::ParametersLoad(const char *fn, int test, int verbose){
 
 	FILE *fp;
 

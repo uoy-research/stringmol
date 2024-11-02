@@ -147,7 +147,7 @@ char * generate_bind_data(char * string1, char * string2){
 	 //Get the Smith Waterman alignment
 	A.get_sw(a1,a2,&sw);
 	 //Figure out the active molecule
-	A.set_exec(a1,a2,&sw);
+	A.ReactionSetupExecution(a1,a2,&sw);
 	if(a1->status == B_ACTIVE)
 		pact = a1;
 	else
