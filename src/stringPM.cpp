@@ -40,6 +40,8 @@
 #include "SMspp.h"
 #include "stringPM.h"
 
+#include "error_codes.h"
+
 //For debugging:
 //#define VERBOSE
 //#define V_VERBOSE
@@ -1048,11 +1050,25 @@ int stringPM::load_replicable(const char *fn){
 
 
 
-/**Suggest: load_agents(char *fn, char *fntab, int test, int verbose)
-   if fntab == null: load_table(fn)
-   else load_table_matrix(fntab)
 
-*/
+
+/******************************************************************************
+* @brief Load the molecule set from a config file
+*
+* @details loads the agents, but *also* many of the run parameters (todo: fix this).
+*          exit on failure to handle essential parameters (todo: proper error codes!)
+*
+* @param[in] fn name of the config file
+*
+* @param[in] fntab name of the file containing the BLOSUM matrix
+*
+* @param[in] test poorly designed test flag - todo: remove
+*
+* @param[in] verbose flag for verbose output
+*
+*
+* @return 0 if error; 1 if success... todo reverse this
+*****************************************************************************/
 int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 
 
@@ -1069,20 +1085,20 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 	err = readordef_param_int(fn,"EXTIT", &extit, 0, 0);
 	if(err>1){
 		printf("ERROR %d on loading external iteration value (EXTIT)\n",err);
-		exit(0);
+		exit(PARAM_LOAD_ERROR);
 	}
 
 	err = readordef_param_int(fn,"REPORTEVERY", &report_every, report_every, 0);
 	if(err>1){
 		printf("ERROR %d on loading reporting frequency\n",err);
-		exit(0);
+		exit(PARAM_LOAD_ERROR);
 	}
 
 
 	err = readordef_param_int(fn,"IMAGEEVERY", &image_every, image_every, 0);
 	if(err>1){
 		printf("ERROR %d on loading imaging frequency\n",err);
-		exit(0);
+		exit(PARAM_LOAD_ERROR);
 	}
 
 
@@ -1091,7 +1107,7 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 	err = readordef_param_int(fn,"SPLPRINT", &splprint, splprint, 0);
 	if(err>1){
 		printf("ERROR %d on loading specieslist print frequency\n",err);
-		exit(0);
+		exit(PARAM_LOAD_ERROR);
 	}
 	maxl0 = maxl+1;
 
@@ -1109,7 +1125,7 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 	int estep_err = readordef_param_int(fn,"ESTEP", &estep, destep, 0);
 	if(estep_err>1){
 		printf("ERROR %d on loading energy per time step (ESTEP)\n",estep_err);
-		exit(0);
+		exit(PARAM_LOAD_ERROR);
 	}
 
 
@@ -1142,18 +1158,18 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 	err = readordef_param_int(fn,"GRIDX", &gridx, gdefault, 0);
 	if(err>1){
 		printf("ERROR %d on loading gridx (GRIDX)\n",err);
-		exit(0);
+		exit(PARAM_LOAD_ERROR);
 	}
 	else{
 		if(gridx>0){//Then we've got a grid definition and we need a y
 			err = readordef_param_int(fn,"GRIDY", &gridy, gdefault, 0);
 			if(err>1){
 				printf("ERROR %d on loading gridy (GRIDY)\n",err);
-				exit(0);
+				exit(PARAM_LOAD_ERROR);
 			}
 			if(gridy==0){
 				printf("ERROR: GRIDX is %u, but GRIDY is 0\n",gridx);
-				exit(0);
+				exit(PARAM_LOAD_ERROR);
 			}
 			init_smprun(gridx,gridy);
 		}

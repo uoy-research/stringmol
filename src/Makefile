@@ -164,7 +164,7 @@ $(OUTPUT_DIR)/stringmanip.o: 	stringmanip.cpp stringmanip.h
 $(OUTPUT_DIR)/stringPM.o:	stringPM.cpp stringPM.h \
 		memoryutil.h	randutil.h	\
         alignment.h		stringmanip.h	instructions.h	\
-		rules.h	agents_base.h	SMspp.h 
+		rules.h	agents_base.h	SMspp.h error_codes.h
 	$(CC) -c stringPM.cpp -o $(OUTPUT_DIR)/stringPM.o
 
 $(OUTPUT_DIR)/tests.o:	tests.cpp tests.h
