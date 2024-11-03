@@ -88,7 +88,7 @@ int joinsplists(int argc, char *argv[]){
 	A = &oA;
 
 
-	pag = A->make_ag('A');//,1);
+	pag = A->AgentMake('A');//,1);
 	pag->S =(char *) malloc(A->maxl0*sizeof(char));
 //First lets do the loading:
 	for(i=0;i<nlists;i++){
@@ -114,8 +114,8 @@ int joinsplists(int argc, char *argv[]){
 					//No parents for these initial agents!
 					pag->pp = A->spl->make_parents(NULL,NULL);
 
-					//int stringPM::update_lineage(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
-					A->update_lineage(pag,'I',1,NULL,NULL,0);
+					//int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
+					A->SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
 					//s = A->spl->getspp(pag,0);
 					//	s->tspp = 0;
 					//}
@@ -172,7 +172,7 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
 		l_spp *species;
 		species = NULL;
 
-		pag = A->make_ag(symbol);//,1);
+		pag = A->AgentMake(symbol);//,1);
 
 		pag->S =(char *) malloc(A->maxl0*sizeof(char));
 		memset(pag->S,0,A->maxl0*sizeof(char));
@@ -183,8 +183,8 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
 		pag->pp = A->spl->make_parents(NULL,NULL);
 
 		if(i==0){
-			//int stringPM::update_lineage(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
-			A->update_lineage(pag,'I',1,NULL,NULL,0);
+			//int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
+			A->SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
 			species = A->spl->getspp(pag,0,A->maxl0);
 			species->tspp = 0;
 		}
@@ -193,7 +193,7 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
 			A->nowhead = pag;
 		}
 		else{
-			A->append_ag(&(A->nowhead),pag);
+			A->AgentAppend(&(A->nowhead),pag);
 		}
 	}
 }
@@ -315,7 +315,7 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
 			l_spp *s;
 			s = NULL;
 
-			pag = A->make_ag('A'+j);//,1);
+			pag = A->AgentMake('A'+j);//,1);
 
 			pag->S =(char *) malloc(A->maxl0*sizeof(char));
 			memset(pag->S,0,A->maxl0*sizeof(char));
@@ -327,8 +327,8 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
 			pag->pp = A->spl->make_parents(NULL,NULL);
 
 			if(!i){
-				//int stringPM::update_lineage(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
-				A->update_lineage(pag,'I',1,NULL,NULL,0);
+				//int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
+				A->SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
 				s = A->spl->getspp(pag,0,A->maxl0);
 				s->tspp = 0;
 			}
@@ -337,7 +337,7 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
 				A->nowhead = pag;
 			}
 			else{
-				A->append_ag(&(A->nowhead),pag);
+				A->AgentAppend(&(A->nowhead),pag);
 			}
 		}
 	}
@@ -479,7 +479,7 @@ int origlife(int argc, char *argv[]){
 
 				A.extit = i;
 
-				A.make_next();
+				A.TimestepIncrement();
 
 				if(!(i%1000)){
 					A.SpeciesPrintCount(stdout,0,-1);
@@ -650,7 +650,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 			A.extit = i;
 
-			A.make_next();
+			A.TimestepIncrement();
 
 			if(!(i%1000)){
 				A.SpeciesPrintCount(stdout,0,-1);
@@ -891,7 +891,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 
 			A.extit = i;
 
-			A.comass_make_next();
+			A.comass_TimestepIncrement();
 
 
 			if(!(i%1000)){
@@ -1621,7 +1621,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
 			A.extit = i;
 
-			A.energetic_make_next();
+			A.energetic_TimestepIncrement();
 
 			//A.sanity_check();
 			//if(!(i%10000)){
@@ -1840,7 +1840,7 @@ int SmPm_conpop(int argc, char *argv[]){
 	while(r<=MAXCONSTEPS){ //TODO: amend this so that immortal containers are possible
 
 		for(c=0;c<NCON;c++){
-			A[c]->make_next();
+			A[c]->TimestepIncrement();
 			A[c]->extit++;
 			//Restore the 20-each model - we'll do selection on replenishment
 			A[c]->energy += A[c]->estep;
@@ -2018,7 +2018,7 @@ int SmPm_conpop(int argc, char *argv[]){
 				l_spp *s;
 				for(pag = A[c]->nowhead;pag!=NULL;pag=pag->next){
 					pag->pp = A[c]->spl->make_parents(NULL,NULL);
-					A[c]->update_lineage(pag,'I',1,NULL,NULL,0);
+					A[c]->SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
 					s = A[c]->spl->getspp(pag,A[c]->extit,A[c]->maxl0);
 					s->tspp = 0;
 					pag->spp=s;
@@ -2127,7 +2127,7 @@ void SmPm_1on1(int argc,char *argv[]){
 		A.energy = 50;
 		A.extit = i++;
 
-		A.make_next();
+		A.TimestepIncrement();
 
 		p = A.nowhead;
 		while(p!=NULL){
@@ -2310,7 +2310,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 		l_spp *s;
 		s = NULL;
 
-		pag = A->make_ag('R');//,1);
+		pag = A->AgentMake('R');//,1);
 
 		pag->S =(char *) malloc(A->maxl0*sizeof(char));
 		pag->label = 'R';
@@ -2322,7 +2322,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 		pag->pp = A->spl->make_parents(NULL,NULL);
 
 		if(!i){
-			A->update_lineage(pag,'R',1,NULL,NULL,0);
+			A->SpeciesListUpdate(pag,'R',1,NULL,NULL,0);
 			s = A->spl->getspp(pag,0,A->maxl0);
 			//TODO: tidy up handling of seed species, but for now:
 			s->tspp = 0;
@@ -2330,7 +2330,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 
 		//Record that the replicase copies itself
 		pag->spp=s;
-		A->append_ag(&(A->nexthead),pag);
+		A->AgentAppend(&(A->nexthead),pag);
 	}
 
 
@@ -2338,7 +2338,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 	while(A->nowhead!=NULL && count < nmols){
 		pag = A->AgentSelectRandomly(A->nowhead,-1);
 		A->AgentExtract(&(A->nowhead),pag);
-		A->update_lineage(pag,'R',1,NULL,NULL,0);
+		A->SpeciesListUpdate(pag,'R',1,NULL,NULL,0);
 
 		//safest & quickest to destroy the replicases and replenish.
 		if(!(strncmp(pag->spp->S,repstring,replen))){
@@ -2353,8 +2353,8 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 				continue;
 			}
 		}
-		A->update_lineage(pag,'M',1,NULL,NULL,0);
-		A->append_ag(&(A->nexthead),pag);
+		A->SpeciesListUpdate(pag,'M',1,NULL,NULL,0);
+		A->AgentAppend(&(A->nexthead),pag);
 		count++;
 	}
 
@@ -2501,7 +2501,7 @@ int speigmonst(int argc, char *argv[]){
 
 			A.extit = i;
 
-			A.comass_make_next();
+			A.comass_TimestepIncrement();
 
 
 			if(!(i%1000)){

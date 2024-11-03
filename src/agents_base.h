@@ -108,8 +108,8 @@ class agents_base{
 		void printfr(FILE *fp, rules *rset);
 
 		//Iteration stuff
-		//virtual void make_next(rules *rset)=0;
-		virtual void make_next()=0;
+		//virtual void TimestepIncrement(rules *rset)=0;
+		virtual void TimestepIncrement()=0;
 
 		//Cell division
 		int divide_conditions(int time);

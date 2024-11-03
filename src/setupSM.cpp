@@ -269,7 +269,7 @@ int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runpar
 
 		A->extit = i;
 
-		A->comass_make_next();
+		A->comass_TimestepIncrement();
 		A->UpdateNowNext();
 
 
@@ -489,7 +489,7 @@ int run_one_AlifeXII_trial(stringPM *A){
 		//TODO: find out what this does - rename the variable to  make it clear.
 		A->extit = i;
 
-		A->make_next();
+		A->TimestepIncrement();
 		A->UpdateNowNext();
 
 		if(!(i%1000)){
@@ -750,7 +750,7 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 	if(act->f[act->ft]-csite->S < csite->len){
 
 		//1: MAKE THE NEW MOLECULE FROM THE CLEAVE POINT
-		c = A->make_ag(pass->label);//,1);
+		c = A->AgentMake(pass->label);//,1);
 
 		//Copy the cleaved string to the agent
 		char *cs;
@@ -781,13 +781,13 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 #endif
 
 			//Check the lineage
-			A->update_lineage(c,'C',1,act->spp,pass->spp,act->biomass);
+			A->SpeciesListUpdate(c,'C',1,act->spp,pass->spp,act->biomass);
 			act->biomass=0; //reset this; we might continue to make stuff!
 
 			//TODO: place the new agent on the grid
 			if((place_neighbor(A,run,c,act->x,act->y))!=NULL){//,x,y))!=NULL){
 				//append the agent to nexthead
-				A->append_ag(&(A->nexthead),c);
+				A->AgentAppend(&(A->nexthead),c);
 			}
 			else{
 				A->AgentFree(c);
@@ -811,12 +811,12 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 		//Get rid of zero-length strings...
 		//NB - grid status will be updated at the end of the timestep - simpler.
-		if((dac = A->check_ptrs(act))){
+		if((dac = A->PointersCheck(act))){
 			//int x,y;
 			switch(dac){
 			case 1://Destroy active - only append passive
-				A->unbind_ag(pass,'P',1,act->spp,pass->spp);
-				A->append_ag(&(A->nexthead),pass);
+				A->AgentUnbind(pass,'P',1,act->spp,pass->spp);
+				A->AgentAppend(&(A->nexthead),pass);
 				//find_ag_gridpos(pass,run,&x,&y);
 				//run->status[x][y]=G_NEXT;
 				run->status[pass->x][pass->y]=G_NEXT;
@@ -830,8 +830,8 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 				break;
 			case 2://Destroy passive - only append active
-				A->unbind_ag(act,'A',1,act->spp,pass->spp);
-				A->append_ag(&(A->nexthead),act);
+				A->AgentUnbind(act,'A',1,act->spp,pass->spp);
+				A->AgentAppend(&(A->nexthead),act);
 				//find_ag_gridpos(act,run,&x,&y);
 				run->status[act->x][act->y]=G_NEXT;
 
@@ -846,8 +846,8 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				break;
 			case 3://Destroy both
 				printf("Destroying both parents after cleave!\nThis should never happen!\n");
-				A->unbind_ag(act,'A',1,act->spp,pass->spp);
-				A->unbind_ag(pass,'P',1,act->spp,pass->spp);
+				A->AgentUnbind(act,'A',1,act->spp,pass->spp);
+				A->AgentUnbind(pass,'P',1,act->spp,pass->spp);
 				A->AgentFree(act);
 				act = NULL;
 				A->AgentFree(pass);
@@ -928,8 +928,8 @@ int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int 
 	 ************/
 	case '='://h-copy
 		if(A->OpcodeCopy(act)<0){
-			A->unbind_ag(act,'A',1,act->spp,pass->spp);
-			A->unbind_ag(pass,'P',1,act->spp,pass->spp);
+			A->AgentUnbind(act,'A',1,act->spp,pass->spp);
+			A->AgentUnbind(pass,'P',1,act->spp,pass->spp);
 		}
 		break;
 
@@ -1015,10 +1015,10 @@ int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int 
 			printf("Unbinding...\n");
 #endif
 
-			A->unbind_ag(act,'A',1,act->spp,pass->spp);
+			A->AgentUnbind(act,'A',1,act->spp,pass->spp);
 			run->status[act->x][act->y] = G_NEXT;
 
-			A->unbind_ag(pass,'P',1,act->spp,pass->spp);
+			A->AgentUnbind(pass,'P',1,act->spp,pass->spp);
 			//int xx,yy;
 			//find_ag_gridpos(pass,run,&xx,&yy);
 			run->status[pass->x][pass->y] = G_NEXT;
@@ -1038,8 +1038,8 @@ int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int 
 	//TODO: This action should be elsewhere - much harder to follow here
 	if(safe_append){
 		act->ect++;
-		A->append_ag(&(A->nexthead),act);
-		A->append_ag(&(A->nexthead),pass);
+		A->AgentAppend(&(A->nexthead),act);
+		A->AgentAppend(&(A->nexthead),pass);
 	}
 	A->energy--;
 
@@ -1281,7 +1281,7 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 
 int smspatial_step(stringPM *A, smsprun *run){
 
-	//again, we follow make_next, but are a little more careful with the binding and uncoupling
+	//again, we follow TimestepIncrement, but are a little more careful with the binding and uncoupling
 	s_ag *pag;
 
 	//A->energy += A->estep;
@@ -1352,7 +1352,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 
 						//Now we've found a potential partner, we can see if it binds:
 						float bprob;
-						bprob = A->get_sw(pag,bag,&sw);
+						bprob = A->AgentsAlign(pag,bag,&sw);
 
 						float rno;
 						rno = rand0to1();
@@ -1364,8 +1364,8 @@ int smspatial_step(stringPM *A, smsprun *run){
 
 							A->energy--;
 
-							A->append_ag(&(A->nexthead),pag);
-							A->append_ag(&(A->nexthead),bag);
+							A->AgentAppend(&(A->nexthead),pag);
+							A->AgentAppend(&(A->nexthead),bag);
 							changed=1;
 						}
 					}
@@ -1389,9 +1389,9 @@ int smspatial_step(stringPM *A, smsprun *run){
 				}
 			}
 			if(!changed){
-				A->append_ag(&(A->nexthead),pag);
+				A->AgentAppend(&(A->nexthead),pag);
 				if(bag!=NULL)
-					A->append_ag(&(A->nexthead),bag);
+					A->AgentAppend(&(A->nexthead),bag);
 
 			}
 		}
@@ -1457,7 +1457,7 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 			if( pag->x > -1 ){
 				if( pag->y > -1){
 					place_mol(pag,*run,pag->x,pag->y);
-					A->append_ag(&(A->nexthead),pag);
+					A->AgentAppend(&(A->nexthead),pag);
 					found = 1;
 				}
 				else{
@@ -1493,14 +1493,14 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 							place_mol(pag,*run,x,y);
 
 							//Move to the 'used' bucket
-							A->append_ag(&(A->nexthead),pag);
+							A->AgentAppend(&(A->nexthead),pag);
 
 							s_ag *bag;
 							bag = A->AgentSelectRandomly(A->nowhead,-1);
 							if(bag != NULL){
 								A->AgentExtract(&(A->nowhead),bag);
 								place_mol(bag,*run,xx,yy);
-								A->append_ag(&(A->nexthead),bag);
+								A->AgentAppend(&(A->nexthead),bag);
 							}
 						}
 					}

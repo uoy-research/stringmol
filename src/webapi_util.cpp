@@ -78,7 +78,7 @@ s_ag * make_mol(stringPM *A, char* string){
 	}
 
 
-	pag = A->make_ag('X');
+	pag = A->AgentMake('X');
 
 	pag->S =(char *) malloc(A->maxl0*sizeof(char));
 
@@ -145,7 +145,7 @@ char * generate_bind_data(char * string1, char * string2){
 	a1 = make_mol(&A,string1);
 	a2 = make_mol(&A,string2);
 	 //Get the Smith Waterman alignment
-	A.get_sw(a1,a2,&sw);
+	A.AgentsAlign(a1,a2,&sw);
 	 //Figure out the active molecule
 	A.ReactionSetupExecution(a1,a2,&sw);
 	if(a1->status == B_ACTIVE)
