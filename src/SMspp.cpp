@@ -15,7 +15,7 @@
 /* GNU General Public License for more details.                         */
 
 /* You should have received a copy of the GNU General Public License    */
-/* along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
+/* along with this program. If not, see <http://www.gnu.org/licenses/>. */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -27,7 +27,7 @@
 
 SMspp::SMspp() {
 	spp_count=1;  // Why is this 1??
-	species = NULL;
+	species_list = NULL;
 }
 
 SMspp::~SMspp() {
@@ -44,18 +44,18 @@ SMspp& SMspp::operator=(const SMspp &SMspp_in){
 	//Straight copy of the variables
 	spp_count = SMspp_in.spp_count;
 
-	pls = SMspp_in.species;
+	pls = SMspp_in.species_list;
 
 	if(pls == NULL){
-		species = NULL;
+		species_list = NULL;
 	}
 	else{
-		species = NULL;
+		species_list = NULL;
 		while(pls != NULL){
-			pls2 = make_spp_from_string(pls->S,pls->tspp,strlen(pls->S)+10,pls->spp);
-			if(species==NULL){
-				species = pls2;
-				head2 = species;
+			pls2 = SpeciesMakeFromString(pls->S,pls->tspp,strlen(pls->S)+10,pls->spp);
+			if(species_list==NULL){
+				species_list = pls2;
+				head2 = species_list;
 			}
 			else{
 				head2->next = pls2;
@@ -66,15 +66,24 @@ SMspp& SMspp::operator=(const SMspp &SMspp_in){
 	}
 
 	return *this;
-	//if(SMspp_in.species !=NULL){
-	//	printf("WARNING! Trying to copy a species but haven't written it yet!\n");
-	//	//exit(2345);
-	//}
-	
-	//return(SMspp_out);
 }
 
-s_parent *SMspp::get_parents(l_spp * c, l_spp *paspp, l_spp  *ppspp){
+
+
+
+
+/***********************************************
+ * @brief Find parents in the parents list; make new entry if not found
+ *
+ * @param[in] c the species
+ *
+ * @param[in] paspp the active parent
+ *
+ * @param[in] ppspp the passive parent
+ *
+ * @return the created parent
+ ***********************************************/
+s_parent *SMspp::ParentsFindOrMake(l_spp * c, l_spp *paspp, l_spp  *ppspp){
 
 	s_parent *pp;
 	for(pp = c->pp;pp!=NULL;pp=pp->next){
@@ -86,13 +95,25 @@ s_parent *SMspp::get_parents(l_spp * c, l_spp *paspp, l_spp  *ppspp){
 	}
 
 	//We'll only make it to here if a parent is not found
-	pp = make_parents(paspp,ppspp);
-	append_parents(c,pp);
+	pp = ParentsMake(paspp,ppspp);
+	ParentsAppend(c,pp);
 	return pp;
 }
 
 
-void SMspp::append_parents(l_spp *c, s_parent *pp){
+
+
+
+/***********************************************
+ * @brief Append a parent a species' list of parents
+ *
+ * @param[in] c the species
+ *
+ * @param[in] pp the parent list
+ *
+ * @return the created parent
+ ***********************************************/
+void SMspp::ParentsAppend(l_spp *c, s_parent *pp){
 	s_parent *oo;
 
 	if(c->pp==NULL){
@@ -108,9 +129,24 @@ void SMspp::append_parents(l_spp *c, s_parent *pp){
 	}
 }
 
-//NB: We have to know what the parents are to do this, and to have checked that
-// the parent pair does not already exist.
-s_parent * SMspp::make_parents(l_spp * paspp, l_spp * ppspp){
+
+
+
+
+
+/***********************************************
+ * @brief create an s_parent object
+ *
+ * @details We have to know what the parents are to do this, and to have
+ *          checked that the parent pair does not already exist.
+ *
+ * @param[in] paspp the active parent
+ *
+ * @param[in] ppspp the passive parent
+ *
+ * @return the created parent
+ ***********************************************/
+s_parent * SMspp::ParentsMake(l_spp * paspp, l_spp * ppspp){
 
 	s_parent *pp;
 	pp = static_cast<s_parent *>(malloc(sizeof(s_parent)));
@@ -134,12 +170,15 @@ s_parent * SMspp::make_parents(l_spp * paspp, l_spp * ppspp){
 /***********************************************
  * @brief Create a species struct from a character string.
  *
- * @param[S] the sequence of the species
- * @param[extit] the "tspp" variable
- * @param[maxl0] the length of \p S:
- * @param[spno] if -1, use spp_count to generate a spno for this string, else try to assign spno - risk of error though!
+ * @param[in] a the stringmol agent
+ *
+ * @param[in] extit the timestamp
+ *
+ * @param[in] maxl0 the max string length + `\0`
+ *
+ * @return the created species
  ***********************************************/
-l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const int spno){
+l_spp * SMspp::SpeciesMakeFromString(char *S, int extit, const int maxl0, const int spno){
 
 	//! pointer to the l_spp object
 	l_spp *sp;
@@ -157,7 +196,7 @@ l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const i
 	if(spno>-1){
 		//Todo - check that spno doesn't already exist:
 		l_spp *lsp;
-		for(lsp = species; lsp != NULL; lsp = lsp->next){
+		for(lsp = species_list; lsp != NULL; lsp = lsp->next){
 			if(lsp->spp == spno){
 				printf("ERROR: species %d already exists! string is: %s\n",lsp->spp,lsp->S);
 				return NULL; //todo handle the error more gracefully!
@@ -179,20 +218,32 @@ l_spp * SMspp::make_spp_from_string(char *S, int extit, const int maxl0, const i
 	
 	sp->pf = 0;
 	sp->anc = 0;
-	sp->sig_sc=0;
 
 	return sp;
-
 }
 
 
-l_spp * SMspp::make_spp_from_agent(s_ag *a, int extit, const int maxl0){
+
+
+
+/***********************************************
+ * @brief Create a species struct from a stringmol agent.
+ *
+ * @param[in] a the stringmol agent
+ *
+ * @param[in] extit the timestamp
+ *
+ * @param[in] maxl0 the max string length + `\0`
+ *
+ * @return the created species
+ ***********************************************/
+l_spp * SMspp::SpeciesMakeFromAgent(s_ag *a, int extit, const int maxl0){
 
 	l_spp *sp;
 
-	sp = make_spp_from_string(a->S,extit,maxl0,-1);
+	sp = SpeciesMakeFromString(a->S,extit,maxl0,-1);
 	//Here we assume that parents of the agent are already set!
-	//sp->pp = make_parents(a->pp->pa,a->pp->pp);
+	//sp->pp = ParentsMake(a->pp->pa,a->pp->pp);
 	//a->pp = sp->pp;
 
 	a->pp = NULL;
@@ -200,18 +251,30 @@ l_spp * SMspp::make_spp_from_agent(s_ag *a, int extit, const int maxl0){
 }
 
 
-void SMspp::prepend_spp(l_spp *sp){
 
-	sp->next = species;
-	species = sp;
+
+
+/***********************************************
+ * @brief add a species_list to the *start* of the species_list list
+ *
+ * @param[in] sp the species_list
+ ***********************************************/
+void SMspp::SpeciesPrependToList(l_spp *sp){
+
+	sp->next = species_list;
+	species_list = sp;
 
 }
+
+
+
+
 
 l_spp * SMspp::find_spp(char *S, const int maxl0){
 
 	l_spp *p;
 	//First, check if it's in the list:
-	for(p=species;p!=NULL;p=p->next){
+	for(p=species_list;p!=NULL;p=p->next){
 		if(!strcmp(p->S,S))
 			return p;
 	}
@@ -230,8 +293,8 @@ l_spp * SMspp::getspp(s_ag *a, int extit,const int maxl0){//s_spp * paspp, s_spp
 
 	if(p==NULL){
 		//If not found, make a new one, append it and return the address of the new.
-		p = make_spp_from_agent(a,extit,maxl0);
-		prepend_spp(p);
+		p = SpeciesMakeFromAgent(a,extit,maxl0);
+		SpeciesPrependToList(p);
 	}
 
 	return p;
@@ -246,30 +309,16 @@ l_spp * SMspp::getspp_from_string(char *S, int extit,const int maxl0, const int 
 
 	if(p==NULL){
 		//If not found, make a new one, append it and return the address of the new.
-		p = make_spp_from_string(S,extit,maxl0,spno);
-		prepend_spp(p);
+		p = SpeciesMakeFromString(S,extit,maxl0,spno);
+		SpeciesPrependToList(p);
 	}
 
 	return p;
 }
 
 
-/*
-s_spp * SMspp::getspp(int spno){
 
-	s_spp *p;
-	//First, check if it's in the list:
-	for(p=species;p!=NULL;p=p->next){
-		if(spno == p->spp)
-			return p;
-	}
 
-	//If not, make a new one, append it and return the address of the new.
-	printf("ERROR - species %d not found\n",spno);
-	fflush(stdout);
-	return NULL;
-}
-*/
 
 void SMspp::free_parent_list(s_parent *pp){
 
@@ -293,18 +342,28 @@ void SMspp::free_spp(l_spp *sp){
 int SMspp::clear_list(){
 	l_spp *ps,*n;
 
-	for(ps=species;ps!=NULL;){
+	for(ps=species_list;ps!=NULL;){
 		n = ps->next;
 		free_spp(ps);
 		ps = n;
 	}
-	species = NULL;
+	species_list = NULL;
 	spp_count=1;  // Why is this 1??
 	return 0;
 }
 
 
-int SMspp::print_spp_list(FILE *fp){
+
+
+
+/******************************************************************************
+* @brief print the list of species_list
+*
+* @param[in] fp a file pointer (can be stdout)
+*
+* @return the number of species_list present
+*****************************************************************************/
+int SMspp::SpeciesListPrint(FILE *fp){
 
 	l_spp *ps;
 	s_parent *pp;
@@ -313,11 +372,11 @@ int SMspp::print_spp_list(FILE *fp){
 	if(fp==NULL)
 		fp=stdout;
 
-	for(ps=species;ps!=NULL;ps=ps->next){
+	for(ps=species_list;ps!=NULL;ps=ps->next){
 			for(pp=ps->pp;pp!=NULL;pp=pp->next){
 				count++;
 				if(pp->pa && pp->pp)//Need to find a better way....
-					fprintf(fp,"%d,%d,%d,%f,%d,%d,%d,%s\n",ps->spp, pp->pa->spp, pp->pp->spp ,ps->sig_sc,pp->n,ps->tspp,ps->biomass,ps->S);
+					fprintf(fp,"%d,%d,%d,%d,%d,%d,%s\n",ps->spp, pp->pa->spp, pp->pp->spp ,pp->n,ps->tspp,ps->biomass,ps->S);
 				else{
 					fprintf(fp,"%d,",ps->spp);
 					if(pp->pa)

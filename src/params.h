@@ -24,11 +24,11 @@
 #ifndef PARAMS_H_
 #define PARAMS_H_
 
-int read_param_float(FILE *fp, const char *label, float *val, int verbose);
-int read_param_int(FILE *fp,const char *label, unsigned int *val, int verbose);
+int ParameterReadFloat(FILE *fp, const char *label, float *val, int verbose);
+int ParameterReadUnsignedInt(FILE *fp,const char *label, unsigned int *val, int verbose);
 char * read_param_string(FILE **pfp,const char *label, int verbose);
 
-int readordef_param_int(const char *fn, const char *label, unsigned int *val, const int defaultvalue, const int verbose);
+int ParameterReadOrDefineUnsignedInt(const char *fn, const char *label, unsigned int *val, const int defaultvalue, const int verbose);
 
 void report_param_error(int error, int doexit);
 

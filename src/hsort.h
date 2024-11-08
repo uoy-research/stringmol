@@ -27,7 +27,7 @@ extern "C" {
 
 
 
-void idx_hsort_int(int a[], int idx[], const int N);
+void HeapsortByIndex(int a[], int idx[], const int N);
 //void print_hsort_data(int a[], int idx[], const int N, FILE *out);
 
 #endif

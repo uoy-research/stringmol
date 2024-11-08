@@ -60,7 +60,7 @@ int mutate_int (int val, int min, int max) {
 
 	int outofrange=1;
 	while(outofrange){
-		int mpow = (float) rpow * rand0to1();
+		int mpow = (float) rpow * RandomBetween0And1();
 
 		if (randint()%2 == 0){
 			val = (val + pow(2,mpow));

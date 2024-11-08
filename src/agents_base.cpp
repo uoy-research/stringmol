@@ -64,7 +64,7 @@ int agents_base::PropensityEquation(const int n){
 
 		//printf("%d\t%f\t%f\t%f\t%f\n",n,cov,agarea,cellarea,arearatio);
 
-		float rno = rand0to1();
+		float rno = RandomBetween0And1();
 
 		if(rno<cov)
 			return 1;
@@ -223,21 +223,21 @@ int agents_base::ParametersLoad(const char *fn, int test, int verbose){
 	if((fp=fopen(fn,"r"))!=NULL){
 		float tmpen;
 		int err = 0;
-		int e=  read_param_float(fp,"CELLRAD",&cellrad, verbose);
+		int e=  ParameterReadFloat(fp,"CELLRAD",&cellrad, verbose);
 		if(e>1)err++;
 
 		vcellrad = cellrad;
-		e=  read_param_float(fp,"AGRAD",&agrad, verbose);
+		e=  ParameterReadFloat(fp,"AGRAD",&agrad, verbose);
 		if(e>1)err++;
 
-		//err +=  read_param_float(fp,"MOVE",&move);
-		e=  read_param_float(fp,"ENERGY",&tmpen, verbose);
+		//err +=  ParameterReadFloat(fp,"MOVE",&move);
+		e=  ParameterReadFloat(fp,"ENERGY",&tmpen, verbose);
 		if(e>1)err++;
 		energy = (int) tmpen;
 
-		e=  read_param_float(fp,"NSTEPS",&nsteps, verbose);
+		e=  ParameterReadFloat(fp,"NSTEPS",&nsteps, verbose);
 		if(e>1)err++;
-		//err += 	read_param_float(fp,"DIVTIME",&divtime);
+		//err += 	ParameterReadFloat(fp,"DIVTIME",&divtime);
 
 		if(err){
 			printf("Some error reading config file\n");

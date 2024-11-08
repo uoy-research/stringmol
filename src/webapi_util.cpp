@@ -153,7 +153,7 @@ char * generate_bind_data(char * string1, char * string2){
 	else
 		pact = a2;
 	 //Get the bind probability
-	float bprob = A.get_bprob(&sw);
+	float bprob = A.ReactionCalculateBindProbability(&sw);
 
 
 	/*TODO: Questions for Adam:

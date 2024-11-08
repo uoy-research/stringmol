@@ -133,8 +133,8 @@ stringPM * test_config_settings( int argc, char *argv[], int return_SM){
 	printf("..c'est ca!\n\n");
 
 	//int readordef_param_int(char *fn, const char *label, int *val, const int defaultvalue, const int verbose)
-	readordef_param_int(argv[2], "NTRIALS", &ntrials, 1, 1);
-	int nns = readordef_param_int(argv[2], "NSTEPS", &nsteps, -1, 1);
+	ParameterReadOrDefineUnsignedInt(argv[2], "NTRIALS", &ntrials, 1, 1);
+	int nns = ParameterReadOrDefineUnsignedInt(argv[2], "NSTEPS", &nsteps, -1, 1);
 
 	A->load(argv[2],NULL,0,1);
 	//if(!arg_load(A, argc, argv, 0))
@@ -313,7 +313,7 @@ void test_rand_config(int argc, char *argv[]){
 	 */
 	int lim = 625;
 	for (j=0; j<lim; j++) {
-		printf("%0.8f ", rand0to1());//genrand());
+		printf("%0.8f ", RandomBetween0And1());//genrand());
 		if (j%8==7) printf("\n");
 	}
 	printf("\nMTSTATE IS:\n");
@@ -328,7 +328,7 @@ void test_rand_config(int argc, char *argv[]){
 	//Run the rng on another 1000, save output to file
 	fp = fopen("testdata1.dat","w");
 	for (j=0; j<lim; j++) {
-		fprintf(fp, "%0.8f", rand0to1());//genrand());
+		fprintf(fp, "%0.8f", RandomBetween0And1());//genrand());
 		if (j%8==7)fprintf(fp,"\n");else fprintf(fp,"\t");
 	}
 	fclose(fp);
@@ -338,14 +338,14 @@ void test_rand_config(int argc, char *argv[]){
 
 	fp = fopen("testdata1_again.dat","w");
 	for (j=0; j<lim; j++) {
-		fprintf(fp, "%0.8f", rand0to1());//genrand());
+		fprintf(fp, "%0.8f", RandomBetween0And1());//genrand());
 		if (j%8==7)fprintf(fp,"\n");else fprintf(fp,"\t");
 	}
 	fclose(fp);
 
 	//Just to be sure, let's run this a few hundred thousand times and add a prime...
 	for (j=0; j<((lim*1000)+13); j++) {
-		rand0to1();
+		RandomBetween0And1();
 	}
 
 	//Now see if the two sets of values are the same:

@@ -52,7 +52,7 @@
 	void evostats(char * Afn, stringPM *B,s_sw **spp_matches, float *self, float *gvm);
 
 	//Different ways of loading, dependant upon the no. of arguments
-	int arg_load(stringPM *A, int argc, char *argv[], int verbose=0);
+	int ParametersLoadFromMainArgs(stringPM *A, int argc, char *argv[], int verbose=0);
 
 
 	/* Standard initialisation of random number seed */

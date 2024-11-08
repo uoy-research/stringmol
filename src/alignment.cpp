@@ -18,7 +18,7 @@
 /* along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 
-
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,13 +28,20 @@
 
 #include "alignment.h"
 
-/*
- * LINKED LIST STUFF
- * ***************************************************************/
 
-//swa = read_sw(swlist,a1->spp,a2->spp);
 
-s_sw * read_sw(s_sw *swlist, int sp1, int sp2){
+
+
+/*******************************************************************************
+* @brief copy align member variables to s_sw member variables
+*
+* @param[in] b the s_sw object
+*
+* @param[in] sw the align object
+*
+* @return 0 always
+*******************************************************************************/
+s_sw * ReactionReadAlignmentFromSWList(s_sw *swlist, int sp1, int sp2){
 
 	s_sw *p;
 
@@ -45,18 +52,32 @@ s_sw * read_sw(s_sw *swlist, int sp1, int sp2){
 	}
 	return NULL;
 }
+// TODO(sjh): this is very similar to stringPM::ReactionReadAlignmentFromSWList
 
 
 
-//store_sw(&swlist,sw);
 
-int store_sw(s_sw **head, align *sw, int sp1, int sp2){
 
-	//idea is to bung new alignments at the front of the list, since they are more likely to be used..
+/*******************************************************************************
+* @brief add Smith-Waterman alignment data to the list of stored reactions
+*
+* @param[in] head the head of the list
+*
+* @param[in] sw the alignment data
+*
+* @param[in] sp1 the index of species 1
+*
+* @param[in] sp2 the index of species 2
+*
+* @return 0 always
+*******************************************************************************/
+int ReactionStoreAlignmentToSWList(s_sw **head, align *sw, int sp1, int sp2){
+
+	// idea is to place new alignments at the front of the list, since
+	// they are more likely to be used..
 
 	s_sw *p;
 	s_sw *old;
-
 
 	old = *head;
 
@@ -68,7 +89,8 @@ int store_sw(s_sw **head, align *sw, int sp1, int sp2){
 
 	p->match = sw->match;		// the number of matching characters.
 	p->score = sw->score; 		// the score of the match
-	p->prob =  sw->prob;		// the probability of the match - used for determining events based on the score/match
+	p->prob =  sw->prob;		// the probability of the match - used for
+	                            // determining events based on the score/match
 	p->s1 =    sw->s1;			// start of the match in string 1
 	p->e1 =    sw->e1;			// end of the match in string 1
 	p->s2 =    sw->s2;			// start of the match in string 2
@@ -76,16 +98,23 @@ int store_sw(s_sw **head, align *sw, int sp1, int sp2){
 
 	*head = p;
 
-
-
-
-	//if(*head!=NULL)
 	return 0;
 }
 
 
-//load_sw(swa,sw);
-int load_sw(s_sw *b, align *sw){
+
+
+
+/*******************************************************************************
+* @brief copy align member variables to s_sw member variables
+*
+* @param[in] b the s_sw object
+*
+* @param[in] sw the align object
+*
+* @return 0 always
+*******************************************************************************/
+int SmithWatermanDataFromAlignmentObject(s_sw *b, align *sw){
 	sw->match = b->match;		// the number of matching characters.
 	sw->score = b->score; 		// the score of the match
 	sw->prob =  b->prob;		// the probability of the match - used for determining events based on the score/match
@@ -95,6 +124,8 @@ int load_sw(s_sw *b, align *sw){
 	sw->e2 =    b->e2;			// end of the match in string 2
 	return 0;
 }
+
+
 
 
 
@@ -110,10 +141,6 @@ void free_swlist(s_sw **head){
 	}
 	*head = NULL;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////
-
 
 
 
@@ -171,10 +198,24 @@ float wT(int a, int b,swt *T){
 
 
 
-/*
- * THIS VERSION USES A PROPER TRACE BACK MATRIX
- */
-int SmithWatermanV2(char *s1, char *s2, align *A, swt *swT, int verbose){
+/******************************************************************************
+* @brief caluclate the Smith-Waterman alignment of two stringmol sequences
+*
+* @details see technical report
+*
+* @param[in] s1 the first sequence
+*
+* @param[in] s2 the second sequence
+*
+* @param[in] align struct holding the alignment outputs
+*
+* @param[in] swT the similarity table
+*
+* @param[in] verbose flag for verbose output
+*
+* @return 0 always
+*****************************************************************************/
+int SmithWatermanAlignment(char *s1, char *s2, align *A, swt *swT, int verbose){
 
 	//align *A;
 	int l1,l2;
@@ -340,40 +381,29 @@ int SmithWatermanV2(char *s1, char *s2, align *A, swt *swT, int verbose){
 
 
 
+/******************************************************************************
+* @brief determine whether an alignment event has happened
+*
+* @details see technical report
+*
+* @param[in] align struct containing the alignment data
+*
+* @param[in] len length of the alignment
+*
+* @return 1 if the alignment happens, 0 if not
+*****************************************************************************/
+int OpcodeTemplateAligns(align *A,int len){
 
+	float rand = (float) RandomBetween0And1();
 
-
-
-
-
-
-
-
-
-void align_prob(align *A){
-
-	if(A->match)
-		A->prob = A->score/A->match;
-	else
-		A->prob = 0.;
-
-}
-
-
-int align_event(align *A,int len){
-
-	float rand = (float) rand0to1();
-	if(len<0){
-		printf("Align with length -1\n");
-		fflush(stdout);
-		align_prob(A);
-	}
-	else
-		A->prob = pow((float)A->score/len,len);//factorial(len);//A->score/len;
+	A->prob = pow((float)A->score/len,len);//factorial(len);//A->score/len;
 	if(rand<A->prob)
 		return 1;
 	return 0;
 }
+
+
+
 
 
 float instr_wt(char C){
@@ -406,10 +436,46 @@ void print_swt(FILE *fp, swt *sss){
 }
 
 
-char sym_from_adj(char X, swt *swt){
 
-	int idx = tab_idx(X,swt);
-	float rno=rand0to1();
+
+
+/******************************************************************************
+ * @brief find the index of an opcode in an `swt` table
+ *
+ * @param[in] X the input opcode
+ *
+ * @param[in] T the swt table
+ *
+ * @return the index, or -1 on error
+ *****************************************************************************/
+int OpcodeIndex(char X, swt *T){
+
+	int i;
+	for(i=0;i<T->N;i++)
+		if(T->key[i]==X)
+			return i;
+
+	printf("ERROR: Code %c (%d) not found in instruction set!\n",X,X);fflush(stdout);
+	return -1;
+}
+
+
+
+
+
+/******************************************************************************
+ * @brief finds an opcode 'adjacent' in mutation space to an input opcode
+ *
+ * @param[in] X the input opcode
+ *
+ * @param[in] swt the SmithWaterman data
+ *
+ * @return 0 the opcode char if found; 0 if not found
+ *****************************************************************************/
+char OpcodeAdjacent(char X, swt *swt){
+
+	int idx = OpcodeIndex(X,swt);
+	float rno=RandomBetween0And1();
 
 	if(idx>-1){
 		int count=0,i;
@@ -432,6 +498,8 @@ char sym_from_adj(char X, swt *swt){
 
 	return 0;
 }
+
+
 
 
 
@@ -585,19 +653,6 @@ int load_table(char *fn,swt *T){
 	return 5;
 }
 
-
-
-int tab_idx(char X, swt *T){
-
-	int i;
-	for(i=0;i<T->N;i++)
-		if(T->key[i]==X)
-			return i;
-
-	printf("ERROR: Code %c (%d) not found in instruction set!\n",X,X);fflush(stdout);
-	return -1;
-}
-
 /* FUNCTIONS FOR ADAM NELLIS */
 /* Not used??
 float score_sw(char *s1, char *s2, swt *swT){
@@ -627,7 +682,7 @@ void test_adj(swt *swt){
 	for(i=0;i<swt->N;i++){
 		printf("%c; ",swt->key[i]);
 		for(j=0;j<ntrials;j++){
-			printf("%c,",sym_from_adj(swt->key[i],swt));
+			printf("%c,",OpcodeAdjacent(swt->key[i],swt));
 		}
 		printf("\n");
 	}

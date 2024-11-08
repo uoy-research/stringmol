@@ -29,7 +29,7 @@
 		int initmyrand(int seed);
 		unsigned long longinitmyrand(const unsigned long *inseed);
 
-		double rand0to1();
+		double RandomBetween0And1();
 		int rand_in_rad(const float rad, float *x, float *y);
 
 		unsigned long randint();

@@ -92,8 +92,6 @@ stringPM::stringPM(SMspp * pSP){
 	maxl0 = maxl+1; //allow room for a terminating 0
 	estep = 20;
 
-	signal = NULL;
-
 	/** This is a toggle to turn the '+' operator on and off
 	 *
 	 * It can be set using the 'GRANULAR' flag in the config file
@@ -138,8 +136,6 @@ stringPM& stringPM::operator=(const stringPM &spm){
 	maxl = spm.maxl;
 	maxl0 = spm.maxl0; //allow room for a terminating 0
 	estep = spm.estep;
-
-	signal = spm.signal;
 
 	/** This is a toggle to turn the '+' operator on and off
 	 *
@@ -220,7 +216,7 @@ float stringPM::load_mut(const char *fn, int verbose){
 	if((fp=fopen(fn,"r"))!=NULL){
 
 		char *emsg;
-		int finderr=read_param_float(fp,"MUTATE",&mut,verbose);
+		int finderr=ParameterReadFloat(fp,"MUTATE",&mut,verbose);
 		fclose(fp);
 
 		switch(finderr){
@@ -262,7 +258,7 @@ float stringPM::load_decay(const char *fn, int verbose){
 
 	if((fp=fopen(fn,"r"))!=NULL){
 
-		int finderr=read_param_float(fp,"DECAY",&dec,verbose);
+		int finderr=ParameterReadFloat(fp,"DECAY",&dec,verbose);
 		fclose(fp);
 
 		switch(finderr){
@@ -485,7 +481,7 @@ int stringPM::load_splist(const char *fn,int verbose){
 				memset(label,0,llen);
 				sscanf(line,"%*s %d %2000s",&spno,label);
 				//TODO: make sure extit is set at this point
-				spl->getspp_from_string(label,extit,maxl0,spno);
+				spl->getspp_from_string(label,timestep,maxl0,spno);
 			}
 		}
 		fclose(fp);
@@ -649,7 +645,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 
 				//set the species data:
 				l_spp *sp;
-				for(sp = spl->species; sp!=NULL; sp=sp->next){
+				for(sp = spl->species_list; sp!=NULL; sp=sp->next){
 					id_spp(sp, pag, aspno,  active_spp_string);
 					id_spp(sp, bag, pspno, passive_spp_string);
 				}
@@ -718,13 +714,13 @@ s_ag * stringPM::read_unbound_agent(FILE **fp, char line[], const int llen){
 
 
 	//No parents for these initial agents!
-	pag->pp = spl->make_parents(NULL,NULL);
+	pag->pp = spl->ParentsMake(NULL,NULL);
 
 	//if(!i){
 
 	//int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
 	SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
-	s = spl->getspp(pag,extit,maxl0);
+	s = spl->getspp(pag,timestep,maxl0);
 	//TODO: tidy up handling of seed species, but for now:
 	s->tspp = 0;
 	//}
@@ -814,7 +810,7 @@ s_ag * stringPM::read_active_agent(FILE **fp, char line[], const int llen, int &
 
 	//set the species data:
 	l_spp *sp;
-	for(sp = spl->species; sp!=NULL; sp=sp->next){
+	for(sp = spl->species_list; sp!=NULL; sp=sp->next){
 		id_spp(sp, pag, aspno,  active_spp_string);
 		//id_spp(sp, bag, pspno, passive_spp_string);
 	}
@@ -869,7 +865,7 @@ s_ag * stringPM::read_passive_agent(FILE **fp, char line[], const int llen){
 
 	//set the species data:
 	l_spp *sp;
-	for(sp = spl->species; sp!=NULL; sp=sp->next){
+	for(sp = spl->species_list; sp!=NULL; sp=sp->next){
 		//id_spp(sp, pag, aspno,  active_spp_string);
 		id_spp(sp, bag, pspno, passive_spp_string);
 	}
@@ -1074,28 +1070,28 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 
 	//Load the maximum permitted length of the molecules (or the default)
 	int dmxl = maxl;
-	int err = readordef_param_int(fn,"MAXLEN", &maxl, dmxl, 0);
+	int err = ParameterReadOrDefineUnsignedInt(fn,"MAXLEN", &maxl, dmxl, 0);
 	if(err>1){
 		printf("ERROR %d on loading max line length (MAXLEN)\n",err);
 		exit(0);
 	}
 	maxl0 = maxl+1;
 
-	extit = 0;
-	err = readordef_param_int(fn,"EXTIT", &extit, 0, 0);
+	timestep = 0;
+	err = ParameterReadOrDefineUnsignedInt(fn,"EXTIT", &timestep, 0, 0);
 	if(err>1){
 		printf("ERROR %d on loading external iteration value (EXTIT)\n",err);
 		exit(PARAM_LOAD_ERROR);
 	}
 
-	err = readordef_param_int(fn,"REPORTEVERY", &report_every, report_every, 0);
+	err = ParameterReadOrDefineUnsignedInt(fn,"REPORTEVERY", &report_every, report_every, 0);
 	if(err>1){
 		printf("ERROR %d on loading reporting frequency\n",err);
 		exit(PARAM_LOAD_ERROR);
 	}
 
 
-	err = readordef_param_int(fn,"IMAGEEVERY", &image_every, image_every, 0);
+	err = ParameterReadOrDefineUnsignedInt(fn,"IMAGEEVERY", &image_every, image_every, 0);
 	if(err>1){
 		printf("ERROR %d on loading imaging frequency\n",err);
 		exit(PARAM_LOAD_ERROR);
@@ -1104,7 +1100,7 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 
 
 	//TODO: Not sure that this has ever been used - but it might be useful
-	err = readordef_param_int(fn,"SPLPRINT", &splprint, splprint, 0);
+	err = ParameterReadOrDefineUnsignedInt(fn,"SPLPRINT", &splprint, splprint, 0);
 	if(err>1){
 		printf("ERROR %d on loading specieslist print frequency\n",err);
 		exit(PARAM_LOAD_ERROR);
@@ -1122,7 +1118,7 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 
 
 	int destep = estep;
-	int estep_err = readordef_param_int(fn,"ESTEP", &estep, destep, 0);
+	int estep_err = ParameterReadOrDefineUnsignedInt(fn,"ESTEP", &estep, destep, 0);
 	if(estep_err>1){
 		printf("ERROR %d on loading energy per time step (ESTEP)\n",estep_err);
 		exit(PARAM_LOAD_ERROR);
@@ -1155,14 +1151,14 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 
 	int gdefault = 0;
 	unsigned int gridx,gridy;
-	err = readordef_param_int(fn,"GRIDX", &gridx, gdefault, 0);
+	err = ParameterReadOrDefineUnsignedInt(fn,"GRIDX", &gridx, gdefault, 0);
 	if(err>1){
 		printf("ERROR %d on loading gridx (GRIDX)\n",err);
 		exit(PARAM_LOAD_ERROR);
 	}
 	else{
 		if(gridx>0){//Then we've got a grid definition and we need a y
-			err = readordef_param_int(fn,"GRIDY", &gridy, gdefault, 0);
+			err = ParameterReadOrDefineUnsignedInt(fn,"GRIDY", &gridy, gdefault, 0);
 			if(err>1){
 				printf("ERROR %d on loading gridy (GRIDY)\n",err);
 				exit(PARAM_LOAD_ERROR);
@@ -1275,13 +1271,13 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 
 
 						//No parents for these initial agents!
-						pag->pp = spl->make_parents(NULL,NULL);
+						pag->pp = spl->ParentsMake(NULL,NULL);
 
 						if(!i){
 
 							//int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
 							SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
-							s = spl->getspp(pag,extit,maxl0);
+							s = spl->getspp(pag,timestep,maxl0);
 							//TODO: tidy up handling of seed species, but for now:
 							s->tspp = 0;
 						}
@@ -1430,7 +1426,7 @@ void stringPM::SpeciesPrintCount(FILE *fp,int style, int state){
 	if(nspp>1){
 
 		//print_hsort_data(spno,spindx,nspp,stdout);
-		idx_hsort_int(spno,spindx,nspp);
+		HeapsortByIndex(spno,spindx,nspp);
 	}
 	else{
 		spindx[0]=0;
@@ -1442,11 +1438,11 @@ void stringPM::SpeciesPrintCount(FILE *fp,int style, int state){
 		for(int i=0;i<nspp;i++){
 			fprintf(fp,"-------");
 		}
-		fprintf(fp,"\n%d\t",(int) extit);
+		fprintf(fp,"\n%d\t",(int) timestep);
 		for(int i=0;i<nspp;i++){
 			fprintf(fp,"%03d\t",spno[spindx[i]]);
 		}
-		fprintf(fp,"\n%d\t",(int) extit);
+		fprintf(fp,"\n%d\t",(int) timestep);
 		for(int i=0;i<nspp;i++){
 			fprintf(fp,"%03d\t",spct[spindx[i]]);
 		}
@@ -1454,7 +1450,7 @@ void stringPM::SpeciesPrintCount(FILE *fp,int style, int state){
 		break;
 	case 1: //Vertical
 		for(int i=0;i<nspp;i++){
-			fprintf(fp,"%d,%d,%d\n",(int) extit,spno[spindx[i]],spct[spindx[i]]);
+			fprintf(fp,"%d,%d,%d\n",(int) timestep,spno[spindx[i]],spct[spindx[i]]);
 		}
 		break;
 	}
@@ -1671,7 +1667,7 @@ s_ag * stringPM::AgentSelectRandomly(s_ag *head, int state){
 	switch(state){
 	case -1:
 		while(pag==NULL){
-			pos = (int) (count * rand0to1());
+			pos = (int) (count * RandomBetween0And1());
 			//printf("count = %d, pos = %d\n",count,pos);
 			pag = head;
 			for(i=0;i<pos;i++){
@@ -1692,7 +1688,7 @@ s_ag * stringPM::AgentSelectRandomly(s_ag *head, int state){
 		}
 		pos=count;
 		while(pos==count){
-			pos = (int) (count * rand0to1());
+			pos = (int) (count * RandomBetween0And1());
 		}
 		pag=arr[pos];
 		free(arr);
@@ -1731,7 +1727,7 @@ s_ag * stringPM::AgentMake(int alab){
 	//ATTENTION! this is how you convert from C-style to C++-style casts
 	//https://embeddedartistry.com/blog/2017/03/15/c-casting-or-oh-no-they-broke-malloc/
 	//if((ag = (s_ag *) mymalloc(1,sizeof(s_ag)))!=NULL){
-	if(( ag = static_cast<s_ag *> (mymalloc(1, sizeof(s_ag))))!=NULL){
+	if(( ag = static_cast<s_ag *> (MallocOrExit(1, sizeof(s_ag))))!=NULL){
 		ag->label=alab;
 		ag->next = NULL;
 		ag->prev = NULL;
@@ -1874,7 +1870,7 @@ int stringPM::AgentAttemptDecay(s_ag *pag){
 #endif
 
 
-	float rno = rand0to1();
+	float rno = RandomBetween0And1();
 
 #ifdef UNB_DECAY_ONLY
 	if(rno<prob && pag->status == B_UNBOUND){
@@ -1895,33 +1891,9 @@ int stringPM::AgentAttemptDecay(s_ag *pag){
 
 
 
-float stringPM::sigalign(char *str){
-
-	int L_sig = strlen(signal);
-	int L_str = strlen(str);
-	align sw;
-	char *comp;
-	float bprob;
-
-	comp = string_comp(str);
-	/*bprob =*/ SmithWatermanV2(comp,signal,&sw,blosum,0);
-	free(comp);
-	int l = L_str>L_sig?L_str:L_sig;
-	int la = sw.e1-sw.s1 < sw.e2-sw.s2 ? sw.e1-sw.s1 : sw.e2-sw.s2;
-	if(la<=2)
-		bprob=0;
-	else{
-		float s = sw.score<l-1.124? sw.score : l-1.124;
-		bprob = s/(l-1.124);
-	}
-
-	return bprob;
-
-}
 
 
-
-float stringPM::get_bprob(align *sw){
+float stringPM::ReactionCalculateBindProbability(align *sw){
 	float bprob = 0.;
 	//This is the old bind prob, with a modifier for short strings:
 
@@ -1959,7 +1931,7 @@ float stringPM::AgentsAlign(s_ag *a1, s_ag *a2, align *sw){
 	s_sw *swa;
 
 	//SUGGEST: pass in pointer to the species - not its index
-	swa = read_sw(swlist,a1->spp->spp,a2->spp->spp);
+	swa = ReactionReadAlignmentFromSWList(swlist,a1->spp->spp,a2->spp->spp);
 
 	if(swa==NULL){
 
@@ -1967,22 +1939,22 @@ float stringPM::AgentsAlign(s_ag *a1, s_ag *a2, align *sw){
 	
 		comp = string_comp(a1->S);
 
-		/*bprob =*/ SmithWatermanV2(comp,a2->S,sw,blosum,0);
+		/*bprob =*/ SmithWatermanAlignment(comp,a2->S,sw,blosum,0);
 
 		free(comp);
 
 		align sw2;
 
-		/*bprob =*/ SmithWatermanV2(a1->S,a2->S,&sw2,blosum,0);
+		/*bprob =*/ SmithWatermanAlignment(a1->S,a2->S,&sw2,blosum,0);
 
 		//TODO: SUGGEST: pass in pointer to the species - not its index
-		store_sw(&swlist,sw,a1->spp->spp,a2->spp->spp);
+		ReactionStoreAlignmentToSWList(&swlist,sw,a1->spp->spp,a2->spp->spp);
 	}
 	else{
-		load_sw(swa,sw);
+		SmithWatermanDataFromAlignmentObject(swa,sw);
 	}
 
-	bprob = get_bprob(sw);
+	bprob = ReactionCalculateBindProbability(sw);
 
 
 	if(verbose_bind){
@@ -2216,7 +2188,7 @@ int stringPM::ReactionAttemptBind(s_ag *pag){
 		sw.s2=0;			// start of the match in string 2
 		sw.e2=1;			// end of the match in string 2
 #endif
-		rno = rand0to1();
+		rno = RandomBetween0And1();
 		if(rno<bprob){//Binding success!
 			//figure out which is the executing string:
 			ReactionSetupExecution(pag,bag,&sw);
@@ -2296,7 +2268,17 @@ int stringPM::PointerPosition(s_ag *pag, char headtype){
 }
 
 
-int stringPM::rewind_bad_ptrs(s_ag* act){
+
+
+
+/******************************************************************************
+ * @brief reposition pointers if they are beyond the end of string post cleave
+ *
+ * @param[in] act the agent
+ *
+ * @return 0 always
+ *****************************************************************************/
+int stringPM::AgentRewindDanglingPtrs(s_ag* act){
 
 	int plen,alen,pdist;
 	char *ps;
@@ -2380,14 +2362,14 @@ int stringPM::rewind_bad_ptrs(s_ag* act){
 
 
 /******************************************************************************
- * @brief check that the pointers are 'on' a string
+ * @brief handle zero-length strings (after a Cleave for example)
  *
  * @param[in] act the agent
  *
  * @return 0 if no problem; 1 if zero-length active string;
  *         2 zero-length passive string
  *****************************************************************************/
-int stringPM::PointersCheck(s_ag* act){
+int stringPM::AgentCheckZeroLengthString(s_ag* act){
 
 #ifdef VERBOSE
 	ReactionPrintState(stdout,act,act->pass);
@@ -2396,7 +2378,7 @@ int stringPM::PointersCheck(s_ag* act){
 	//char *ps;
 
 	//Sort pointers out first - even if there's going to be an error!
-	rewind_bad_ptrs(act);
+	AgentRewindDanglingPtrs(act);
 
 	//Step 1: make sure act and pass *have* strings...
 	if(!strlen(act->S)){
@@ -2505,11 +2487,11 @@ int stringPM::OpcodeCopy(s_ag *act){
 	//}
 
 	if(safe){
-		rno=rand0to1();
+		rno=RandomBetween0And1();
 		if(rno<indelrate){//INDEL
 
 			//should follow the blosum table for this....
-			rno=rand0to1();
+			rno=RandomBetween0And1();
 			if(rno<0.5){//insert
 				//first do a straight copy..
 				*(act->w[act->wt])=*(act->r[act->rt]);
@@ -2518,7 +2500,7 @@ int stringPM::OpcodeCopy(s_ag *act){
 				act->w[act->wt]++;
 
 				//Then pick a random instruction:
-				cidx = (float) rand0to1() * blosum->N;
+				cidx = (float) RandomBetween0And1() * blosum->N;
 
 				//insert the random instruction
 				*(act->w[act->wt])=blosum->key[cidx];
@@ -2537,7 +2519,7 @@ int stringPM::OpcodeCopy(s_ag *act){
 		}
 		else{
 			if(rno<subrate+indelrate){//INCREMENTAL MUTATION
-				cidx = sym_from_adj(*(act->r[act->rt]),blosum);
+				cidx = OpcodeAdjacent(*(act->r[act->rt]),blosum);
 				*(act->w[act->wt])=cidx;
 			}
 			else{//NO MUTATION
@@ -2607,7 +2589,7 @@ int stringPM::OpcodeCleave(s_ag *act){
 		}
 
 		//Make the parent structure: ALL DONE NOW IN SpeciesListUpdate
-		//c->pp = splist->make_parents(act->spp,pass->spp);
+		//c->pp = splist->ParentsMake(act->spp,pass->spp);
 
 		cpy -= act->f[act->ft]-cs;
 
@@ -2636,7 +2618,7 @@ int stringPM::OpcodeCleave(s_ag *act){
 
 		csite->len = strlen(csite->S);
 
-		if((dac = PointersCheck(act))){
+		if((dac = AgentCheckZeroLengthString(act))){
 			switch(dac){
 			case 1://Destroy active - only append passive
 				AgentUnbind(pass,'P',1,act->spp,pass->spp);
@@ -2817,7 +2799,7 @@ int stringPM::ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 	 *  IFLABEL *
 	 ************/
 	case '?'://If-label
-			act->i[act->it]=IfLabel(act->i[act->it],act->r[act->rt],act->S,blosum,maxl);
+			act->i[act->it]=OpcodeIf(act->i[act->it],act->r[act->rt],act->S,blosum,maxl);
 			break;
 
 
@@ -3199,15 +3181,15 @@ int stringPM::comass_hcopy(s_ag *act){
 		//see if we are overwriting or not:
 		int rm,wm=-1;
 		if(*(act->w[act->wt])){
-			wm=tab_idx(*(act->w[act->wt]),blosum);
+			wm=OpcodeIndex(*(act->w[act->wt]),blosum);
 		}
 
 
-		rno=rand0to1();
+		rno=RandomBetween0And1();
 		if(rno<indelrate){//INDEL - we should never be doing this in comass!
 
 			//should follow the blosum table for this....
-			rno=rand0to1();
+			rno=RandomBetween0And1();
 			if(rno<0.5){//insert
 
 				//first do a straight copy..
@@ -3215,7 +3197,7 @@ int stringPM::comass_hcopy(s_ag *act){
 				act->w[act->wt]++;
 
 				//Then pick a random instruction:
-				rm = (float) rand0to1() * blosum->N;
+				rm = (float) RandomBetween0And1() * blosum->N;
 
 				//Check there's mass for this symbol:
 				if(mass[rm]){
@@ -3239,8 +3221,8 @@ int stringPM::comass_hcopy(s_ag *act){
 		else{
 			if(rno<subrate+indelrate){//INCREMENTAL MUTATION - we should never be doing this either
 
-				cidx = sym_from_adj(*(act->r[act->rt]),blosum);
-				rm = tab_idx(cidx,blosum);
+				cidx = OpcodeAdjacent(*(act->r[act->rt]),blosum);
+				rm = OpcodeIndex(cidx,blosum);
 				if(mass[rm]){
 					*(act->w[act->wt])=cidx;
 					act->w[act->wt]++;
@@ -3256,7 +3238,7 @@ int stringPM::comass_hcopy(s_ag *act){
 			}
 			else{//NO MUTATION (but possible sub via comass effects)
 
-				rm = tab_idx(*(act->r[act->rt]),blosum);
+				rm = OpcodeIndex(*(act->r[act->rt]),blosum);
 				if(mass[rm]){
 					*(act->w[act->wt])=*(act->r[act->rt]);
 					act->w[act->wt]++;
@@ -3266,8 +3248,8 @@ int stringPM::comass_hcopy(s_ag *act){
 					mass[rm]--;
 				}
 				else{
-					cidx = sym_from_adj(*(act->r[act->rt]),blosum);
-					rm = tab_idx(cidx,blosum);
+					cidx = OpcodeAdjacent(*(act->r[act->rt]),blosum);
+					rm = OpcodeIndex(cidx,blosum);
 					if(mass[rm]){
 						*(act->w[act->wt])=cidx;
 						act->w[act->wt]++;
@@ -3386,7 +3368,7 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 	 *  IFLABEL *
 	 ************/
 	case '?'://If-label
-			act->i[act->it]=IfLabel(act->i[act->it],act->r[act->rt],act->S,blosum,maxl);
+			act->i[act->it]=OpcodeIf(act->i[act->it],act->r[act->rt],act->S,blosum,maxl);
 			break;
 
 
@@ -3451,7 +3433,7 @@ int stringPM::load_comass(const char *fn, int verbose){
 
 	if((fp=fopen(fn,"r"))!=NULL){
 
-		int finderr=read_param_int(fp,"MASS",&massval,verbose);
+		int finderr=ParameterReadUnsignedInt(fp,"MASS",&massval,verbose);
 
 		report_param_error(finderr, 1);
 
@@ -3498,7 +3480,7 @@ int stringPM::update_mass(char *S, int len, int val, const int doconcat){
 	
 	int updated=0;
 	for(int i=0;i<len;i++){
-		int c = tab_idx(S[i],blosum);
+		int c = OpcodeIndex(S[i],blosum);
 		mass[c] += val;
 		//Strategy: if there isn't the mass available for the string, delete the code
 		if(doconcat && mass[c]<0){
@@ -3542,7 +3524,7 @@ int stringPM::comass_AgentAttemptDecay(s_ag *pag){
 #endif
 
 
-	float rno = rand0to1();
+	float rno = RandomBetween0And1();
 
 #ifdef UNB_DECAY_ONLY
 	if(rno<prob && pag->status == B_UNBOUND){
@@ -3761,7 +3743,7 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 				 *  IFLABEL *
 				 ************/
 				case '?'://If-label
-						act->i[act->it]=IfLabel(act->i[act->it],act->r[act->rt],act->S,blosum,maxl);
+						act->i[act->it]=OpcodeIf(act->i[act->it],act->r[act->rt],act->S,blosum,maxl);
 						break;
 
 
@@ -3853,7 +3835,7 @@ int stringPM::energetic_attempt_bind(s_ag *pag){
 		sw.s2=0;			// start of the match in string 2
 		sw.e2=1;			// end of the match in string 2
 #endif
-		rno = rand0to1();
+		rno = RandomBetween0And1();
 		if(rno<bprob && ((1-bprob)*nrglim < energy   ) ){//Binding success!
 			//figure out which is the executing string:
 			ReactionSetupExecution(pag,bag,&sw);
@@ -4134,7 +4116,7 @@ void stringPM::sanity_check(){
 int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp, int mass){
 
 	l_spp *sp;
-	sp = spl->species;
+	sp = spl->species_list;
 	int found=0;
 	int novel=0;
 
@@ -4162,23 +4144,18 @@ int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_s
 
 	if(add){//Only do this if we are adding to the list (not just checking reaction-space
 		if(!found){
-			sp = spl->make_spp_from_agent(p,extit,maxl0);
-			if(signal!=NULL){
-				sp->sig_sc = sigalign(sp->S);
-			}
-			else
-				sp->sig_sc=0;
+			sp = spl->SpeciesMakeFromAgent(p,timestep,maxl0);
 
 			sp->sptype = sptype;
 			sp->biomass += mass;
-			spl->prepend_spp(sp); //append_lspp(sp);
+			spl->SpeciesPrependToList(sp); //append_lspp(sp);
 			novel=1;
 		}
 
 		//Now sort out the parentage:
 		p->spp = sp;//->spp;
 		if(novel)
-			p->pp = spl->get_parents(p->spp, paspp, ppspp);
+			p->pp = spl->ParentsFindOrMake(p->spp, paspp, ppspp);
 
 	}
 
@@ -4188,7 +4165,7 @@ int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_s
 
 l_spp * stringPM::get_spp(int n){
 	l_spp * sp;
-	sp = spl->species;
+	sp = spl->species_list;
 	while(sp!=NULL){
 		if(sp->spp == n)
 			return sp;
@@ -4208,7 +4185,7 @@ int stringPM::get_ecosystem(){
 	int maxct;
 
 	//reset the flags
-	sp=spl->species;
+	sp=spl->species_list;
 	while(sp!=NULL){
 		sp->pf=sp->anc=0;
 		sp = sp->next;
@@ -4217,7 +4194,7 @@ int stringPM::get_ecosystem(){
 	//Find the current ecosystem
 	ag=nowhead;
 	while(ag!=NULL){
-		sp=spl->species;
+		sp=spl->species_list;
 		while(sp!=NULL){
 			if(sp->spp == ag->spp->spp){
 				sp->pf++;
@@ -4228,9 +4205,9 @@ int stringPM::get_ecosystem(){
 		ag=ag->next;
 	}
 
-	maxsp= spl->species->spp;
-	maxct=spl->species->pf;
-	sp=spl->species;
+	maxsp= spl->species_list->spp;
+	maxct=spl->species_list->pf;
+	sp=spl->species_list;
 	while(sp!=NULL){
 		if(sp->pf > maxct){
 			maxsp = sp->spp;
@@ -4255,7 +4232,7 @@ void stringPM::print_ancestry_dot(FILE *fp, int time,int step){
 		fp=fopen("ancestry.dot","w");
 
 	//reset the flags
-	sp=spl->species;
+	sp=spl->species_list;
 	while(sp!=NULL){
 		sp->pf=sp->anc=0;
 		sp = sp->next;
@@ -4264,7 +4241,7 @@ void stringPM::print_ancestry_dot(FILE *fp, int time,int step){
 	//Find the current ecosystem
 	ag=nowhead;
 	while(ag!=NULL){
-		sp=spl->species;
+		sp=spl->species_list;
 		while(sp!=NULL){
 			if(sp->spp == ag->spp->spp){
 				sp->pf++;
@@ -4280,7 +4257,7 @@ void stringPM::print_ancestry_dot(FILE *fp, int time,int step){
 	l_spp *sp2;
 	while(!finished){
 		finished=1;
-		sp=spl->species;
+		sp=spl->species_list;
 		while(sp!=NULL){
 			if(sp->pf > minno || sp->anc){
 
@@ -4322,7 +4299,7 @@ void stringPM::print_ancestry_dot(FILE *fp, int time,int step){
 	//Do the timeline first:	//TIME LINE GRAPH:
 	fprintf(fp,"/* TIME LINE */\n{node [shape=plaintext, fontsize=16];\n");
 	fprintf(fp,"0");
-	sp = spl->species;
+	sp = spl->species_list;
 	while(sp!=NULL){
 		if(sp->tspp){
 			if(sp->pf > minno || sp->anc){
@@ -4337,7 +4314,7 @@ void stringPM::print_ancestry_dot(FILE *fp, int time,int step){
 
 
 	fprintf(fp,"\n\n/* ANCESTORS: */");
-	sp=spl->species;
+	sp=spl->species_list;
 	while(sp!=NULL){
 
 		//if(sp->pf<0 || sp->pf > minno){//It's an ancestor
@@ -4387,7 +4364,7 @@ void stringPM::print_ancestry_dot(FILE *fp, int time,int step){
 
 
 	fprintf(fp,"\n\n/* CURRENT ECOSYSTEM: */");
-	sp=spl->species;
+	sp=spl->species_list;
 	int minnoct=0;
 	while(sp!=NULL){
 		if(sp->pf>minno){
@@ -4425,7 +4402,7 @@ void stringPM::print_spp_strings(FILE *fp){
 
 
 	fprintf(fp,"SppNo\tTIME\tNumber\tP1\tP2\tbtype\tlen\tSTRING\n");
-	for(sp=spl->species;sp!=NULL;sp=sp->next){
+	for(sp=spl->species_list;sp!=NULL;sp=sp->next){
 		int len = strlen(sp->S);
 		//TODO: record all parent pairs.
 		s_parent *ppp;
@@ -4442,7 +4419,7 @@ void stringPM::print_spp_strings(FILE *fp){
 	//For debugging - print the master list of species
 	fprintf(fp,"\n\nMASTER SPECIES LIST");
 	fprintf(fp,"SppNo\ttP1\tP2\tbtype\tlen\tSTRING\n");
-	for(ss=spl->species ;ss!=NULL;ss=ss->next){
+	for(ss=spl->species_list ;ss!=NULL;ss=ss->next){
 		int len = strlen(ss->S);
 		for(pp=ss->pp; pp!=NULL; pp=pp->next){
 			if(ss->pp->pa != NULL)
@@ -4484,7 +4461,7 @@ int stringPM::share_agents(s_ag **hp){
 		float rno;
 
 		//Work out where it's going:
-		if((rno = rand0to1()) < 0.5){
+		if((rno = RandomBetween0And1()) < 0.5){
 			head = hp;
 			therect++;
 		}
@@ -4837,7 +4814,7 @@ int stringPM::print_conf(FILE *fp){
 	USING	/n/staff/sjh/current/ewSTRING/SMconfigs/instr_set1.mis
 */
 	fprintf(fp,"%%%%%%AUTOMATICALLY GENERATED Stringmol CONFIG FILE\n");
-	fprintf(fp,"%%%%%%Generated at time:\nEXTIT  		%u\n\n",extit);
+	fprintf(fp,"%%%%%%Generated at time:\nEXTIT  		%u\n\n",timestep);
 	fprintf(fp,"%%%%%%CELL PARAMETERS\n");
 	fprintf(fp,"CELLRAD		%d\n",(int) cellrad);
 	fprintf(fp,"AGRAD       %d\n",(int) agrad);
@@ -4901,7 +4878,7 @@ int stringPM::print_conf(FILE *fp){
 
 	char mt_file[128];
 	FILE *fp2;
-	sprintf(mt_file,"RNGstate_%u.txt",extit);
+	sprintf(mt_file,"RNGstate_%u.txt",timestep);
 	if((fp2 = fopen(mt_file,"w"))!=NULL){
 		print_mt(fp2);
 		fclose(fp2);
@@ -4940,7 +4917,7 @@ int stringPM::print_conf(FILE *fp){
 		lextant[ss]=NULL;
 
 	ss=0;
-	for(psp=spl->species;psp != NULL; psp = psp->next){
+	for(psp=spl->species_list;psp != NULL; psp = psp->next){
 		extant[ss]=0;
 		lextant[ss++]=psp;
 	}

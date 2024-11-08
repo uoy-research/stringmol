@@ -25,8 +25,8 @@ extern "C" {
 #ifndef MEMUTIL_H_
 #define MEMUTIL_H_
 
-void memerror();
-void * mymalloc(const int number, const int size);
+void MemoryError();
+void * MallocOrExit(const int number, const int size);
 
 void	** arr2alloc(const int n1, const int n2, const int size);
 //void	arr2free(void **aa, const int n1, const int n2);

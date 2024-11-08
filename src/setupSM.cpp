@@ -76,7 +76,7 @@ void setupSMol(struct runparams &RunPar, int argc, char *argv[]){
 
 	unsigned int rerr,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
-		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
+		rerr = ParameterReadUnsignedInt(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
 		case 2:
 			printf("Multiple NTRIALS specified. Check config file\n");
@@ -94,7 +94,7 @@ void setupSMol(struct runparams &RunPar, int argc, char *argv[]){
 
 	//Read nsteps:
 	if((fp=fopen(argv[2],"r"))!=NULL){
-		rerr = read_param_int(fp,"NSTEPS",&(RunPar.maxnsteps),1);
+		rerr = ParameterReadUnsignedInt(fp,"NSTEPS",&(RunPar.maxnsteps),1);
 		switch(rerr){
 		case 2:
 			printf("Multiple NSTEPS specified. Check config file\n");
@@ -130,7 +130,7 @@ void record_spp(stringPM *A){
 	//printf("Printing species list\n");
 	sprintf(fn,"splist%03d.dat",A->run_number);
 	if((fp = fopen(fn,"w"))!=NULL){
-		A->spl->print_spp_list(fp);
+		A->spl->SpeciesListPrint(fp);
 		fclose(fp);
 	}
 	else{
@@ -267,7 +267,7 @@ int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runpar
 	int i;
 	for(i=0;R->indefinite || nsteps <= R->maxnsteps;i++){
 
-		A->extit = i;
+		A->timestep = i;
 
 		A->comass_TimestepIncrement();
 		A->UpdateNowNext();
@@ -354,7 +354,20 @@ void setmutnet(const int * mutnet, swt *blosum){
 
 
 
-int arg_load(stringPM *A, int argc, char *argv[], int verbose ){
+/******************************************************************************
+* @brief load config specified by command-line arguments
+*
+* @param[in] A the stringPM object
+*
+* @param[in] argc from "main()"
+*
+* @param[in] argv from "main()"
+*
+* @param[in] verbose verbose output
+*
+* @return 0 if error; 1 if success... todo reverse
+*****************************************************************************/
+int ParametersLoadFromMainArgs(stringPM *A, int argc, char *argv[], int verbose ){
 
 	//TODO: This can be a bit fragile for runs with >2 arguments... be careful!
 	switch(argc){
@@ -430,14 +443,14 @@ void init_randseed_config(int argc, char *argv[]){
 	FILE *fpr;
 	if((fpr=fopen(argv[2],"r"))!=NULL){
 		unsigned int stmp;
-		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
+		int rerr = ParameterReadUnsignedInt(fpr,"RANDSEED",&stmp,1);
 		//TODO: load the full RNG state using load_mt (RNGFILE in config)
 		if(rerr){
 			printf("Error reading randseed\n");
 		}
 
 
-		rerr = read_param_int(fpr,"GAQNN",&qnnscoring,1);
+		rerr = ParameterReadUnsignedInt(fpr,"GAQNN",&qnnscoring,1);
 		if(rerr)
 			qnnscoring=1;
 		seedin = stmp;
@@ -487,7 +500,7 @@ int run_one_AlifeXII_trial(stringPM *A){
 	for(i=0;nsteps <= A->nsteps;i++){
 
 		//TODO: find out what this does - rename the variable to  make it clear.
-		A->extit = i;
+		A->timestep = i;
 
 		A->TimestepIncrement();
 		A->UpdateNowNext();
@@ -534,7 +547,7 @@ int run_one_AlifeXII_trial(stringPM *A){
 
 int randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout){
 
-	int pos = 8. * rand0to1();
+	int pos = 8. * RandomBetween0And1();
 
 	/*    012
 	 *    3*4
@@ -609,7 +622,7 @@ s_ag * pick_partner(stringPM *A, smsprun *run,int x, int y){
 	if(!count)
 		return NULL;
 
-	int it = count * rand0to1();
+	int it = count * RandomBetween0And1();
 
 
 	//now, let's choose the agents
@@ -680,7 +693,7 @@ s_ag * place_neighbor(stringPM *A, smsprun *run,s_ag *c,int x,int y){
 	}
 	if(nvacant){
 		//Decide where to put it:
-		int pos = nvacant * rand0to1();
+		int pos = nvacant * RandomBetween0And1();
 		int here=0;
 		for(int i=-1;i<2;i++){
 			for(int j=-1;j<2;j++){
@@ -811,7 +824,7 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 		//Get rid of zero-length strings...
 		//NB - grid status will be updated at the end of the timestep - simpler.
-		if((dac = A->PointersCheck(act))){
+		if((dac = A->AgentCheckZeroLengthString(act))){
 			//int x,y;
 			switch(dac){
 			case 1://Destroy active - only append passive
@@ -990,7 +1003,7 @@ int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int 
 	 *  IFLABEL *
 	 ************/
 	case '?'://If-label
-			act->i[act->it]=IfLabel(act->i[act->it],act->r[act->rt],act->S,A->blosum,A->maxl);
+			act->i[act->it]=OpcodeIf(act->i[act->it],act->r[act->rt],act->S,A->blosum,A->maxl);
 			break;
 
 
@@ -1052,7 +1065,7 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 
  	float prob = A->decayrate;//1./pow(65,2);//4./3.); //This is now done in load_decay...
 
-	float rno = rand0to1();
+	float rno = RandomBetween0And1();
 
 	if(rno<prob){
 		//unbind_ag(pag);
@@ -1225,7 +1238,7 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 			foundrng=false;
 		}
 
-		int rerr = readordef_param_int(fn,"RANDSEED", &stmp, seedin, 0);//read_param_int(fpr,"RANDSEED",&stmp,1);
+		int rerr = ParameterReadOrDefineUnsignedInt(fn,"RANDSEED", &stmp, seedin, 0);//read_param_int(fpr,"RANDSEED",&stmp,1);
 
 
 		if(rerr){
@@ -1300,7 +1313,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 		A->AgentExtract(&A->nowhead,pag);
 
 		//For debugging RNG diffs.
-		if(A->extit == 90001){
+		if(A->timestep == 90001){
 			printf("%d\t%d\t%d\t\n",//%c%c%c%c\n",
 					ct++,
 					get_mti(),
@@ -1355,7 +1368,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 						bprob = A->AgentsAlign(pag,bag,&sw);
 
 						float rno;
-						rno = rand0to1();
+						rno = RandomBetween0And1();
 						if(rno<bprob){//Binding success!
 							//figure out which is the executing string:
 							A->ReactionSetupExecution(pag,bag,&sw);
@@ -1446,7 +1459,7 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 
 	//TODO: Now we have to place each agent on the grid - use the makenext() model -
 	//But we only need to do this if extit == 0, because otherwise we'll have the molecular positions...
-	if(!A->extit){
+	if(!A->timestep){
 		while(A->nowhead!=NULL){
 			s_ag *pag;
 			pag = A->AgentSelectRandomly(A->nowhead,-1);
@@ -1468,7 +1481,7 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 			}
 
 			while(!found){
-				int pos = (*run)->gridx * (*run)->gridy * rand0to1();
+				int pos = (*run)->gridx * (*run)->gridy * RandomBetween0And1();
 
 				int x = pos%(*run)->gridx;
 				int y = pos/(*run)->gridx;
@@ -1574,7 +1587,7 @@ int smspatial(int argc, char *argv[]) {
 	//reload file: should have identical settings to the input conig:
 	FILE *fpp{};
 	char fn[128]{};
-	sprintf(fn,"reload_%05u.conf",A.extit);
+	sprintf(fn,"reload_%05u.conf",A.timestep);
 	fpp = fopen(fn,"w");
 	A.print_conf(fpp);
 	fclose(fpp);
@@ -1585,13 +1598,13 @@ int smspatial(int argc, char *argv[]) {
 
 
 //	while(A.nagents(A.nowhead,-1)){
-	while((A.extit < A.nsteps) && (ct > 0)){
+	while((A.timestep < A.nsteps) && (ct > 0)){
 
 		//if(!(A.extit%100) || A.extit==1){
 		//if(!(A.extit%100)){
-		if(!(A.extit%A.image_every)){
+		if(!(A.timestep%A.image_every)){
 			bt = ct - A.AgentsCount(A.nowhead,B_UNBOUND);
-			printf("Step %u done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
+			printf("Step %u done, number of molecules is %d, nbound = %d\n",A.timestep,ct,bt);
 
 			smspatial_pic(&A, smpic_spp);
 			smspatial_pic(&A, smpic_len);
@@ -1602,23 +1615,23 @@ int smspatial(int argc, char *argv[]) {
 		//		|| (A.extit%1000) == 999 || (A.extit%1000) == 1  || !(A.extit%97) || !(A.extit%47)
 		//		|| (A.extit%1000) == 99 || (A.extit%1000) == 100|| (A.extit%1000) == 101
 		//		|| (A.extit>90001 && A.extit <9000))
-		if(!(A.extit%A.report_every)){
+		if(!(A.timestep%A.report_every)){
 			
 			
-			sprintf(fn,"out1_%05u.conf",A.extit);
+			sprintf(fn,"out1_%05u.conf",A.timestep);
 			fpp = fopen(fn,"w");
 
 			A.print_conf(fpp);
 			fclose(fpp);
 
 			FILE *fp{};
-			sprintf(fn,"splist%u.dat",A.extit);
+			sprintf(fn,"splist%u.dat",A.timestep);
 			fp = fopen(fn,"w");
-			SP.print_spp_list(fp);
+			SP.SpeciesListPrint(fp);
 			fclose(fp);
 
 
-			printsppct(&A,A.extit);
+			printsppct(&A,A.timestep);
 
 		}
 
@@ -1638,7 +1651,7 @@ int smspatial(int argc, char *argv[]) {
 		}
 #endif
 
-		A.extit++;
+		A.timestep++;
 		ct = A.AgentsCount(A.nowhead,-1);
 
 	}
@@ -1752,10 +1765,10 @@ int smspatial_pic(stringPM *A, smpic pt){
 	char filename[128];
 	switch(pt){
 	case smpic_len:
-		sprintf(filename,"lenframe%07u.png",A->extit);
+		sprintf(filename,"lenframe%07u.png",A->timestep);
 		break;
 	case smpic_spp:
-		sprintf(filename,"sppframe%07u.png",A->extit);
+		sprintf(filename,"sppframe%07u.png",A->timestep);
 		break;
 
 	}
@@ -1938,7 +1951,7 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 
 
 			char filename[128];
-			sprintf(filename,"lenframe%07u.png",A.extit);
+			sprintf(filename,"lenframe%07u.png",A.timestep);
 			encodeOneStep(filename, image, run->gridx, run->gridy);
 
 			A.clearout();

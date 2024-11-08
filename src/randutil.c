@@ -110,23 +110,26 @@ unsigned long longinitmyrand(const unsigned long *inseed){
 
 
 
-
-
-
-
-
-
-
-
-double rand0to1(){
+/******************************************************************************
+* @brief generate a random number between 0 and 1
+*
+* @details uses the Mersenne Twister algorithm (TODO: check range is [0,1)
+*
+* @return a double between 0 and 1
+*****************************************************************************/
+double RandomBetween0And1(){
 	double x;
 #ifdef USING_MT
-	x = genrand();
+	x = GenerateRandomDouble();
 #else
 	x = (double) rand() / (double) RAND_MAX;
 #endif
 	return x;
 }
+
+
+
+
 
 unsigned long randint(){
 
@@ -149,7 +152,7 @@ int * randintarray(const int size,const int Min,const int max){
 	int i, * array;
 	array = (int *) malloc(size*sizeof(int));
 	for(i=0;i<size;i++)
-		array[i] = Min + floor((double)max*rand0to1());
+		array[i] = Min + floor((double)max*RandomBetween0And1());
 	return array;
 }
 
@@ -159,7 +162,7 @@ int * randboolarray(const int size){
 	int i, * array;
 	array = (int *) malloc(size*sizeof(int));
 	for(i=0;i<size;i++){
-		float v=rand0to1();
+		float v=RandomBetween0And1();
 		if(v<0.5)
 			array[i] = 0;
 		else

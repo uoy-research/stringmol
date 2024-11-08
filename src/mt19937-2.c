@@ -70,9 +70,19 @@ sgenrand(unsigned long seed)
 }
 
 
+
+
+
+/*******************************************************************************
+* @brief generate a random double in [0,1)
+*
+* @details see Mersenne Twister documentation
+*
+* @return a random double in [0,1)
+*******************************************************************************/
 double /* generating reals */
 /* unsigned long */ /* for integer generation */
-genrand()
+GenerateRandomDouble()
 {
     unsigned long y;
     static const unsigned long mag01[2]={0x0, MATRIX_A};

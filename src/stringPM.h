@@ -65,7 +65,7 @@ public:
 	s_sw *swlist;
 
 	long agct;
-	unsigned int extit; 	//record of the cell iteration count
+	unsigned int timestep; 	//record of the cell iteration count
 
 	unsigned long randseed;
 	s_loadtype loadtype;		//Type of load we are doing (for backwards compatibility)
@@ -102,9 +102,6 @@ public:
 	//Reporting timings
 	unsigned int report_every;			//How often to write splists and configs
 	unsigned int image_every;			//How often to generate an image (spatial stringmol only)
-
-	//Signal string - for getting a signal score:
-	char *signal;
 
 	//Max molecular lengths
 	unsigned int maxl;
@@ -226,15 +223,15 @@ public:
 	//String & alignment stuff
 	int 	PointerPosition(s_ag *pag, char head); 	//Find the position of a particular head.
 	float 	AgentsAlign(s_ag *a1, s_ag *a2, align *sw);
-	float 	get_bprob(align *sw);
+	float 	ReactionCalculateBindProbability(align *sw);
 	void 	ReactionSetupExecution(s_ag *A, s_ag *B, align *sw);
 	int 	ReactionExecuteOpcode(s_ag *act, s_ag *pass);
 			//print string stuff
 	void 	PointerPrintOffset(FILE *fp,const char *S,const char *p,int F, char c);
 	void 	ReactionPrintState(FILE *fp, s_ag *act, s_ag *pas);
 	void 	free_swt(swt *pSWT, int verbose);
-	int 	PointersCheck(s_ag* act);
-	int 	rewind_bad_ptrs(s_ag* pag);
+	int 	AgentCheckZeroLengthString(s_ag* act);
+	int 	AgentRewindDanglingPtrs(s_ag* pag);
 
 
 	//Checking the energy model: (THIS RESULTS IN AN UNSTABLE SYSTEM)
@@ -279,9 +276,6 @@ public:
 
 	//Container functions
 	int 		share_agents(s_ag **head); //Copies a set of agents onto nowhead;
-
-	//Signal functions
-	float 		sigalign(char *str);
 
 	//Output a config file at any point in the trial:
 	int 		print_conf(FILE *fp);

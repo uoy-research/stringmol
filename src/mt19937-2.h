@@ -31,7 +31,7 @@ extern "C" {
 
 //FUNCTION HEADERS FOR RANDOM NUMBER GENERATOR
 void	sgenrand(unsigned long seed);
-double 	genrand(); /* generating reals */
+double 	GenerateRandomDouble(); /* generating reals */
 unsigned long genrandint();/* unsigned long */ /* for integer generation */
 
 int mt_get_mti();
