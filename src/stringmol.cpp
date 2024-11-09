@@ -446,7 +446,7 @@ int origlife(int argc, char *argv[]){
 
             //SP.clear_list();
 
-            A.load(argv[2],NULL,0,1);
+            A.ConfigLoad(argv[2],NULL,0,1);
 
             test_adj(A.blosum);
 
@@ -614,7 +614,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
         SP.clear_list();
 
-        //A.load(argv[2],NULL,0,1);
+        //A.ConfigLoad(argv[2],NULL,0,1);
         if(!ParametersLoadFromMainArgs(&A, argc, argv))
             return 0;
 
@@ -872,7 +872,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 
         SP.clear_list();
 
-        A.load(argv[2],NULL,0,1);
+        A.ConfigLoad(argv[2],NULL,0,1);
         A.load_comass(argv[2],1);
         A.print_agents(stdout,"NOW",0);
 
@@ -1179,7 +1179,7 @@ int comass_GA(int argc, char *argv[]){
         //todo: check we aren't violating comass when we init - what do we do if we do???
         if(!ParametersLoadFromMainArgs(&A, argc, argv))
             return 0;
-        //A.load(argv[2],NULL,0,1);
+        //A.ConfigLoad(argv[2],NULL,0,1);
 
         if(argc<4){
 
@@ -1240,7 +1240,7 @@ int comass_GA(int argc, char *argv[]){
         A.spl->clear_list();
 
         //todo: check we aren't violating comass when we init - what do we do if we do???
-        A.load(argv[2],NULL,0,1);
+        A.ConfigLoad(argv[2],NULL,0,1);
 
         //int ga_step_int(int **pop, double *eval, const int POPSIZE, const int PARAMETERS);
         //int ll;
@@ -1482,7 +1482,7 @@ int comass_GA_boostwinners(int argc, char *argv[]){
 
         //Reload the config:
         A.spl->clear_list();
-        A.load(argv[2],NULL,0,1);
+        A.ConfigLoad(argv[2],NULL,0,1);
 
 
         A.set_mass(concs);
@@ -1601,7 +1601,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
         SP.clear_list();
 
-        A.load(argv[2],NULL,0,1);
+        A.ConfigLoad(argv[2],NULL,0,1);
 
         //test_adj(A.blosum);
 
@@ -1805,7 +1805,7 @@ int SmPm_conpop(int argc, char *argv[]){
         A[c] = new stringPM(SP[c]);
 
         //A[c]->signal = signal;
-        //A[c]->load(argv[2],NULL,0,1);
+        //A[c]->ConfigLoad(argv[2],NULL,0,1);
         if(!ParametersLoadFromMainArgs(A[c], argc, argv))
             return 0;
 
@@ -2103,11 +2103,11 @@ void SmPm_1on1(int argc,char *argv[]){
     /*switch(argc){
     case 3:
         printf("Traditional config\n");
-        A.load(argv[2],NULL,1,1);
+        A.ConfigLoad(argv[2],NULL,1,1);
         break;
     case 4:
         printf("youShare-compatible config\n");
-        A.load(argv[2],argv[3],1,1);
+        A.ConfigLoad(argv[2],argv[3],1,1);
         break;
     default:
         printf("Error: wrong number of arguments - try 2 or 3\n");
@@ -2255,7 +2255,7 @@ void swdist(int argc, char *argv[]){
 
     FILE *fin;
 
-    A.load(argv[2],NULL,0,1);
+    A.ConfigLoad(argv[2],NULL,0,1);
     align sw;
 
     char s1[A.maxl0], s2[A.maxl0];
@@ -2481,7 +2481,7 @@ int speigmonst(int argc, char *argv[]){
         int div= 0;
 
         if(!rr){
-            A.load(argv[2],NULL,0,1);
+            A.ConfigLoad(argv[2],NULL,0,1);
             A.load_comass(argv[2],1);
             strncpy(repstring,SP.species_list->next->S,A.maxl0);
         }

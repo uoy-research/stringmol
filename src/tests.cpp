@@ -136,7 +136,7 @@ stringPM * test_config_settings( int argc, char *argv[], int return_SM){
 	ParameterReadOrDefineUnsignedInt(argv[2], "NTRIALS", &ntrials, 1, 1);
 	int nns = ParameterReadOrDefineUnsignedInt(argv[2], "NSTEPS", &nsteps, -1, 1);
 
-	A->load(argv[2],NULL,0,1);
+	A->ConfigLoad(argv[2],NULL,0,1);
 	//if(!arg_load(A, argc, argv, 0))
 	//	return NULL;
 
@@ -305,7 +305,7 @@ void test_rand_config(int argc, char *argv[]){
 
 	//Seed the rng
 	//TODO: Get the Seed from the config file...
-	sgenrand(1); //any nonzero integer can be used as a seed
+	SetRNGSeed(1); //any nonzero integer can be used as a seed
 
 	/* The size of the MT array is 624, but mti is incremented
 	 * *after* being used, so the range of values of mti is

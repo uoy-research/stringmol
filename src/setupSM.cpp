@@ -373,11 +373,11 @@ int ParametersLoadFromMainArgs(stringPM *A, int argc, char *argv[], int verbose 
 	switch(argc){
 	case 3:
 		if(verbose)printf("Traditional config\n");
-		A->load(argv[2],NULL,0,1);
+		A->ConfigLoad(argv[2],NULL,0,1);
 		return 1;
 	case 4:
 		if(verbose)printf("youShare-compatible config\n");
-		A->load(argv[2],argv[3],0,1);
+		A->ConfigLoad(argv[2],argv[3],0,1);
 		return 1;
 	default:
 		if(verbose)printf("Error: wrong number of arguments - try 2 or 3\n");
@@ -1440,7 +1440,7 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 
 
 
-	A->load(fn,NULL,0,1);
+	A->ConfigLoad(fn,NULL,0,1);
 
 	A->run_number = runno;
 

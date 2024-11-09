@@ -192,7 +192,7 @@ void agents_base::preset(){
 
 
 // VJH - added this function for youShare - some alterations on merge
-void agents_base::load(const char *fn, char *fninput, int test=0, int verbose=0){
+void agents_base::ConfigLoad(const char *fn, char *fninput, int test=0, int verbose=0){
 
 	ParametersLoad(fn,test,verbose);
 

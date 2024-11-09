@@ -21,7 +21,7 @@
 #include <string.h>
 
 
-/******************************************************************************
+/*******************************************************************************
 * @brief find the complment of an opcode using ROT13- 'B' has complement 'O'
 *
 * @details see technical report
@@ -29,7 +29,7 @@
 * @param[in] t the opcode
 *
 * @return the complement of the input
-*****************************************************************************/
+*******************************************************************************/
 int OpcodeComplement(int t){
 
 	int a;
@@ -79,7 +79,19 @@ int OpcodeComplement(int t){
 }
 
 
-char * string_comp(char *S){
+
+
+
+/*******************************************************************************
+* @brief find the complment of a stringmol sequence
+*
+* @details see technical report
+*
+* @param[in] S the string
+*
+* @return the complement of the input
+*******************************************************************************/
+char * StringComplement(char *S){
 	char *comp;
 	int len = strlen(S)+1;
 	unsigned int i;

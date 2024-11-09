@@ -1937,7 +1937,7 @@ float stringPM::AgentsAlign(s_ag *a1, s_ag *a2, align *sw){
 
 		char *comp;
 	
-		comp = string_comp(a1->S);
+		comp = StringComplement(a1->S);
 
 		/*bprob =*/ SmithWatermanAlignment(comp,a2->S,sw,blosum,0);
 

@@ -23,7 +23,7 @@
 #define STRINGMANIP_H_
 
 	int OpcodeComplement(int t);
-	char * string_comp(char *S);
+	char * StringComplement(char *S);
 
 
 #endif /* STRINGMANIP_H_ */

@@ -117,7 +117,8 @@ int ReactionStoreAlignmentToSWList(s_sw **head, align *sw, int sp1, int sp2){
 int SmithWatermanDataFromAlignmentObject(s_sw *b, align *sw){
 	sw->match = b->match;		// the number of matching characters.
 	sw->score = b->score; 		// the score of the match
-	sw->prob =  b->prob;		// the probability of the match - used for determining events based on the score/match
+	sw->prob =  b->prob;		// the probability of the match - used for
+	                            // determining events based on the score/match
 	sw->s1 =    b->s1;			// start of the match in string 1
 	sw->e1 =    b->e1;			// end of the match in string 1
 	sw->s2 =    b->s2;			// start of the match in string 2
@@ -146,7 +147,16 @@ void free_swlist(s_sw **head){
 
 
 
-int swt_index(int c,swt *T){
+/*******************************************************************************
+* @brief get the similarity score between two opcodes
+*
+* @param[in] c the opcode
+*
+* @param[in] T the alignment table data
+*
+* @return the index; or -1 on error
+*******************************************************************************/
+int AlignmentTableIndex(int c,swt *T){
 	int i = 0;
 
 	for(i=0;i<T->N;i++){
@@ -163,14 +173,26 @@ int swt_index(int c,swt *T){
 
 
 
-float wT(int a, int b,swt *T){
+
+/*******************************************************************************
+* @brief get the similarity score between two opcodes
+*
+* @param[in] a the first opcode
+*
+* @param[in] a the second opcode
+*
+* @param[in] T the alignment table data
+*
+* @return the score; or -10000 on error
+*******************************************************************************/
+float AlignmentSimilarityScore(int a, int b,swt *T){
 
 	int ai,bi;
 
 	if(a)
-		ai = swt_index(a,T);
+		ai = AlignmentTableIndex(a,T);
 	if(b)
-		bi = swt_index(b,T);
+		bi = AlignmentTableIndex(b,T);
 
 	if(a<0 || b<0){
 		printf("swt_index returned an error w()\n");fflush(stdout);
@@ -258,21 +280,21 @@ int SmithWatermanAlignment(char *s1, char *s2, align *A, swt *swT, int verbose){
 
 			//Match/Mismatch
 			//m = H[i-1][j-1] + w(s1[si],s2[sj]);
-			m = H[i-1][j-1] + wT(s1[si],s2[sj],swT);
+			m = H[i-1][j-1] + AlignmentSimilarityScore(s1[si],s2[sj],swT);
 			if(m>H[i][j]){
 				H[i][j] = m;
 				T[i][j] = swMATCH;
 			}
 
 			//Deletion
-			m = H[i-1][j] + wT(s1[si],0,swT);
+			m = H[i-1][j] + AlignmentSimilarityScore(s1[si],0,swT);
 			if(m>H[i][j]){
 				H[i][j] = m;
 				T[i][j] = swDEL;
 			}
 
 			//Insertion
-			m = H[i][j-1] + wT(0,s2[sj],swT);
+			m = H[i][j-1] + AlignmentSimilarityScore(0,s2[sj],swT);
 			if(m>H[i][j]){
 				H[i][j] = m;
 				T[i][j] = swINS;

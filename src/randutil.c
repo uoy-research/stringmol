@@ -70,7 +70,7 @@ int initmyrand(int seed){
 	printf("in initmyrand, seed is %d (%u)\n",seed,(unsigned int) seed);
 
 #ifdef USING_MT
-	sgenrand(seed);
+	SetRNGSeed(seed);
 #else
 	srand(seed);
 #endif
@@ -99,7 +99,7 @@ unsigned long longinitmyrand(const unsigned long *inseed){
 	}
 
 #ifdef USING_MT
-	sgenrand(seed);
+	SetRNGSeed(seed);
 #else
 	srand(seed);
 #endif

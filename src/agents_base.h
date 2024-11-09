@@ -81,8 +81,8 @@ class agents_base{
 
 
 		//fromfile stuff
-		void load(const char *fn, char *fninput, int test, int verbose);
-		void load(const char *fn, int test, int verbose);
+		void ConfigLoad(const char *fn, char *fninput, int test, int verbose);
+		//void load(const char *fn, int test, int verbose);
 
 		int ParametersLoad(const char *fn, int test, int verbose);
 		int load_division(char *fn);
