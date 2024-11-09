@@ -37,7 +37,22 @@
 //Use this to control whether h-search is stochastic or not
 #define SOFT_SEARCH
 
-int LabLength(char *ip, const int maxl){
+
+
+
+
+/******************************************************************************
+* @brief calculates the length of an opcode template
+*
+* @details see technical report section 9.1
+*
+* @param[in] ip the instruction pointer
+*
+* @param[in] maxl maximum string length
+*
+* @return the length of the template
+*****************************************************************************/
+int OpcodeTemplateLength(char *ip, const int maxl){
 
 	int len=0;
 	ip = ip+1;
@@ -52,10 +67,30 @@ int LabLength(char *ip, const int maxl){
 }
 
 
-////////////////////
-// $: H-Search    //
-////////////////////
-char * HSearch(char *iptr, char *sp, swt *T, const int *itog, int *ftog,const int maxl){
+
+
+
+/******************************************************************************
+* @brief execute the "search" opcode ("$")
+*
+* @details see technical report
+*
+* @param[in] iptr the instruction pointer
+*
+* @param[in] sp the string that the active flow pointer is pointing at
+*
+* @param[in] T the Smith-Waterman object
+*
+* @param[in] itog toggle state of the instruction pointer
+*
+* @param[in] ftog toggle state of the flow pointer
+*
+* @param[in] maxl maximum string length
+*
+* @return 1 always - to indicate the reaction has changed
+*         todo: maybe some error handling here would be good!
+*****************************************************************************/
+char * OpcodeSearch(char *iptr, char *sp, swt *T, const int *itog, int *ftog,const int maxl){
 
 	char *ip,*tp,tmp[maxl];
 	ip = iptr;
@@ -88,7 +123,7 @@ char * HSearch(char *iptr, char *sp, swt *T, const int *itog, int *ftog,const in
 		ip++;
 	}
 	*/
-	len = LabLength(ip, maxl);
+	len = OpcodeTemplateLength(ip, maxl);
 	tp = iptr+len;
 	//ip=iptr+1;
 
@@ -102,10 +137,10 @@ char * HSearch(char *iptr, char *sp, swt *T, const int *itog, int *ftog,const in
 	strncpy(tmp,iptr+1,len);
 	//generate the complement:
 	for(i=0;i<len;i++)
-		tmp[i] = AlphaComp(tmp[i]);
+		tmp[i] = OpcodeComplement(tmp[i]);
 
 	//SmithWaterman(tmp,sp,&A,T,0);
-	/*float bprob =*/ SmithWatermanV2(tmp,sp,&A,T,0);
+	/*float bprob =*/ SmithWatermanAlignment(tmp,sp,&A,T,0);
 
 	//TODO: this will always match if any symbols match. There is no stochastic element..
 #ifndef SOFT_SEARCH
@@ -123,7 +158,7 @@ char * HSearch(char *iptr, char *sp, swt *T, const int *itog, int *ftog,const in
 	float s = A.score<l-1.124? A.score : l-1.124;
 	float bprob = s/(l-1.124);
 
-	float rno = rand0to1();
+	float rno = RandomBetween0And1();
 	if(rno<bprob)//search success!
 #endif
 		return tp + A.e2 - (tp-sp);
@@ -135,13 +170,29 @@ char * HSearch(char *iptr, char *sp, swt *T, const int *itog, int *ftog,const in
 
 
 
-////////////////////
-// ?: If-Label    //
-////////////////////
-char * IfLabel(char *ip, char *rp, char *sp, swt *T, const int maxl){
+
+
+/******************************************************************************
+* @brief execute the "if" opcode ("?")
+*
+* @details see technical report
+*
+* @param[in] ip the instruction pointer
+*
+* @param[in] rp the read pointer
+*
+* @param[in] sp the string that the active flow pointer is pointing at
+*
+* @param[in] T the Smith-Waterman object
+*
+* @param[in] maxl maximum string length
+*
+* @return new position of the instruction pointer, 0 if "error" (can't happen)
+*****************************************************************************/
+char * OpcodeIf(char *ip, char *rp, char *sp, swt *T, const int maxl){
 
 	char tmp[maxl],tmp2[maxl];
-	int i,len = LabLength(ip, maxl);
+	int i,len = OpcodeTemplateLength(ip, maxl);
 	ip++;
 	align A;
 
@@ -168,14 +219,14 @@ char * IfLabel(char *ip, char *rp, char *sp, swt *T, const int maxl){
 		strncpy(tmp,ip,len);
 		//generate the complement:
 		for(i=0;i<len;i++)
-			tmp[i] = AlphaComp(tmp[i]);
+			tmp[i] = OpcodeComplement(tmp[i]);
 
 		strncpy(tmp2,rp,len);
 
 		//SmithWaterman(tmp,tmp2,&A,T,0);
-		SmithWatermanV2(tmp,tmp2,&A,T,0);
+		SmithWatermanAlignment(tmp,tmp2,&A,T,0);
 
-		if(align_event(&A,len))
+		if(OpcodeTemplateAligns(&A,len))
 			return ip+len+1;
 		return ip+len;
 		break;

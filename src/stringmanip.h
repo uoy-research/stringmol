@@ -22,8 +22,8 @@
 #ifndef STRINGMANIP_H_
 #define STRINGMANIP_H_
 
-	int AlphaComp(int t);
-	char * string_comp(char *S);
+	int OpcodeComplement(int t);
+	char * StringComplement(char *S);
 
 
 #endif /* STRINGMANIP_H_ */

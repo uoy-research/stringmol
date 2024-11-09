@@ -23,14 +23,14 @@ TEST_CASE("reseeding with initmyrand(436) resets the rng and the same sequence i
     const int nrand = 10;
     float rnos1[nrand], rnos2[nrand];
     for(int rr=0;rr<nrand;rr++)
-        rnos1[rr] = rand0to1();
+        rnos1[rr] = RandomBetween0And1();
 
     rout = initmyrand(rin);
     REQUIRE(rout == rin);
 
 
     for(int rr=0;rr<nrand;rr++){
-        rnos2[rr] = rand0to1();
+        rnos2[rr] = RandomBetween0And1();
         REQUIRE(rnos1[rr] == rnos2[rr]);
     }
 }
@@ -44,7 +44,7 @@ TEST_CASE("reseeding with initmyrand(-1) resets the rng and a different sequence
     const int nrand = 10;
     float rnos1[nrand], rnos2[nrand];
     for(int rr=0;rr<nrand;rr++)
-        rnos1[rr] = rand0to1();
+        rnos1[rr] = RandomBetween0And1();
 
     rout2 = initmyrand(rin);
     REQUIRE(rout2 != rin);
@@ -52,7 +52,7 @@ TEST_CASE("reseeding with initmyrand(-1) resets the rng and a different sequence
     REQUIRE(rout2 != rout1);
 
     for(int rr=0;rr<nrand;rr++){
-        rnos2[rr] = rand0to1();
+        rnos2[rr] = RandomBetween0And1();
         REQUIRE(rnos1[rr] != rnos2[rr]);
     }
 }
@@ -69,11 +69,11 @@ TEST_CASE("resetting Mersenne Twister index"){
     //This repeats tests above, but hey- can't hurt can it?
     REQUIRE(rout == rin);
     for(int cc=0;cc<ncalls;cc++){
-        rand0to1();
+        RandomBetween0And1();
     }
     pos = get_mti();
     for(int cc=0;cc<nrand;cc++){
-        rnos1[cc] = rand0to1();
+        rnos1[cc] = RandomBetween0And1();
     }
     set_mti(pos);
     pos2 = get_mti();
@@ -81,7 +81,7 @@ TEST_CASE("resetting Mersenne Twister index"){
     REQUIRE(pos==pos2);
 
     for(int rr=0;rr<nrand;rr++){
-        rnos2[rr] = rand0to1();
+        rnos2[rr] = RandomBetween0And1();
         REQUIRE(rnos1[rr] == rnos2[rr]);
     }    
 
@@ -98,7 +98,7 @@ TEST_CASE("save and load RNG to/from file"){
     initmyrand(-1);
     //Run the RNG forward a couple of thousand times
     for(int cc=0;cc<runf;cc++){
-        rand0to1();
+        RandomBetween0And1();
     }
 
 	if((mtf = fopen(fn,"w"))!=NULL){
@@ -113,7 +113,7 @@ TEST_CASE("save and load RNG to/from file"){
 
     //Run the RNG forward into array1
     for(int cc=0;cc<nrand;cc++){
-        rnos1[cc] = rand0to1();
+        rnos1[cc] = RandomBetween0And1();
     }
 
     //Restore the RNG
@@ -121,7 +121,7 @@ TEST_CASE("save and load RNG to/from file"){
 
     //Run the RNG forward into array2 and test
     for(int rr=0;rr<nrand;rr++){
-        rnos2[rr] = rand0to1();
+        rnos2[rr] = RandomBetween0And1();
         REQUIRE(rnos1[rr] == rnos2[rr]);
     }    
     

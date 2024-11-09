@@ -30,8 +30,8 @@ extern "C" {
 #define MT199372_H_
 
 //FUNCTION HEADERS FOR RANDOM NUMBER GENERATOR
-void	sgenrand(unsigned long seed);
-double 	genrand(); /* generating reals */
+void	SetRNGSeed(unsigned long seed);
+double 	GenerateRandomDouble(); /* generating reals */
 unsigned long genrandint();/* unsigned long */ /* for integer generation */
 
 int mt_get_mti();

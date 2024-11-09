@@ -27,7 +27,10 @@
 
 
 
-void memerror(){
+/***********************************************
+ * @brief exit if there's been an error with malloc
+ ***********************************************/
+void MemoryError(){
 
 	printf("Memory allocation error\n");
 	fflush(stdout);
@@ -39,10 +42,20 @@ void memerror(){
 
 
 
-void * mymalloc(const int number, const int size){
+/***********************************************
+ * @brief malloc, but exit if the operation fails - this is better
+ *        than SIGSEV faults that are hard to trace!
+ *
+ * @param[in] c the species
+ *
+ * @param[in] pp the parent list
+ *
+ * @return the created parent
+ ***********************************************/
+void * MallocOrExit(const int number, const int size){
 	void *mem;
 	if((mem = malloc(number*size))==NULL)
-		memerror();
+		MemoryError();
 	return mem;
 }
 

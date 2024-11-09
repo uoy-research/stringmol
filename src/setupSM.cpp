@@ -76,7 +76,7 @@ void setupSMol(struct runparams &RunPar, int argc, char *argv[]){
 
 	unsigned int rerr,rlim=20;
 	if((fp=fopen(argv[2],"r"))!=NULL){
-		rerr = read_param_int(fp,"NTRIALS",&rlim,1);
+		rerr = ParameterReadUnsignedInt(fp,"NTRIALS",&rlim,1);
 		switch(rerr){
 		case 2:
 			printf("Multiple NTRIALS specified. Check config file\n");
@@ -94,7 +94,7 @@ void setupSMol(struct runparams &RunPar, int argc, char *argv[]){
 
 	//Read nsteps:
 	if((fp=fopen(argv[2],"r"))!=NULL){
-		rerr = read_param_int(fp,"NSTEPS",&(RunPar.maxnsteps),1);
+		rerr = ParameterReadUnsignedInt(fp,"NSTEPS",&(RunPar.maxnsteps),1);
 		switch(rerr){
 		case 2:
 			printf("Multiple NSTEPS specified. Check config file\n");
@@ -125,12 +125,12 @@ void record_spp(stringPM *A){
 	char fn[256];
 	FILE *fp;
 
-	A->print_spp_count(stdout,0,-1);
+	A->SpeciesPrintCount(stdout,0,-1);
 
 	//printf("Printing species list\n");
 	sprintf(fn,"splist%03d.dat",A->run_number);
 	if((fp = fopen(fn,"w"))!=NULL){
-		A->spl->print_spp_list(fp);
+		A->spl->SpeciesListPrint(fp);
 		fclose(fp);
 	}
 	else{
@@ -194,7 +194,7 @@ void printsppct(stringPM *A, int t){
 	int finished = 0;
 	int nag,*done;
 
-	nag = A->nagents(A->nowhead,-1);
+	nag = A->AgentsCount(A->nowhead,-1);
 
 	done = (int *) malloc(nag*sizeof(int));
 	memset(done,0,nag*sizeof(int));
@@ -267,10 +267,10 @@ int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runpar
 	int i;
 	for(i=0;R->indefinite || nsteps <= R->maxnsteps;i++){
 
-		A->extit = i;
+		A->timestep = i;
 
-		A->comass_make_next();
-		A->update();
+		A->comass_TimestepIncrement();
+		A->UpdateNowNext();
 
 
 		if(!(i%1000)){
@@ -296,10 +296,10 @@ int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runpar
 			*/
 		}
 
-		if(!A->nagents(A->nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
+		if(!A->AgentsCount(A->nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
 			printf("DEATH\n");
 			printf("At  time %d e=%d\t",i,(int)A->energy);
-			A->print_spp_count(stdout,0,-1);
+			A->SpeciesPrintCount(stdout,0,-1);
 			//nsteps=i;
 			break;
 		}
@@ -354,17 +354,30 @@ void setmutnet(const int * mutnet, swt *blosum){
 
 
 
-int arg_load(stringPM *A, int argc, char *argv[], int verbose ){
+/******************************************************************************
+* @brief load config specified by command-line arguments
+*
+* @param[in] A the stringPM object
+*
+* @param[in] argc from "main()"
+*
+* @param[in] argv from "main()"
+*
+* @param[in] verbose verbose output
+*
+* @return 0 if error; 1 if success... todo reverse
+*****************************************************************************/
+int ParametersLoadFromMainArgs(stringPM *A, int argc, char *argv[], int verbose ){
 
 	//TODO: This can be a bit fragile for runs with >2 arguments... be careful!
 	switch(argc){
 	case 3:
 		if(verbose)printf("Traditional config\n");
-		A->load(argv[2],NULL,0,1);
+		A->ConfigLoad(argv[2],NULL,0,1);
 		return 1;
 	case 4:
 		if(verbose)printf("youShare-compatible config\n");
-		A->load(argv[2],argv[3],0,1);
+		A->ConfigLoad(argv[2],argv[3],0,1);
 		return 1;
 	default:
 		if(verbose)printf("Error: wrong number of arguments - try 2 or 3\n");
@@ -392,8 +405,6 @@ void print_params(stringPM *A, int ntrials, int nsteps){
 	printf("AGRAD       %f\n",A->agrad);
 	printf("ENERGY      %d\n",(int) A->energy);
 	printf("NSTEPS      %f\n",A->nsteps);
-
-	/** Although agents_base contains a call to load_influx, Stringmol never uses it */
 
 	//load agents: load_table(_mtx); load_mut; load_decay
 	if(A->blosum == NULL)
@@ -432,14 +443,14 @@ void init_randseed_config(int argc, char *argv[]){
 	FILE *fpr;
 	if((fpr=fopen(argv[2],"r"))!=NULL){
 		unsigned int stmp;
-		int rerr = read_param_int(fpr,"RANDSEED",&stmp,1);
+		int rerr = ParameterReadUnsignedInt(fpr,"RANDSEED",&stmp,1);
 		//TODO: load the full RNG state using load_mt (RNGFILE in config)
 		if(rerr){
 			printf("Error reading randseed\n");
 		}
 
 
-		rerr = read_param_int(fpr,"GAQNN",&qnnscoring,1);
+		rerr = ParameterReadUnsignedInt(fpr,"GAQNN",&qnnscoring,1);
 		if(rerr)
 			qnnscoring=1;
 		seedin = stmp;
@@ -489,13 +500,13 @@ int run_one_AlifeXII_trial(stringPM *A){
 	for(i=0;nsteps <= A->nsteps;i++){
 
 		//TODO: find out what this does - rename the variable to  make it clear.
-		A->extit = i;
+		A->timestep = i;
 
-		A->make_next();
-		A->update();
+		A->TimestepIncrement();
+		A->UpdateNowNext();
 
 		if(!(i%1000)){
-			A->print_spp_count(stdout,0,-1);
+			A->SpeciesPrintCount(stdout,0,-1);
 		//}
 		//
 		//if(!(i%1000)){
@@ -507,10 +518,10 @@ int run_one_AlifeXII_trial(stringPM *A){
 //#ifdef DO_ANCESTRY
 //#endif
 
-		if(!A->nagents(A->nowhead,-1)){
+		if(!A->AgentsCount(A->nowhead,-1)){
 			printf("DEATH\n");
 			printf("At  time %d e=%d, mutrate = %0.9f & %0.9f\t",i,(int)A->energy,A->indelrate,A->subrate);
-			A->print_spp_count(stdout,0,-1);
+			A->SpeciesPrintCount(stdout,0,-1);
 			//nsteps=i;
 			break;
 		}
@@ -536,7 +547,7 @@ int run_one_AlifeXII_trial(stringPM *A){
 
 int randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout){
 
-	int pos = 8. * rand0to1();
+	int pos = 8. * RandomBetween0And1();
 
 	/*    012
 	 *    3*4
@@ -611,7 +622,7 @@ s_ag * pick_partner(stringPM *A, smsprun *run,int x, int y){
 	if(!count)
 		return NULL;
 
-	int it = count * rand0to1();
+	int it = count * RandomBetween0And1();
 
 
 	//now, let's choose the agents
@@ -682,7 +693,7 @@ s_ag * place_neighbor(stringPM *A, smsprun *run,s_ag *c,int x,int y){
 	}
 	if(nvacant){
 		//Decide where to put it:
-		int pos = nvacant * rand0to1();
+		int pos = nvacant * RandomBetween0And1();
 		int here=0;
 		for(int i=-1;i<2;i++){
 			for(int j=-1;j<2;j++){
@@ -752,7 +763,7 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 	if(act->f[act->ft]-csite->S < csite->len){
 
 		//1: MAKE THE NEW MOLECULE FROM THE CLEAVE POINT
-		c = A->make_ag(pass->label);//,1);
+		c = A->AgentMake(pass->label);//,1);
 
 		//Copy the cleaved string to the agent
 		char *cs;
@@ -770,7 +781,8 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 		if(!cpy){
 			printf("ERROR: Zero length molecule definitely being created!\nbail..\n");
-			A->free_ag(c);
+			A->AgentFree(c);
+			c=NULL;
 		}
 		else{
 
@@ -782,16 +794,17 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 #endif
 
 			//Check the lineage
-			A->update_lineage(c,'C',1,act->spp,pass->spp,act->biomass);
+			A->SpeciesListUpdate(c,'C',1,act->spp,pass->spp,act->biomass);
 			act->biomass=0; //reset this; we might continue to make stuff!
 
 			//TODO: place the new agent on the grid
 			if((place_neighbor(A,run,c,act->x,act->y))!=NULL){//,x,y))!=NULL){
 				//append the agent to nexthead
-				A->append_ag(&(A->nexthead),c);
+				A->AgentAppend(&(A->nexthead),c);
 			}
 			else{
-				A->free_ag(c);
+				A->AgentFree(c);
+				c=NULL;
 			}
 		}
 		//TODO: check string lens of act and pass?
@@ -811,12 +824,12 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 		//Get rid of zero-length strings...
 		//NB - grid status will be updated at the end of the timestep - simpler.
-		if((dac = A->check_ptrs(act))){
+		if((dac = A->AgentCheckZeroLengthString(act))){
 			//int x,y;
 			switch(dac){
 			case 1://Destroy active - only append passive
-				A->unbind_ag(pass,'P',1,act->spp,pass->spp);
-				A->append_ag(&(A->nexthead),pass);
+				A->AgentUnbind(pass,'P',1,act->spp,pass->spp);
+				A->AgentAppend(&(A->nexthead),pass);
 				//find_ag_gridpos(pass,run,&x,&y);
 				//run->status[x][y]=G_NEXT;
 				run->status[pass->x][pass->y]=G_NEXT;
@@ -825,12 +838,13 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				run->grid[act->x][act->y]=NULL;
 				run->status[act->x][act->y]=G_EMPTY;
 
-				A->free_ag(act);
+				A->AgentFree(act);
+				act = NULL;
 
 				break;
 			case 2://Destroy passive - only append active
-				A->unbind_ag(act,'A',1,act->spp,pass->spp);
-				A->append_ag(&(A->nexthead),act);
+				A->AgentUnbind(act,'A',1,act->spp,pass->spp);
+				A->AgentAppend(&(A->nexthead),act);
 				//find_ag_gridpos(act,run,&x,&y);
 				run->status[act->x][act->y]=G_NEXT;
 
@@ -839,14 +853,18 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				run->grid[pass->x][pass->y]=NULL;
 				run->status[pass->x][pass->y]=G_EMPTY;
 
-				A->free_ag(pass);
+				A->AgentFree(pass);
+				pass = NULL;
+
 				break;
 			case 3://Destroy both
 				printf("Destroying both parents after cleave!\nThis should never happen!\n");
-				A->unbind_ag(act,'A',1,act->spp,pass->spp);
-				A->unbind_ag(pass,'P',1,act->spp,pass->spp);
-				A->free_ag(act);
-				A->free_ag(pass);
+				A->AgentUnbind(act,'A',1,act->spp,pass->spp);
+				A->AgentUnbind(pass,'P',1,act->spp,pass->spp);
+				A->AgentFree(act);
+				act = NULL;
+				A->AgentFree(pass);
+				pass = NULL;
 				break;
 			default://This can't be right can it?
 				if(act->ft == act->it){
@@ -882,7 +900,7 @@ int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int 
 			cs = act->S;
 		else
 			cs = act->pass->S;
-		tmp = HSearch(act->i[act->it],cs,A->blosum,&(act->it),&(act->ft),A->maxl);
+		tmp = OpcodeSearch(act->i[act->it],cs,A->blosum,&(act->it),&(act->ft),A->maxl);
 		act->f[act->ft] = tmp;
 		act->i[act->it]++;
 		break;
@@ -922,9 +940,9 @@ int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int 
 	 *   HCOPY  *
 	 ************/
 	case '='://h-copy
-		if(A->hcopy(act)<0){
-			A->unbind_ag(act,'A',1,act->spp,pass->spp);
-			A->unbind_ag(pass,'P',1,act->spp,pass->spp);
+		if(A->OpcodeCopy(act)<0){
+			A->AgentUnbind(act,'A',1,act->spp,pass->spp);
+			A->AgentUnbind(pass,'P',1,act->spp,pass->spp);
 		}
 		break;
 
@@ -985,7 +1003,7 @@ int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int 
 	 *  IFLABEL *
 	 ************/
 	case '?'://If-label
-			act->i[act->it]=IfLabel(act->i[act->it],act->r[act->rt],act->S,A->blosum,A->maxl);
+			act->i[act->it]=OpcodeIf(act->i[act->it],act->r[act->rt],act->S,A->blosum,A->maxl);
 			break;
 
 
@@ -1010,10 +1028,10 @@ int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int 
 			printf("Unbinding...\n");
 #endif
 
-			A->unbind_ag(act,'A',1,act->spp,pass->spp);
+			A->AgentUnbind(act,'A',1,act->spp,pass->spp);
 			run->status[act->x][act->y] = G_NEXT;
 
-			A->unbind_ag(pass,'P',1,act->spp,pass->spp);
+			A->AgentUnbind(pass,'P',1,act->spp,pass->spp);
 			//int xx,yy;
 			//find_ag_gridpos(pass,run,&xx,&yy);
 			run->status[pass->x][pass->y] = G_NEXT;
@@ -1033,8 +1051,8 @@ int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int 
 	//TODO: This action should be elsewhere - much harder to follow here
 	if(safe_append){
 		act->ect++;
-		A->append_ag(&(A->nexthead),act);
-		A->append_ag(&(A->nexthead),pass);
+		A->AgentAppend(&(A->nexthead),act);
+		A->AgentAppend(&(A->nexthead),pass);
 	}
 	A->energy--;
 
@@ -1047,7 +1065,7 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 
  	float prob = A->decayrate;//1./pow(65,2);//4./3.); //This is now done in load_decay...
 
-	float rno = rand0to1();
+	float rno = RandomBetween0And1();
 
 	if(rno<prob){
 		//unbind_ag(pag);
@@ -1072,7 +1090,9 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 		run->grid[pag->x][pag->y]=NULL;
 		run->status[pag->x][pag->y]=G_EMPTY;
 
-		A->free_ag(pag);
+		A->AgentFree(pag);
+		//TODO: sort this null-ing of free'd agents out!
+		//pag = NULL;
 
 		if(bag!=NULL){
 
@@ -1080,7 +1100,8 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 			run->grid[bag->x][bag->y]=NULL;
 			run->status[bag->x][bag->y]=G_EMPTY;
 
-			A->free_ag(bag);
+			A->AgentFree(bag);
+			bag = NULL;
 		}
 
 		return 1;
@@ -1217,7 +1238,7 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 			foundrng=false;
 		}
 
-		int rerr = readordef_param_int(fn,"RANDSEED", &stmp, seedin, 0);//read_param_int(fpr,"RANDSEED",&stmp,1);
+		int rerr = ParameterReadOrDefineUnsignedInt(fn,"RANDSEED", &stmp, seedin, 0);//read_param_int(fpr,"RANDSEED",&stmp,1);
 
 
 		if(rerr){
@@ -1273,7 +1294,7 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 
 int smspatial_step(stringPM *A, smsprun *run){
 
-	//again, we follow make_next, but are a little more careful with the binding and uncoupling
+	//again, we follow TimestepIncrement, but are a little more careful with the binding and uncoupling
 	s_ag *pag;
 
 	//A->energy += A->estep;
@@ -1288,11 +1309,11 @@ int smspatial_step(stringPM *A, smsprun *run){
 	while(A->nowhead!=NULL){
  
  		s_ag *bag;
-		pag = A->rand_ag(A->nowhead,-1);
-		A->extract_ag(&A->nowhead,pag);
+		pag = A->AgentSelectRandomly(A->nowhead,-1);
+		A->AgentExtract(&A->nowhead,pag);
 
 		//For debugging RNG diffs.
-		if(A->extit == 90001){
+		if(A->timestep == 90001){
 			printf("%d\t%d\t%d\t\n",//%c%c%c%c\n",
 					ct++,
 					get_mti(),
@@ -1314,11 +1335,11 @@ int smspatial_step(stringPM *A, smsprun *run){
 			break;
 		case B_ACTIVE:
 			bag = pag->pass;
-			A->extract_ag(&(A->nowhead),bag);
+			A->AgentExtract(&(A->nowhead),bag);
 			break;
 		case B_PASSIVE:
 			bag = pag->exec;
-			A->extract_ag(&(A->nowhead),bag);
+			A->AgentExtract(&(A->nowhead),bag);
 			break;
 		}
 
@@ -1340,24 +1361,24 @@ int smspatial_step(stringPM *A, smsprun *run){
 					if((bag = pick_partner(A,run,pag->x,pag->y))!=NULL){
 
 						//TODO: We need to make sure that bag is in nowhead first!
-						A->extract_ag(&(A->nowhead),bag);
+						A->AgentExtract(&(A->nowhead),bag);
 
 						//Now we've found a potential partner, we can see if it binds:
 						float bprob;
-						bprob = A->get_sw(pag,bag,&sw);
+						bprob = A->AgentsAlign(pag,bag,&sw);
 
 						float rno;
-						rno = rand0to1();
+						rno = RandomBetween0And1();
 						if(rno<bprob){//Binding success!
 							//figure out which is the executing string:
-							A->set_exec(pag,bag,&sw);
+							A->ReactionSetupExecution(pag,bag,&sw);
 							pag->nbind++;
 							bag->nbind++;
 
 							A->energy--;
 
-							A->append_ag(&(A->nexthead),pag);
-							A->append_ag(&(A->nexthead),bag);
+							A->AgentAppend(&(A->nexthead),pag);
+							A->AgentAppend(&(A->nexthead),bag);
 							changed=1;
 						}
 					}
@@ -1381,15 +1402,15 @@ int smspatial_step(stringPM *A, smsprun *run){
 				}
 			}
 			if(!changed){
-				A->append_ag(&(A->nexthead),pag);
+				A->AgentAppend(&(A->nexthead),pag);
 				if(bag!=NULL)
-					A->append_ag(&(A->nexthead),bag);
+					A->AgentAppend(&(A->nexthead),bag);
 
 			}
 		}
 	}
 
-	A->update();
+	A->UpdateNowNext();
 	update_grid(run);
 
 
@@ -1419,7 +1440,7 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 
 
 
-	A->load(fn,NULL,0,1);
+	A->ConfigLoad(fn,NULL,0,1);
 
 	A->run_number = runno;
 
@@ -1438,18 +1459,18 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 
 	//TODO: Now we have to place each agent on the grid - use the makenext() model -
 	//But we only need to do this if extit == 0, because otherwise we'll have the molecular positions...
-	if(!A->extit){
+	if(!A->timestep){
 		while(A->nowhead!=NULL){
 			s_ag *pag;
-			pag = A->rand_ag(A->nowhead,-1);
-			A->extract_ag(&(A->nowhead),pag);
+			pag = A->AgentSelectRandomly(A->nowhead,-1);
+			A->AgentExtract(&(A->nowhead),pag);
 			int found = 0;
 
 			//Check to see if a position has been set for each molecule..
 			if( pag->x > -1 ){
 				if( pag->y > -1){
 					place_mol(pag,*run,pag->x,pag->y);
-					A->append_ag(&(A->nexthead),pag);
+					A->AgentAppend(&(A->nexthead),pag);
 					found = 1;
 				}
 				else{
@@ -1460,7 +1481,7 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 			}
 
 			while(!found){
-				int pos = (*run)->gridx * (*run)->gridy * rand0to1();
+				int pos = (*run)->gridx * (*run)->gridy * RandomBetween0And1();
 
 				int x = pos%(*run)->gridx;
 				int y = pos/(*run)->gridx;
@@ -1485,14 +1506,14 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 							place_mol(pag,*run,x,y);
 
 							//Move to the 'used' bucket
-							A->append_ag(&(A->nexthead),pag);
+							A->AgentAppend(&(A->nexthead),pag);
 
 							s_ag *bag;
-							bag = A->rand_ag(A->nowhead,-1);
+							bag = A->AgentSelectRandomly(A->nowhead,-1);
 							if(bag != NULL){
-								A->extract_ag(&(A->nowhead),bag);
+								A->AgentExtract(&(A->nowhead),bag);
 								place_mol(bag,*run,xx,yy);
-								A->append_ag(&(A->nexthead),bag);
+								A->AgentAppend(&(A->nexthead),bag);
 							}
 						}
 					}
@@ -1500,7 +1521,7 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 			}
 		}
 
-		A->update();
+		A->UpdateNowNext();
 	}
 	else{
 		//Fill the grid
@@ -1553,7 +1574,7 @@ int smspatial(int argc, char *argv[]) {
 	smspatial_init(argv[2],&A,&run,1);
 
 	int bt,ct{0};
-	ct = A.nagents(A.nowhead,-1);
+	ct = A.AgentsCount(A.nowhead,-1);
 	printf("Initialisation done, number of molecules is %d\n",ct);
 
 	//This used to be called here - but better to do it before smspatial_init()
@@ -1566,7 +1587,7 @@ int smspatial(int argc, char *argv[]) {
 	//reload file: should have identical settings to the input conig:
 	FILE *fpp{};
 	char fn[128]{};
-	sprintf(fn,"reload_%05u.conf",A.extit);
+	sprintf(fn,"reload_%05u.conf",A.timestep);
 	fpp = fopen(fn,"w");
 	A.print_conf(fpp);
 	fclose(fpp);
@@ -1577,13 +1598,13 @@ int smspatial(int argc, char *argv[]) {
 
 
 //	while(A.nagents(A.nowhead,-1)){
-	while((A.extit < A.nsteps) && (ct > 0)){
+	while((A.timestep < A.nsteps) && (ct > 0)){
 
 		//if(!(A.extit%100) || A.extit==1){
 		//if(!(A.extit%100)){
-		if(!(A.extit%A.image_every)){
-			bt = ct - A.nagents(A.nowhead,B_UNBOUND);
-			printf("Step %u done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
+		if(!(A.timestep%A.image_every)){
+			bt = ct - A.AgentsCount(A.nowhead,B_UNBOUND);
+			printf("Step %u done, number of molecules is %d, nbound = %d\n",A.timestep,ct,bt);
 
 			smspatial_pic(&A, smpic_spp);
 			smspatial_pic(&A, smpic_len);
@@ -1594,23 +1615,23 @@ int smspatial(int argc, char *argv[]) {
 		//		|| (A.extit%1000) == 999 || (A.extit%1000) == 1  || !(A.extit%97) || !(A.extit%47)
 		//		|| (A.extit%1000) == 99 || (A.extit%1000) == 100|| (A.extit%1000) == 101
 		//		|| (A.extit>90001 && A.extit <9000))
-		if(!(A.extit%A.report_every)){
+		if(!(A.timestep%A.report_every)){
 			
 			
-			sprintf(fn,"out1_%05u.conf",A.extit);
+			sprintf(fn,"out1_%05u.conf",A.timestep);
 			fpp = fopen(fn,"w");
 
 			A.print_conf(fpp);
 			fclose(fpp);
 
 			FILE *fp{};
-			sprintf(fn,"splist%u.dat",A.extit);
+			sprintf(fn,"splist%u.dat",A.timestep);
 			fp = fopen(fn,"w");
-			SP.print_spp_list(fp);
+			SP.SpeciesListPrint(fp);
 			fclose(fp);
 
 
-			printsppct(&A,A.extit);
+			printsppct(&A,A.timestep);
 
 		}
 
@@ -1630,8 +1651,8 @@ int smspatial(int argc, char *argv[]) {
 		}
 #endif
 
-		A.extit++;
-		ct = A.nagents(A.nowhead,-1);
+		A.timestep++;
+		ct = A.AgentsCount(A.nowhead,-1);
 
 	}
 
@@ -1744,10 +1765,10 @@ int smspatial_pic(stringPM *A, smpic pt){
 	char filename[128];
 	switch(pt){
 	case smpic_len:
-		sprintf(filename,"lenframe%07u.png",A->extit);
+		sprintf(filename,"lenframe%07u.png",A->timestep);
 		break;
 	case smpic_spp:
-		sprintf(filename,"sppframe%07u.png",A->extit);
+		sprintf(filename,"sppframe%07u.png",A->timestep);
 		break;
 
 	}
@@ -1930,7 +1951,7 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 
 
 			char filename[128];
-			sprintf(filename,"lenframe%07u.png",A.extit);
+			sprintf(filename,"lenframe%07u.png",A.timestep);
 			encodeOneStep(filename, image, run->gridx, run->gridy);
 
 			A.clearout();

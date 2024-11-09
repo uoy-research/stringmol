@@ -76,9 +76,9 @@ typedef struct s_swt{
 
 //Linked list stuff
 
-s_sw * 	read_sw(s_sw *swlist, int sp1, int sp2);
-int 	store_sw(s_sw **swlist, align * sw,int sp1, int sp2);
-int	load_sw(s_sw *b, align *sw);
+s_sw * 	ReactionReadAlignmentFromSWList(s_sw *swlist, int sp1, int sp2);
+int 	ReactionStoreAlignmentToSWList(s_sw **swlist, align * sw,int sp1, int sp2);
+int	SmithWatermanDataFromAlignmentObject(s_sw *b, align *sw);
 void 	free_swlist(s_sw **head);
 
 
@@ -89,20 +89,19 @@ enum sw_subs{swMATCH=1,swDEL=2,swINS=3};
 int 	LongestCommonSubsequence(char *s1, char *s2);
 
 int 	SmithWaterman(char *s1, char *s2, align *A, swt *T, int verbose);
-int 	SmithWatermanV2(char *s1, char *s2, align *A, swt *swT, int verbose);
+int 	SmithWatermanAlignment(char *s1, char *s2, align *A, swt *swT, int verbose);
 
-void 	align_prob(align *A);
-int 	align_event(align *A, int len);
+int 	OpcodeTemplateAligns(align *A, int len);
 
 
 void 	print_swt(FILE *fp, swt *sss);
 
 int 	load_table(char *fn,swt *T);
 void 	table_from_string(float **T, char *key, const int N);
-int 	tab_idx(char X, swt*T);
+int 	OpcodeIndex(char X, swt*T);
 
 //Get an adjacent symbol in the mutation space
-char 	sym_from_adj(char X, swt *swt);
+char 	OpcodeAdjacent(char X, swt *swt);
 
 
 /* Get score only and don't worry about anything else! */

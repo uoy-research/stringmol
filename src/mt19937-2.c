@@ -55,9 +55,18 @@
 static unsigned long mt[N]; /* the array for the state vector  */
 static int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
 
+
+
+
+
+/*******************************************************************************
+* @brief initialise the Mersenne Twister array with a non-zero positive integer
+*
+* @details see Mersenne Twister documentation
+*******************************************************************************/
 /* initializing the array with a NONZERO seed */
 void
-sgenrand(unsigned long seed)
+SetRNGSeed(unsigned long seed)
 //    unsigned long seed;
 {
     /* setting initial seeds to mt[N] using         */
@@ -70,9 +79,19 @@ sgenrand(unsigned long seed)
 }
 
 
+
+
+
+/*******************************************************************************
+* @brief generate a random double in [0,1)
+*
+* @details see Mersenne Twister documentation
+*
+* @return a random double in [0,1)
+*******************************************************************************/
 double /* generating reals */
 /* unsigned long */ /* for integer generation */
-genrand()
+GenerateRandomDouble()
 {
     unsigned long y;
     static const unsigned long mag01[2]={0x0, MATRIX_A};
@@ -82,7 +101,7 @@ genrand()
         int kk;
 
         if (mti == N+1)   /* if sgenrand() has not been called, */
-            sgenrand(4357); /* a default initial seed is used   */
+            SetRNGSeed(4357); /* a default initial seed is used   */
 
         for (kk=0;kk<N-M;kk++) {
             y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
@@ -123,7 +142,7 @@ unsigned long genrandint()
 		static const unsigned long mag01[2]={0x0, MATRIX_A};
 
 		if (mti == N+1)   /* if sgenrand() has not been called, */
-			sgenrand(4357); /* a default initial seed is used   */
+			SetRNGSeed(4357); /* a default initial seed is used   */
 
 		for (kk=0;kk<N-M;kk++) {
 			y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);

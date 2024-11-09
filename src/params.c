@@ -65,7 +65,22 @@ void report_param_error(int error, int doexit){
 
 
 
-int read_param_int(FILE *fp,const char *label, unsigned int *val, int verbose){
+
+
+/******************************************************************************
+* @brief read a parameter from a config file and store as unsigned int
+*
+* @param[in] fn name of the config file
+*
+* @param[in] label the keyword in the config file, eg "AGENT"
+*
+* @param[in] val the value of the parameter
+*
+* @param[in] verbose verbose output
+*
+* @return 0 if error; 1 if success... todo reverse
+*****************************************************************************/
+int ParameterReadUnsignedInt(FILE *fp,const char *label, unsigned int *val, int verbose){
 
 	const int maxl = 128;
 	char line[maxl];
@@ -95,7 +110,23 @@ int read_param_int(FILE *fp,const char *label, unsigned int *val, int verbose){
 }
 
 
-int read_param_float(FILE *fp,const char *label, float *val, int verbose){
+
+
+
+/******************************************************************************
+* @brief read a parameter from a config file and store as float
+*
+* @param[in] fn name of the config file
+*
+* @param[in] label the keyword in the config file, eg "AGENT"
+*
+* @param[in] val the value of the parameter
+*
+* @param[in] verbose verbose output
+*
+* @return 0 if error; 1 if success... todo reverse
+*****************************************************************************/
+int ParameterReadFloat(FILE *fp,const char *label, float *val, int verbose){
 
 	const int maxl = 128;
 	char line[maxl];
@@ -162,13 +193,31 @@ char * read_param_string(FILE **pfp,const char *label, int verbose){
 }
 
 
-int readordef_param_int(const char *fn, const char *label, unsigned int *val, const int defaultvalue, const int verbose){
+
+
+
+/******************************************************************************
+* @brief read a parameter from a config file; use a default if not found
+*
+* @param[in] fn name of the config file
+*
+* @param[in] label the keyword in the config file, eg "AGENT"
+*
+* @param[in] val the value of the parameter
+*
+* @param[in] defaultvalue the value to use if not found in the config file
+*
+* @param[in] verbose verbose output
+*
+* @return 0 if error; 1 if success... todo reverse
+*****************************************************************************/
+int ParameterReadOrDefineUnsignedInt(const char *fn, const char *label, unsigned int *val, const int defaultvalue, const int verbose){
 
 	int errcode = 3;
 	FILE *fp;
 
 	if((fp=fopen(fn,"r"))!=NULL){
-		int rerr = read_param_int(fp,label,val,0);
+		int rerr = ParameterReadUnsignedInt(fp,label,val,0);
 		switch(rerr){
 		case 2:
 			printf("Multiple instances of %s specified. Check config file\n",label);

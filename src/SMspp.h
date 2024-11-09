@@ -97,9 +97,6 @@ struct l_spp{//THIS IS THE LIST OF SPECIES THAT EVOLVE
 	char  	sptype;	//! 'A' = new from an active bind; 'P' = new from a passive bind; 'C' = new from a cleave bind
 	int 	anc;	//! A processing flag, specifically to flag an ancestor - reset when beginning an analysis!
 
-	//A Score for the signal molecule
-	float 	sig_sc;
-
 	//Total biomass produced in this reaction over a trial
 	int	biomass;
 
@@ -115,7 +112,7 @@ struct s_parent{
 
 class SMspp {
 public:
-	l_spp *species; 		//The list of species
+	l_spp *species_list; 		//The list of species
 	long int spp_count; 	//The current number of species
 
 	SMspp();
@@ -123,9 +120,9 @@ public:
 	SMspp& operator=(const SMspp &SMspp_in);
 
 
-	l_spp * make_spp_from_string(char *S, int extit, const int maxl0, const int spno);
-	l_spp * make_spp_from_agent( s_ag *a, int extit, const int maxl0);
-	void 	prepend_spp(l_spp *p);
+	l_spp * SpeciesMakeFromString(char *S, int extit, const int maxl0, const int spno);
+	l_spp * SpeciesMakeFromAgent( s_ag *a, int extit, const int maxl0);
+	void 	SpeciesPrependToList(l_spp *p);
 	l_spp * find_spp(char *S, const int maxl0);
 	l_spp * getspp(            s_ag *a, int extit,const int maxl0);//, s_spp * paspp, s_spp * ppspp);
 	l_spp * getspp_from_string(char *S, int extit,const int maxl0, const int spno);
@@ -133,12 +130,12 @@ public:
 	//s_spp * getspp(s_ag *a);
 	void free_spp(l_spp *sp);
 
-	s_parent * make_parents(l_spp * paspp, l_spp * ppspp);
-	s_parent * get_parents(l_spp * c, l_spp *paspp, l_spp  *ppspp);
-	void 		append_parents(l_spp *c, s_parent *pp);
+	s_parent * ParentsMake(l_spp * paspp, l_spp * ppspp);
+	s_parent * ParentsFindOrMake(l_spp * c, l_spp *paspp, l_spp  *ppspp);
+	void 		ParentsAppend(l_spp *c, s_parent *pp);
 	void 		free_parent_list(s_parent *pp);
 
-	int print_spp_list(FILE *fp);
+	int SpeciesListPrint(FILE *fp);
 
 	int clear_list();
 

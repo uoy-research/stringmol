@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 	smspatial_init(argv[2],&A,&run,1);
 
 	int bt,ct=0;
-	ct = A.nagents(A.nowhead,-1);
+	ct = A.AgentsCount(A.nowhead,-1);
 	printf("Initialisation done, number of molecules is %d\n",ct);
 
 	/* Set up SDL if we're using it */
@@ -117,11 +117,11 @@ int main(int argc, char *argv[]) {
 
 
 //	while(A.nagents(A.nowhead,-1)){
-	while(A.extit < 1000000){// && A.nagents(A.nowhead,-1)>0){
+	while(A.timestep < 1000000){// && A.nagents(A.nowhead,-1)>0){
 
 		smspatial_step(&A,run);
-		ct = A.nagents(A.nowhead,-1);
-		bt = ct - A.nagents(A.nowhead,B_UNBOUND);
+		ct = A.AgentsCount(A.nowhead,-1);
+		bt = ct - A.AgentsCount(A.nowhead,B_UNBOUND);
 #ifdef DODEBUG
 		printf("Nowhead is %p, Nexthead is %p\n",A.nowhead,A.nexthead);
 		s_ag *p;
@@ -146,23 +146,23 @@ int main(int argc, char *argv[]) {
 
 //		if(A.extit == 66396)
 //			printf("Pauuuuse\n!");
-		A.extit++;
+		A.timestep++;
 		//if(!(A.extit%100))
 		//		printf("Step %d done, number of molecules is %d, nbound = %d\n",(int) A.extit,ct,bt);
-		if((!(A.extit%100))  ){// ||     A.extit == 66396    ){
-			printf("Step %d done, number of molecules is %d, nbound = %d\n",(int) A.extit,ct,bt);
+		if((!(A.timestep%100))  ){// ||     A.extit == 66396    ){
+			printf("Step %d done, number of molecules is %d, nbound = %d\n",(int) A.timestep,ct,bt);
 			FILE *fp;char fn[128];
-			sprintf(fn,"splist%u.dat",A.extit);
+			sprintf(fn,"splist%u.dat",A.timestep);
 			fp = fopen(fn,"w");
-			SP.print_spp_list(fp);
+			SP.SpeciesListPrint(fp);
 			fclose(fp);
 
-			printsppct(&A,A.extit);
+			printsppct(&A,A.timestep);
 
 			//printf("Step %ld done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
 
 			FILE *fpp;
-			sprintf(fn,"out1_%05u.conf",A.extit);
+			sprintf(fn,"out1_%05u.conf",A.timestep);
 			fpp = fopen(fn,"w");
 			A.print_conf(fpp);
 			fclose(fpp);
@@ -227,7 +227,7 @@ int main(int argc, char *argv[]) {
 //#ifdef USE_SDL
 				((uint8_t *)screen->pixels)[y + (x * sdlPitch)] = val;//getColor(grid[x][y]);
 
-				if(!(A.extit%10)){
+				if(!(A.timestep%10)){
 					/*Get the rgb values for writing to PNG*/
 					uint8_t r ;
 					uint8_t g ;
@@ -245,9 +245,9 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifdef USE_SDL
-		if(!(A.extit%10)){
+		if(!(A.timestep%10)){
 			char filename[128];
-			sprintf(filename,"frame%07u.png",A.extit);
+			sprintf(filename,"frame%07u.png",A.timestep);
 			encodeOneStep(filename, image, run->gridx, run->gridy);
 		}
 

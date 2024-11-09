@@ -21,13 +21,27 @@
 
 #include "hsort.h"
 
-void swap(int idx[], int a, int b){
+
+
+
+
+/******************************************************************************
+* @brief swap component of heapsort
+*****************************************************************************/
+void SwapByIndex(int idx[], int a, int b){
 	int tmp = idx[a];
 	idx[a]=idx[b];
 	idx[b]=tmp;
 }
 
-void sift_int(const int a[], int idx[],int s, const int N){
+
+
+
+
+/******************************************************************************
+* @brief sift component of heapsort
+*****************************************************************************/
+void HeapsortSiftByIndex(const int a[], int idx[],int s, const int N){
 	int r = s;		//	var int root := start, child
 	//int c;
 
@@ -39,7 +53,7 @@ void sift_int(const int a[], int idx[],int s, const int N){
 			c++;
 		}
 		if(a[idx[r]] < a[idx[c]]){
-			swap(idx,r,c);
+			SwapByIndex(idx,r,c);
 			r = c;
 		}
 		else
@@ -48,19 +62,31 @@ void sift_int(const int a[], int idx[],int s, const int N){
 }
 
 
-void idx_hsort_int(int a[], int idx[], const int N){
+
+
+
+/******************************************************************************
+* @brief heapsort one array by index value in the other
+*
+* @param[in] a the array to be sorted
+*
+* @param[in] idx the index array
+*
+* @param[in] N the array size
+*****************************************************************************/
+void HeapsortByIndex(int a[], int idx[], const int N){
 	int
 		s = (N/2)-1,   	//	var int   start := count ÷ 2 - 1,
 		e = N-1;    	//				end := count - 1
 
 	//"HEAPIFY" in some descriptions:
 	while(s>=0){    	//	while start ≥ 0
-		sift_int(a,idx,s--,N);	//		sift(a, start, count)
+		HeapsortSiftByIndex(a,idx,s--,N);	//		sift(a, start, count)
 					//		start := start - 1
 	}
 	while(e>0){
-		swap(idx,e,0);
-	    sift_int(a, idx, 0, e--);
+		SwapByIndex(idx,e,0);
+	    HeapsortSiftByIndex(a, idx, 0, e--);
 	}
 }
 

@@ -5,6 +5,7 @@
 #./travis_gcc_cpp98
 #cppcheck --quiet --error-exitcode=1 main.cpp
 
+
 echo "============================"
 echo "Checking with cppcheck"
 cd src
@@ -89,3 +90,8 @@ echo "  now testing.."
 
 echo "  cleaning up.."
 rm -f rng.txt
+
+
+#############
+# todo: consider using cccc to get software metrics..
+# todo: consider how to use valgrind within this

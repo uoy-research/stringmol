@@ -48,8 +48,8 @@ rules::rules(char *fn){
 		//allocate memory for the rules now
 		nr = rulecount;
 		rset = (int **) arr2alloc(nr,4,sizeof(int));
-		rval = (float *) mymalloc(nr,sizeof(float));
-		re = (float *) mymalloc(nr,sizeof(float));
+		rval = (float *) MallocOrExit(nr,sizeof(float));
+		re = (float *) MallocOrExit(nr,sizeof(float));
 		//fill the rule array
 		rewind(fp);
 		rulecount = 0;
