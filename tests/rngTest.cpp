@@ -10,14 +10,17 @@
  */
 TEST_CASE("seeding with initmyrand(436) produces 436 as output"){
     int rin = 436;
-    int rout = initmyrand(rin);
+    int rout = RandomInit(rin);
     REQUIRE(rout == rin);
 }
 
 
+
+
+	
 TEST_CASE("reseeding with initmyrand(436) resets the rng and the same sequence is output"){
     int rin = 436;
-    int rout = initmyrand(rin);
+    int rout = RandomInit(rin);
     REQUIRE(rout == rin);
     
     const int nrand = 10;
@@ -25,7 +28,7 @@ TEST_CASE("reseeding with initmyrand(436) resets the rng and the same sequence i
     for(int rr=0;rr<nrand;rr++)
         rnos1[rr] = RandomBetween0And1();
 
-    rout = initmyrand(rin);
+    rout = RandomInit(rin);
     REQUIRE(rout == rin);
 
 
@@ -36,9 +39,12 @@ TEST_CASE("reseeding with initmyrand(436) resets the rng and the same sequence i
 }
 
 
+
+
+
 TEST_CASE("reseeding with initmyrand(-1) resets the rng and a different sequence is output"){
     int rin = -1;
-    int rout2,rout1 = initmyrand(rin);
+    int rout2,rout1 = RandomInit(rin);
     REQUIRE(rout1 != rin);
     
     const int nrand = 10;
@@ -46,7 +52,7 @@ TEST_CASE("reseeding with initmyrand(-1) resets the rng and a different sequence
     for(int rr=0;rr<nrand;rr++)
         rnos1[rr] = RandomBetween0And1();
 
-    rout2 = initmyrand(rin);
+    rout2 = RandomInit(rin);
     REQUIRE(rout2 != rin);
 
     REQUIRE(rout2 != rout1);
@@ -56,6 +62,10 @@ TEST_CASE("reseeding with initmyrand(-1) resets the rng and a different sequence
         REQUIRE(rnos1[rr] != rnos2[rr]);
     }
 }
+
+
+
+
 	
 /*    
 TEST_CASE("resetting Mersenne Twister index"){
@@ -88,6 +98,9 @@ TEST_CASE("resetting Mersenne Twister index"){
 }*/
 
 
+
+
+
 TEST_CASE("save and load RNG to/from file"){
     FILE *mtf;
     int runf = 7919; //the 1000th prime
@@ -95,7 +108,7 @@ TEST_CASE("save and load RNG to/from file"){
     char fn[] = "rng.txt";
     float rnos1[nrand], rnos2[nrand];
 
-    initmyrand(-1);
+    RandomInit(-1);
     //Run the RNG forward a couple of thousand times
     for(int cc=0;cc<runf;cc++){
         RandomBetween0And1();

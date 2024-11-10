@@ -64,7 +64,7 @@ int test_rand(int verbose){
 	if(verbose){
 		printf("Testing seeding using dev/rand... \n");fflush(stdout);
 		}
-	int rout = initmyrand(-1);
+	int rout = RandomInit(-1);
 	if(rout == rin){
 		printf("FAILED - requested seed from dev/random, but got -1\n");
 		failed = 1;
@@ -78,7 +78,7 @@ int test_rand(int verbose){
 		printf("Testing seeding using dev/rand again... \n");
 		fflush(stdout);
 	}
-	rout = rout - initmyrand(-1);
+	rout = rout - RandomInit(-1);
 	if(rout == 0 ){
 		printf("FAILED - requested new seed from dev/random, but got same one\n");
 		failed = 1;
@@ -91,7 +91,7 @@ int test_rand(int verbose){
 		printf("Testing seeding using ingeter %d... \n",rin);
 		fflush(stdout);
 	}
-	rout = initmyrand(rin);
+	rout = RandomInit(rin);
 	if(rout != rin){
 		printf("FAILED - seed not set - different seed used\n");
 		failed = 1;
@@ -247,7 +247,7 @@ int test_loadsave(int argc, char *argv[]){
 
 	//Run the Trial forward
 
-	A->print_agents(stdout,"NOW",0);
+	A->AgentsPrint(stdout,"NOW",0);
 
 
 	run_one_AlifeXII_trial(A);

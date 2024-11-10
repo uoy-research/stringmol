@@ -134,7 +134,7 @@ void SMspp::ParentsAppend(l_spp *c, s_parent *pp){
 
 
 
-/***********************************************
+/*******************************************************************************
  * @brief create an s_parent object
  *
  * @details We have to know what the parents are to do this, and to have
@@ -145,7 +145,7 @@ void SMspp::ParentsAppend(l_spp *c, s_parent *pp){
  * @param[in] ppspp the passive parent
  *
  * @return the created parent
- ***********************************************/
+ ******************************************************************************/
 s_parent * SMspp::ParentsMake(l_spp * paspp, l_spp * ppspp){
 
 	s_parent *pp;
@@ -167,7 +167,7 @@ s_parent * SMspp::ParentsMake(l_spp * paspp, l_spp * ppspp){
 
 
 
-/***********************************************
+/*******************************************************************************
  * @brief Create a species struct from a character string.
  *
  * @param[in] a the stringmol agent
@@ -177,7 +177,7 @@ s_parent * SMspp::ParentsMake(l_spp * paspp, l_spp * ppspp){
  * @param[in] maxl0 the max string length + `\0`
  *
  * @return the created species
- ***********************************************/
+ ******************************************************************************/
 l_spp * SMspp::SpeciesMakeFromString(char *S, int extit, const int maxl0, const int spno){
 
 	//! pointer to the l_spp object
@@ -320,7 +320,12 @@ l_spp * SMspp::getspp_from_string(char *S, int extit,const int maxl0, const int 
 
 
 
-void SMspp::free_parent_list(s_parent *pp){
+/*******************************************************************************
+* @brief free the parent list
+*
+* @param[in] pp the parent list
+*******************************************************************************/
+void SMspp::ParentListFree(s_parent *pp){
 
 	while(pp !=NULL){
 		s_parent *tmp;
@@ -331,20 +336,37 @@ void SMspp::free_parent_list(s_parent *pp){
 }
 
 
-void SMspp::free_spp(l_spp *sp){
+
+
+
+/*******************************************************************************
+* @brief free the species object
+*
+* @param[in] sp the species
+*******************************************************************************/
+void SMspp::SpeciesFree(l_spp *sp){
 	free(sp->S);
-	free_parent_list(sp->pp);
+	ParentListFree(sp->pp);
 	free(sp);
 	//NEED ALSO TO FREE PARENT LIST!
 }
 
 
-int SMspp::clear_list(){
+
+
+
+
+/*******************************************************************************
+* @brief clear the species list
+*
+* @return 0 always
+*******************************************************************************/
+int SMspp::SpeciesListClear(){
 	l_spp *ps,*n;
 
 	for(ps=species_list;ps!=NULL;){
 		n = ps->next;
-		free_spp(ps);
+		SpeciesFree(ps);
 		ps = n;
 	}
 	species_list = NULL;
@@ -356,13 +378,13 @@ int SMspp::clear_list(){
 
 
 
-/******************************************************************************
+/*******************************************************************************
 * @brief print the list of species_list
 *
 * @param[in] fp a file pointer (can be stdout)
 *
 * @return the number of species_list present
-*****************************************************************************/
+*******************************************************************************/
 int SMspp::SpeciesListPrint(FILE *fp){
 
 	l_spp *ps;

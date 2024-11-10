@@ -33,16 +33,28 @@
 #include "mt19937-2.h"
 #endif
 
+
+
+
+
+/*******************************************************************************
+* @brief initialise the random number generator from the OS
+*
+* @details accesses /dev/random to get a seed for the Mersenne Twister
+*
+* @return a random integer
+*******************************************************************************/
 /*
  * Obtain a seed from /dev/random - better than using clock, especially for array jobs
  * NB: this will only work if /dev/random is set up!
  */
-int devrandomseed(){
+int RandomSeedFromSystem(){
 
 	int randomData = open("/dev/random", O_RDONLY);
 	int sjhRandomInteger;
 	if(!read(randomData, &sjhRandomInteger, sizeof sjhRandomInteger)){
-		printf("WARNING!: 0 bytes read from /dev/random in devrandomseed(), randutil.c\n");
+		printf("WARNING!: 0 bytes read from /dev/random");
+		printf("in devrandomseed(), randutil.c\n");
 	}
 	// you now have a random integer!
 	close(randomData);
@@ -57,11 +69,20 @@ int devrandomseed(){
 
 
 
-int initmyrand(int seed){
+/*******************************************************************************
+* @brief initialise the random number generator with a seed or time
+*
+* @details uses the Mersenne Twister algorithm (TODO: check range is [0,1)
+*
+* @param[in] seed used to seed the rng. if <0, chosen by the program
+*
+* @return a double between 0 and 1
+*******************************************************************************/
+int RandomInit(int seed){
 
 	if(seed<0){
 #ifdef USING_SEED_DEVRAND
-		seed = devrandomseed();
+		seed = RandomSeedFromSystem();
 #else
 		seed = time(NULL);
 #endif
@@ -87,8 +108,8 @@ unsigned long longinitmyrand(const unsigned long *inseed){
 	unsigned long seed;
 	if(inseed==NULL){
 #ifdef USING_SEED_DEVRAND
-		seed = devrandomseed();
-		printf("in initmyrand, seed is %ld", (long int) seed  );
+		seed = RandomSeedFromSystem();
+		printf("in longinitmyrand, seed is %ld", (long int) seed  );
 		printf("(%lu)\n",(unsigned long int) seed);
 #else
 		seed = time(NULL);
@@ -110,13 +131,13 @@ unsigned long longinitmyrand(const unsigned long *inseed){
 
 
 
-/******************************************************************************
+/*******************************************************************************
 * @brief generate a random number between 0 and 1
 *
 * @details uses the Mersenne Twister algorithm (TODO: check range is [0,1)
 *
 * @return a double between 0 and 1
-*****************************************************************************/
+*******************************************************************************/
 double RandomBetween0And1(){
 	double x;
 #ifdef USING_MT

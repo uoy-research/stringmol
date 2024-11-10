@@ -128,16 +128,16 @@ public:
 	l_spp * getspp_from_string(char *S, int extit,const int maxl0, const int spno);
 
 	//s_spp * getspp(s_ag *a);
-	void free_spp(l_spp *sp);
+	void SpeciesFree(l_spp *sp);
 
 	s_parent * ParentsMake(l_spp * paspp, l_spp * ppspp);
 	s_parent * ParentsFindOrMake(l_spp * c, l_spp *paspp, l_spp  *ppspp);
 	void 		ParentsAppend(l_spp *c, s_parent *pp);
-	void 		free_parent_list(s_parent *pp);
+	void 		ParentListFree(s_parent *pp);
 
 	int SpeciesListPrint(FILE *fp);
 
-	int clear_list();
+	int SpeciesListClear();
 
 	//TODO: write these - save memory!
 	//int		print_list();
