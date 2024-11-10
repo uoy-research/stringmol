@@ -125,11 +125,11 @@ agents_base::agents_base(){
 		printf("\n");
 	}
 
-	print_propensity(stdout);
+	PropensityPrint(stdout);
 	exit(7);
 	*/
 
-	preset();
+	ParametersSetDefaults();
 
 }
 
@@ -143,7 +143,9 @@ agents_base::~agents_base(){
 
 
 
-/******************************************************************************
+
+
+/*******************************************************************************
 * @brief keep a record of this propensity event
 *
 * @details propensity is aspatial-stringmol's way of calculaing the likelihood
@@ -152,18 +154,28 @@ agents_base::~agents_base(){
 * @param[in] N the number todo: what does it do?
 *
 * @param[in] X another number todo: what does it do?
-*****************************************************************************/
+*******************************************************************************/
 void agents_base::PropensityRecord(int N,int X){
 	if(N<bmax){
 		bct[N]++;
 		if(X)
 			bpp[N]++;
 	}
-
 }
 
 
-void agents_base::print_propensity(FILE *fp){
+
+
+
+/*******************************************************************************
+* @brief print the propensity to file
+*
+* @details propensity is aspatial-stringmol's way of calculaing the likelihood
+*          of two molecules meeting
+*
+* @param[in] fp the file pointer
+*******************************************************************************/
+void agents_base::PropensityPrint(FILE *fp){
 	int i;
 	fprintf(fp,"\nPropensity table\n");
 	for(i=0;i<bmax;i++)
@@ -172,19 +184,20 @@ void agents_base::print_propensity(FILE *fp){
 }
 
 
-void agents_base::preset(){
+
+
+/*******************************************************************************
+* @brief set the default parameters for the well-mixed model
+*******************************************************************************/
+void agents_base::ParametersSetDefaults(){
 
 	ifxhead = NULL;
-	//btab = NULL;
-	//com = NULL;
-	//dcom = NULL;
-
 
 	cellrad = 2500;
 	agrad = 10;
 	move = 0;
 	energy = 0;
-	//divtime = 0;
+
 	vcellrad = 0;
 }
 
@@ -203,7 +216,7 @@ void agents_base::ConfigLoad(const char *fn, char *fninput, int test=0, int verb
 
 
 
-/******************************************************************************
+/*******************************************************************************
 * @brief Load the parameters set from a config file
 *
 * @details loads the run parameters
@@ -215,7 +228,7 @@ void agents_base::ConfigLoad(const char *fn, char *fninput, int test=0, int verb
 * @param[in] verbose flag for verbose output
 *
 * @return 0 if error; 1 if success... todo reverse this
-*****************************************************************************/
+*******************************************************************************/
 int agents_base::ParametersLoad(const char *fn, int test, int verbose){
 
 	FILE *fp;
@@ -281,7 +294,7 @@ void agents_base::clearout(int verbose){
 		ixp=ixp2;
 	}
 
-	preset();
+	ParametersSetDefaults();
 
 	if(verbose){printf("....finished\n");fflush(stdout);}
 }

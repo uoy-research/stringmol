@@ -71,7 +71,7 @@
 //extern const int maxl;//150;// 512;
 //extern const int maxl0; //allow room for a terminating 0
 
-void printsppct(stringPM *A, int t);
+void SpeciesPrintCounts(stringPM *A, int t);
 
 
 int joinsplists(int argc, char *argv[]){
@@ -265,7 +265,7 @@ int biomass_config(stringPM *A, char *fout, const int nbio, const int nag, SMspp
     fprintf(out,"%d\t%d\n",sumsum,sumlim);
     fclose(out);
 
-    SP->clear_list();
+    SP->SpeciesListClear();
 
     int fc=0;
     for(j=0;j<nbio;j++){
@@ -368,7 +368,7 @@ int origlife(int argc, char *argv[]){
     FILE *fp;
     int indefinite=1;
 
-    long rseed = initmyrand(437);//-1);//437);
+    long rseed = RandomInit(437);//-1);//437);
     //R.printasint();
 
     unsigned int nsteps = (int) A.nsteps;
@@ -460,11 +460,11 @@ int origlife(int argc, char *argv[]){
                 random_config(&A, randfn, 30, 10);
             }
             else{
-                SP.clear_list();
+                SP.SpeciesListClear();
                 random_config(&A, randfn, 30, 20);
             }
 
-            //A.print_agents(stdout,"NOW",0);
+            //A.AgentsPrint(stdout,"NOW",0);
             SP.SpeciesListPrint(stdout);
 
             A.run_number=rr;
@@ -500,7 +500,7 @@ int origlife(int argc, char *argv[]){
 
                     printf("%03u At  time %d e=%d,div=%d\n",
                         rr,i,(int)A.energy,div);
-                    printsppct(&A,i);
+                    SpeciesPrintCounts(&A,i);
                 }
 
 
@@ -517,7 +517,7 @@ int origlife(int argc, char *argv[]){
                 if(!A.AgentsCount(A.nowhead,-1) || (!rr && nsteps >1500000) || nsteps >15000000){
                     printf("DEATH\n");
                     printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
-                    //A.print_agents_count(stdout);
+                    //A.AgentsPrint_count(stdout);
                     A.SpeciesPrintCount(stdout,0,-1);
 
                     break;
@@ -531,7 +531,7 @@ int origlife(int argc, char *argv[]){
             A.clearout();
         }
     }
-    //A.print_propensity(fsumm);
+    //A.PropensityPrint(fsumm);
     fclose(fsumm);
     return 0;
 }
@@ -553,7 +553,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
     FILE *fp;
     int indefinite=1;
 
-    long rseed = initmyrand(-1);//437);//-1);//437);
+    long rseed = RandomInit(-1);//437);//-1);//437);
     //R.printasint();
 
     unsigned int nsteps;// = (int) A.nsteps;
@@ -612,7 +612,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
         divct = divit = diven = 0;
 
-        SP.clear_list();
+        SP.SpeciesListClear();
 
         //A.ConfigLoad(argv[2],NULL,0,1);
         if(!ParametersLoadFromMainArgs(&A, argc, argv))
@@ -633,10 +633,10 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 
 
-        A.print_agents(stdout,"NOW",0);
+        A.AgentsPrint(stdout,"NOW",0);
 
         A.run_number=rr;
-        initpopdyfile(&A);
+        PopdyInitFile(&A);
 
         sprintf(pfn,"popdy%d%02d.dat",proc,A.run_number);
         ftmp = fopen(pfn,"w");
@@ -658,9 +658,9 @@ int SmPm_AlifeXII(int argc, char *argv[]){
                 A.SpeciesPrintCount(stdout,0,-1);
 
                 printf("%d%02u At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\n",proc,rr,i,(int)A.energy,div,A.subrate,A.indelrate);
-                //A.print_agents_count(stdout);
+                //A.AgentsPrint_count(stdout);
 
-                printsppct(&A,i);
+                SpeciesPrintCounts(&A,i);
 
             }
 
@@ -678,13 +678,12 @@ int SmPm_AlifeXII(int argc, char *argv[]){
                     sprintf(fn, "ancestry%d%02u_%07d.txt",
                         proc,rr,i);
                     afp = fopen(fn,"w");
-                    //A.print_spp_strings(NULL);
-                    A.print_spp_strings(afp);
+                    A.SpeciesPrintStrings(afp);
                     printf("Done ancestry printing\n");//afp is closed in this function
 
                     sprintf(fn,"ancestry%d%02u_%07d.dot",proc,rr,i);
                     afp = fopen(fn,"w");
-                    A.print_ancestry_dot(afp,i,10000);
+                    A.SpeciesPrintAncestryDot(afp,i,10000);
 
                 }
 
@@ -710,13 +709,13 @@ int SmPm_AlifeXII(int argc, char *argv[]){
             if(!A.AgentsCount(A.nowhead,-1) || (!rr && nsteps >15000000) || nsteps >15000000){
                 printf("DEATH\n");
                 //fprintf(fpdiv,"%d\t%d\t%d",div,i,(int)A.energy);
-                //A.print_agents_count(fpdiv);
+                //A.AgentsPrint_count(fpdiv);
                 //A.SpeciesPrintCount(fpdiv,0,-1);
                 //fflush(fpdiv);
 
 
                 printf("At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\t",i,(int)A.energy,div,A.indelrate,A.subrate);
-                //A.print_agents_count(stdout);
+                //A.AgentsPrint_count(stdout);
                 A.SpeciesPrintCount(stdout,0,-1);
 
                 break;
@@ -760,7 +759,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
         A.clearout();
     }
 
-    A.print_propensity(fsumm);
+    A.PropensityPrint(fsumm);
 
     ////print the rule firings:
     //A.printfr(fsumm,&R);
@@ -788,7 +787,7 @@ int comass_AlifeXII(int argc, char *argv[]){
     FILE *fp;
     int indefinite {1};
 
-    long rseed = initmyrand(437);//-1);//437);
+    long rseed = RandomInit(437);//-1);//437);
     //R.printasint();
 
     unsigned int nsteps = A.nsteps;
@@ -870,11 +869,11 @@ int comass_AlifeXII(int argc, char *argv[]){
 
         int div = 0;
 
-        SP.clear_list();
+        SP.SpeciesListClear();
 
         A.ConfigLoad(argv[2],NULL,0,1);
         A.load_comass(argv[2],1);
-        A.print_agents(stdout,"NOW",0);
+        A.AgentsPrint(stdout,"NOW",0);
 
         A.run_number=rr;
         sprintf(pfn,"popdy%03d.dat",A.run_number);
@@ -912,7 +911,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 
                 setmaxcode(&A,maxcode);
                 printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
-                printsppct(&A,i);
+                SpeciesPrintCounts(&A,i);
                 for(int k=0;k<A.blosum->N;k++){
                     printf("%c:\t%d\t%d",A.blosum->key[k],A.mass[k],maxcode[k]);
                     if(A.mass[k]<0)
@@ -936,13 +935,12 @@ int comass_AlifeXII(int argc, char *argv[]){
 
                     sprintf(fn,"ancestry%03d_%07d.txt",rr,i);
                     afp = fopen(fn,"w");
-                    //A.print_spp_strings(NULL);
-                    A.print_spp_strings(afp);
+                    A.SpeciesPrintStrings(afp);
                     printf("Done ancestry printing\n");//afp is closed in this function
 
                     sprintf(fn,"ancestry%03d_%07d.dot",rr,i);
                     afp = fopen(fn,"w");
-                    A.print_ancestry_dot(afp,i,10000);
+                    A.SpeciesPrintAncestryDot(afp,i,10000);
                     */
                 }
             }
@@ -970,7 +968,7 @@ int comass_AlifeXII(int argc, char *argv[]){
         A.clearout();
     }
 
-    A.print_propensity(fsumm);
+    A.PropensityPrint(fsumm);
 
     fclose(fsumm);
     return 0;
@@ -1174,7 +1172,7 @@ int comass_GA(int argc, char *argv[]){
         mc = fopen(fn,"w");
         fclose(mc);
 
-        A.spl->clear_list();
+        A.spl->SpeciesListClear();
 
         //todo: check we aren't violating comass when we init - what do we do if we do???
         if(!ParametersLoadFromMainArgs(&A, argc, argv))
@@ -1190,7 +1188,7 @@ int comass_GA(int argc, char *argv[]){
             setmutnet(mutnet[rr],A.blosum);
 
             A.set_mass(params[rr]);
-            //A.print_agents(stdout,"NOW",0);
+            //A.AgentsPrint(stdout,"NOW",0);
 
             lifetime = run_one_comass_trial(rr, &A, params[rr], &R);
 
@@ -1237,7 +1235,7 @@ int comass_GA(int argc, char *argv[]){
         //mc = fopen(fn,"w");
         //fclose(mc);
 
-        A.spl->clear_list();
+        A.spl->SpeciesListClear();
 
         //todo: check we aren't violating comass when we init - what do we do if we do???
         A.ConfigLoad(argv[2],NULL,0,1);
@@ -1248,7 +1246,7 @@ int comass_GA(int argc, char *argv[]){
         int rr = ga_step_int(params, eval, POPN, A.blosum->N, 0, MAXMASS,NULL);
 
         A.set_mass(params[rr]);
-        //A.print_agents(stdout,"NOW",0);
+        //A.AgentsPrint(stdout,"NOW",0);
 
         lifetime = run_one_comass_trial(gg, &A, params[rr], &R);
 
@@ -1481,7 +1479,7 @@ int comass_GA_boostwinners(int argc, char *argv[]){
         //FILE *mc;char fn[256],pfn[256];FILE *ftmp;
 
         //Reload the config:
-        A.spl->clear_list();
+        A.spl->SpeciesListClear();
         A.ConfigLoad(argv[2],NULL,0,1);
 
 
@@ -1519,6 +1517,8 @@ int comass_GA_boostwinners(int argc, char *argv[]){
 
 
 
+
+
 int energetic_AlifeXII(int argc, char *argv[]){
 
     int i;
@@ -1528,7 +1528,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
     FILE *fp;
     int indefinite=1;
 
-    long rseed = initmyrand(437);//-1);//437);
+    long rseed = RandomInit(437);//-1);//437);
     //R.printasint();
 
     unsigned int nsteps = A.nsteps;
@@ -1599,13 +1599,13 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
     for(unsigned int rr=0;rr<rlim;rr++){
 
-        SP.clear_list();
+        SP.SpeciesListClear();
 
         A.ConfigLoad(argv[2],NULL,0,1);
 
         //test_adj(A.blosum);
 
-        A.print_agents(stdout,"NOW",0);
+        A.AgentsPrint(stdout,"NOW",0);
 
         A.run_number=rr;
         sprintf(pfn,"popdy%03d.dat",A.run_number);
@@ -1646,9 +1646,9 @@ int energetic_AlifeXII(int argc, char *argv[]){
                 }
 
                 printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
-                //A.print_agents_count(stdout);
+                //A.AgentsPrint_count(stdout);
 
-                printsppct(&A,i);
+                SpeciesPrintCounts(&A,i);
 
             }
 
@@ -1665,13 +1665,12 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
                     sprintf(fn,"ancestry%03d_%07d.txt",rr,i);
                     afp = fopen(fn,"w");
-                    //A.print_spp_strings(NULL);
-                    A.print_spp_strings(afp);
+                    A.SpeciesPrintStrings(afp);
                     printf("Done ancestry printing\n");//afp is closed in this function
 
                     sprintf(fn,"ancestry%03d_%07d.dot",rr,i);
                     afp = fopen(fn,"w");
-                    A.print_ancestry_dot(afp,i,10000);
+                    A.SpeciesPrintAncestryDot(afp,i,10000);
                     */
                 }
             }
@@ -1680,7 +1679,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
             if(!A.AgentsCount(A.nowhead,-1) || (!rr && nsteps >1500000) || nsteps >15000000){
                 printf("DEATH\n");
                 printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
-                //A.print_agents_count(stdout);
+                //A.AgentsPrint_count(stdout);
                 A.SpeciesPrintCount(stdout,0,-1);
 
                 break;
@@ -1706,7 +1705,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
         A.clearout();
     }
 
-    A.print_propensity(fsumm);
+    A.PropensityPrint(fsumm);
 
     fclose(fsumm);
     return 0;
@@ -1818,10 +1817,10 @@ int SmPm_conpop(int argc, char *argv[]){
 
         //sprintf(fn,"divs%03d.dat",c);
         //fpdiv = fopen(fn,"w");
-        //A[c]->print_agents_header(fpo);
-        //A[c]->print_agents(stdout,"NOW",0);
+        //A[c]->AgentsPrint_header(fpo);
+        //A[c]->AgentsPrint(stdout,"NOW",0);
         //fprintf(fpdiv,"div\te\t");
-        //A[c]->print_agents_header(fpdiv);
+        //A[c]->AgentsPrint_header(fpdiv);
 
 
         sprintf(pfn,"popdy%03d.dat",c);
@@ -1861,7 +1860,7 @@ int SmPm_conpop(int argc, char *argv[]){
             for(c=0;c<NCON;c++){
                 printf("\t%d",A[c]->AgentsCount(A[c]->nowhead,-1));
                 fprintf(fpdiv,"\t%d",A[c]->AgentsCount(A[c]->nowhead,-1));
-                printsppct(A[c],gclock);
+                SpeciesPrintCounts(A[c],gclock);
                 score[c] = ctspp(A[c],3);
             }
             //printf("\nScore:");
@@ -1936,36 +1935,6 @@ int SmPm_conpop(int argc, char *argv[]){
         for(c=0;c<NCON;c++){
             if(!(A[c]->AgentsCount(A[c]->nowhead,-1))){
 
-                //Print the ancestry of this cell:
-                /*
-                FILE *afp;
-                sprintf(fn,"ancestry%03d_%07d.dot",A[c]->r,gclock);
-                afp = fopen(fn,"w");
-                A[c]->print_ancestry_dot(afp,gclock,10000);
-                */
-
-
-
-                ////randomly pick another cell
-                //c2=c;
-                //while(c2==c)
-                //    c2 = floor((float) NCON *rand0to1());
-
-                //Pick the cell with the most agents in it.
-                /*
-                printf("Selecting fullest container...\n");
-                int cmax = A[0]->nagents(A[0]->nowhead,-1);
-                c2=0;
-                for(int cc=1;cc<NCON;cc++){
-                    if(cc!=c){
-                        int tp = A[0]->nagents(A[cc]->nowhead,-1);
-                        if(tp>cmax){
-                            cmax=tp;
-                            c2=cc;
-                        }
-                    }
-                }*/
-
                 //Pick the cell with the highest score:
                 printf("At time %d, Cell %d has died. Selecting fittest container for division...\n",gclock,c);
                 /*
@@ -2011,9 +1980,9 @@ int SmPm_conpop(int argc, char *argv[]){
                 A[c]->run_number = r++;
 
                 //clear the species list
-                A[c]->spl->clear_list();
+                A[c]->spl->SpeciesListClear();
                 //clear the list of seen reactions (because we can't track the spp nos
-                free_swlist(&(A[c]->swlist));
+                SmithWatermanListFree(&(A[c]->swlist));
 
                 //TODO: refill the species list (set parents to NULL)
                 s_ag *pag;
@@ -2056,7 +2025,7 @@ int SmPm_conpop(int argc, char *argv[]){
             FILE *afp;
             sprintf(fn,"ancestry%03d_%07d.dot",A[c]->run_number,gclock);
             afp = fopen(fn,"w");
-            A[c]->print_ancestry_dot(afp,gclock,10000);
+            A[c]->SpeciesPrintAncestryDot(afp,gclock);
         }
     }
 
@@ -2082,13 +2051,13 @@ void check_setup(int argc, char *argv[]){
 
 
 
-/******************************************************************************
- * @brief react two molecules together in a stringmol bucket
- *
- * @details loads a config file and reports any reactions that are going on.
- *          Requires special setup of config file to guarantee that just
- *          two molecules react together - not ideal, and needs work!
- *****************************************************************************/
+/*******************************************************************************
+* @brief react two molecules together in a stringmol bucket
+*
+* @details loads a config file and reports any reactions that are going on.
+*          Requires special setup of config file to guarantee that just
+*          two molecules react together - not ideal, and needs work!
+*******************************************************************************/
 void SmPm_1on1(int argc,char *argv[]){
 
     SMspp        SP;
@@ -2192,7 +2161,7 @@ void swdist(int argc, char *argv[]){
     stringPM    A(&SP);
     FILE *fp;
 
-    long rseed = initmyrand(437);
+    long rseed = RandomInit(437);
 
     FILE *fsumm,*ftmp;
 
@@ -2396,7 +2365,7 @@ int speigmonst(int argc, char *argv[]){
     FILE *fp;
     int indefinite=1;
 
-    long rseed = initmyrand(437);//-1);//437);
+    long rseed = RandomInit(437);//-1);//437);
     //R.printasint();
 
     unsigned int nsteps = A.nsteps;
@@ -2486,12 +2455,12 @@ int speigmonst(int argc, char *argv[]){
             strncpy(repstring,SP.species_list->next->S,A.maxl0);
         }
         else{
-            SP.clear_list();
+            SP.SpeciesListClear();
             speigpipette(&A, 50, 50, repstring, 3000);//TODO: fix the massval thing (once comass_ga experiments are finished)
         }
 
         A.energy=20;
-        A.print_agents(stdout,"NOW",0);
+        A.AgentsPrint(stdout,"NOW",0);
 
         A.run_number=rr;
         sprintf(pfn,"popdy%03d.dat",A.run_number);
@@ -2534,7 +2503,7 @@ int speigmonst(int argc, char *argv[]){
 
                 setmaxcode(&A,maxcode);
                 printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
-                printsppct(&A,i);
+                SpeciesPrintCounts(&A,i);
                 for(int k=0;k<A.blosum->N;k++){
                     printf("%c:\t%d\t%d",A.blosum->key[k],A.mass[k],maxcode[k]);
                     if(A.mass[k]<0)
@@ -2558,13 +2527,12 @@ int speigmonst(int argc, char *argv[]){
 
                     sprintf(fn,"ancestry%03d_%07d.txt",rr,i);
                     afp = fopen(fn,"w");
-                    //A.print_spp_strings(NULL);
-                    A.print_spp_strings(afp);
+                    A.SpeciesPrintStrings(afp);
                     printf("Done ancestry printing\n");//afp is closed in this function
 
                     sprintf(fn,"ancestry%03d_%07d.dot",rr,i);
                     afp = fopen(fn,"w");
-                    A.print_ancestry_dot(afp,i,10000);
+                    A.SpeciesPrintAncestryDot(afp,i,10000);
                     */
                 }
             }
@@ -2607,7 +2575,7 @@ int speigmonst(int argc, char *argv[]){
         fclose(mc);
     }
 
-    A.print_propensity(fsumm);
+    A.PropensityPrint(fsumm);
 
     fclose(fsumm);
     return 0;

@@ -157,7 +157,7 @@ int main(int argc, char *argv[]) {
 			SP.SpeciesListPrint(fp);
 			fclose(fp);
 
-			printsppct(&A,A.timestep);
+			SpeciesPrintCounts(&A,A.timestep);
 
 			//printf("Step %ld done, number of molecules is %d, nbound = %d\n",A.extit,ct,bt);
 
@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
 			SMspp		SPB;
 			stringPM	B(&SPB);
 			B.load(fn,NULL,0,1);
-			B.print_agents(stdout,"NOW",0);
+			B.AgentsPrint(stdout,"NOW",0);
 			sprintf(fn,"outB_%05d.conf",A.extit);
 			fpp = fopen(fn,"w");
 			B.print_conf(fpp);

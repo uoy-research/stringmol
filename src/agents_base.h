@@ -49,7 +49,7 @@ class agents_base{
 		int  *bpp; //count of times we've been closenough to run a bind...
 		int  bmax; //max reagents we are going to bother with.
 		void 	PropensityRecord(int N,int X);
-		void 	print_propensity(FILE *fp);
+		void 	PropensityPrint(FILE *fp);
 		int 	proper_prop(const int n);
 		int 	PropensityEquation(const int n);
 
@@ -76,7 +76,7 @@ class agents_base{
 		agents_base();
 		//TODO: the destructor is virtual because I got a warning otherwise...need to check this out..?
 		virtual ~agents_base();
-		void preset();
+		void ParametersSetDefaults();
 		void clearout(int verbose);
 
 
@@ -93,7 +93,6 @@ class agents_base{
 		virtual int AgentsLoad(const char *fn, char *fninput, int test=0, int verbose=0) = 0;// VJH - added this function
 
 		//Diagnoistics
-		//void print_agents(const char *spec);
 		void print_agents_header(FILE *fp);
 		void print_agents_count(FILE *fp);
 		//void update_aac();

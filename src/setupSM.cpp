@@ -158,7 +158,19 @@ float ctspp(stringPM *A, const int spp){
 }
 
 
-void initpopdyfile(stringPM *A, bool overwrite){// = false){
+
+
+
+/*******************************************************************************
+* @brief set up the popdy output file
+*
+* @param[in] A the stringPM object (i.e. the "bucket")
+*
+* @param[in] overwrite whether to overwrite or not... TODO(sjh): investigate!
+*
+* @return a double between 0 and 1
+*******************************************************************************/
+void PopdyInitFile(stringPM *A, bool overwrite){
 	char pfn[128];
 	memset(pfn,0,128*sizeof(char));
 
@@ -167,7 +179,7 @@ void initpopdyfile(stringPM *A, bool overwrite){// = false){
 	sprintf(pfn,"popdy%03d.dat",A->run_number);
 
 	if(!overwrite){
-		get_unused_fn(pfn);
+		FilenameGetUnused(pfn);
 	}
 
 	//Make sure this file is empty...
@@ -181,11 +193,22 @@ void initpopdyfile(stringPM *A, bool overwrite){// = false){
 
 
 
-/* used in comass_AlifeXII, energetic_AlifeXII, origlife,
- * comass_GA, comass_GA_boostwinners, SmPm_AlifeXII, SmPm_conpop and speigmonst
- *
- */
-void printsppct(stringPM *A, int t){
+
+
+/*******************************************************************************
+* @brief print the count of each species in the present timestep
+*
+* @details used in comass_AlifeXII, energetic_AlifeXII, origlife,
+*          comass_GA, comass_GA_boostwinners, SmPm_AlifeXII,
+*          SmPm_conpop and speigmonst
+*
+* @param[in] A the stringPM object (i.e. the "bucket")
+*
+* @param[in] seed used to seed the rng. if <0, chosen by the program
+*
+* @return a double between 0 and 1
+*******************************************************************************/
+void SpeciesPrintCounts(stringPM *A, int timestep){
 
 	//char fn[128];
 	FILE *fp;
@@ -199,13 +222,6 @@ void printsppct(stringPM *A, int t){
 	done = (int *) malloc(nag*sizeof(int));
 	memset(done,0,nag*sizeof(int));
 
-	//memset(fn,0,128*sizeof(char));
-	//sprintf(fn,"popdy%03d.dat",A->run_number);
-
-	//Now we need to get new file names - so popdy001.dat isn't overwritten, but becomes popdy001.1.dat in the subsequent run;
-
-
-	//get_unused_fn(fn);
 	//TODO: need to check that this isn't going to cause problems with callers other than smspatial...!
 	fp = fopen(A->popdyfn,"a");
 
@@ -233,7 +249,7 @@ void printsppct(stringPM *A, int t){
 
 		//Write to file
 		if(!finished)
-			fprintf(fp,"%d,%d,%d\n",t,spc,count);
+			fprintf(fp,"%d,%d,%d\n",timestep,spc,count);
 
 	}while(!finished);
 
@@ -257,7 +273,7 @@ int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runpar
 
 
 	A->run_number=rr;
-	initpopdyfile(A);
+	PopdyInitFile(A);
 
 	//todo DELETE if we don't need epochs any more
 	//int lastepoch=A->get_ecosystem(),thisepoch,nepochs=1;
@@ -278,7 +294,7 @@ int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runpar
 
 			//todo: put the below in a function
 			printf("%03d At  time %d e=%d\n",rr,i,(int)A->energy);
-			printsppct(A,i);
+			SpeciesPrintCounts(A,i);
 
 			setmaxcode(A,maxcode);
 
@@ -490,7 +506,7 @@ int run_one_AlifeXII_trial(stringPM *A){
 
 	int i;
 
-	A->print_agents(stdout,"NOW",0);
+	A->AgentsPrint(stdout,"NOW",0);
 	A->run_number=0;
 
 	int nsteps=0;
@@ -511,7 +527,7 @@ int run_one_AlifeXII_trial(stringPM *A){
 		//
 		//if(!(i%1000)){
 			printf("At  time %d e=%d, mutrate = %0.9f & %0.9f\n",i,(int)A->energy,A->subrate,A->indelrate);
-			printsppct(A,i);
+			SpeciesPrintCounts(A,i);
 		}
 
 //TODO: See equivalent line in SmPm_AlifeXII() function for what should be in the following #ifdef...
@@ -1113,7 +1129,12 @@ int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
 
 
 
-void get_unused_fn(char *fn){
+/*******************************************************************************
+* @brief get a filename for an input filename that doesn't exist
+*
+* @param[in] fn the filename of the file that might exist
+*******************************************************************************/
+void FilenameGetUnused(char *fn){
 
 	int found = 1;
 	char *point_pos, *tmp_pos;
@@ -1271,7 +1292,7 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 
 		sprintf(frfn,"randseed.txt");
 
-		get_unused_fn(&(frfn[0]));
+		FilenameGetUnused(&(frfn[0]));
 
 		FILE *frs;
 		if((frs=fopen(frfn,"w"))==NULL){
@@ -1445,7 +1466,7 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 	A->run_number = runno;
 
 	//Initialize the popdy file...
-	initpopdyfile(A);
+	PopdyInitFile(A);
 
 
 	//TODO: It's a little perverse getting this run object out, but we have to decide whether the grid is 'core' stringmol...
@@ -1631,7 +1652,7 @@ int smspatial(int argc, char *argv[]) {
 			fclose(fp);
 
 
-			printsppct(&A,A.timestep);
+			SpeciesPrintCounts(&A,A.timestep);
 
 		}
 
@@ -1955,7 +1976,7 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 			encodeOneStep(filename, image, run->gridx, run->gridy);
 
 			A.clearout();
-			SP.clear_list();
+			SP.SpeciesListClear();
 
 
 		}

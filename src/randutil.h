@@ -26,7 +26,7 @@
 
 		double raisin();
 
-		int initmyrand(int seed);
+		int RandomInit(int seed);
 		unsigned long longinitmyrand(const unsigned long *inseed);
 
 		double RandomBetween0And1();

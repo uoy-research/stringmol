@@ -80,7 +80,7 @@ stringPM::stringPM(SMspp * pSP){
 	blosum->N=0;
 	blosum->T=NULL;
 	blosum->key=NULL;
-	preset();
+	SetHeadsAndDefaults();
 	agct = 0;
 	//species=NULL;
 	spp_count=1;
@@ -125,7 +125,7 @@ stringPM& stringPM::operator=(const stringPM &spm){
 	blosum->T   = NULL;
 	blosum->key = NULL;
 	
-	preset();
+	SetHeadsAndDefaults();
 	
 	agct = spm.agct;
 	spp_count = spm.agct;
@@ -159,35 +159,31 @@ stringPM::stringPM(const stringPM& spm){
 	*this = spm;
 }
 
+
+
+
+
 stringPM::~stringPM() {
 	clearout(0);
 }
 
 
-void stringPM::preset(){
+
+
+//TODO(sjh): refactor this properly!
+/*******************************************************************************
+* @brief prepare structs and defaults
+*******************************************************************************/
+void stringPM::SetHeadsAndDefaults(){
 
 	nowhead = NULL;
 	nexthead = NULL;
 
 	//note - it's possible that this'll be called twice - but will do no harm!
-	agents_base::preset();
+	agents_base::ParametersSetDefaults();
 }
 
-/*
-int stringPM::load(char *fn){
 
-	load_params(fn);
-
-	load_agents(fn);
-
-	make_com();
-	make_dcom();
-
-	load_division(fn);
-	load_replenish(fn);
-	return 1;
-}
-*/
 
 
 
@@ -206,6 +202,9 @@ char * stringPM::parse_error(int errno){
 	return message;
 
 }
+
+
+
 
 
 float stringPM::load_mut(const char *fn, int verbose){
@@ -247,6 +246,7 @@ float stringPM::load_mut(const char *fn, int verbose){
 	}
 	return 2;
 }
+
 
 
 
@@ -820,6 +820,8 @@ s_ag * stringPM::read_active_agent(FILE **fp, char line[], const int llen, int &
 
 
 
+
+
 s_ag * stringPM::read_passive_agent(FILE **fp, char line[], const int llen){
 
 	int gx,gy;
@@ -901,6 +903,9 @@ smsprun * stringPM::init_smprun(const int gridx, const int gridy){
 
 	return grid;
 }
+
+
+
 
 
 int stringPM::load_replicable(const char *fn){
@@ -1645,7 +1650,7 @@ int stringPM::AgentsCount(s_ag *head, int state){
 
 
 
-/******************************************************************************
+/*******************************************************************************
  * @brief select a random agent from a list
  *
  * @param[in] head: usually 'nowhead' or 'nexthead'
@@ -1653,7 +1658,7 @@ int stringPM::AgentsCount(s_ag *head, int state){
  * @param[in] state if -1: count all; else count with a particular status
  *
  * @return an agent, or NULL if not available
- *****************************************************************************/
+ ******************************************************************************/
 s_ag * stringPM::AgentSelectRandomly(s_ag *head, int state){
 	int count = AgentsCount(head,state);
 	int i,pos;
@@ -1711,13 +1716,13 @@ s_ag * stringPM::AgentSelectRandomly(s_ag *head, int state){
  * alab: a single-character label for the string (e.g. 'C')
  *
  */
-/******************************************************************************
+/*******************************************************************************
  * @brief allocate memory and set up structure of a new agent
  *
  * @param[in] alab an integer identifier
  *
  * @return the agent
- *****************************************************************************/
+* *****************************************************************************/
 s_ag * stringPM::AgentMake(int alab){
 
 	s_ag *ag;
@@ -1751,8 +1756,20 @@ s_ag * stringPM::AgentMake(int alab){
 
 
 
-//Diagnoistics / outputs
-void stringPM::print_agents(FILE *fp, const char *spec, int verbose){
+
+
+/*******************************************************************************
+* @brief print the agents
+*
+* @param[in] fp file pointer (including stdout)
+*
+* @param[in] spec either "NOW" or "NEXT" - nowhead or nexthead
+*
+* @param[in] verbose verbose output
+*
+* @return an agent, or NULL if not available
+******************************************************************************/
+void stringPM::AgentsPrint(FILE *fp, const char *spec, int verbose){
 
 	s_ag *pag;
 	pag = NULL;
@@ -1769,7 +1786,8 @@ void stringPM::print_agents(FILE *fp, const char *spec, int verbose){
 		if(verbose){
 			switch(pag->status){
 				case B_UNBOUND:
-					fprintf(fp,"Agent %6d,\texec=%4d\tnbind=%3d\tUNBOUND, %s\n",pag->idx,pag->ect,pag->nbind,pag->S);
+					fprintf(fp,"Agent %6d,\texec=%4d\tnbind=%3d\tUNBOUND, %s\n",
+							pag->idx,pag->ect,pag->nbind,pag->S);
 					break;
 				case B_ACTIVE:
 					ReactionPrintState(fp,pag,pag->pass);
@@ -1781,11 +1799,15 @@ void stringPM::print_agents(FILE *fp, const char *spec, int verbose){
 		else{
 			switch(pag->status){
 				case B_UNBOUND:
-					fprintf(fp,"Agent %6d,\texec=%4d\tnbind=%3d\tUNBOUND, %s\n",pag->idx,pag->ect,pag->nbind,pag->S);
+					fprintf(fp,"Agent %6d,\texec=%4d\tnbind=%3d\tUNBOUND, %s\n",
+							pag->idx,pag->ect,pag->nbind,pag->S);
 					break;
 				case B_ACTIVE:
-					fprintf(fp,"Agent %6d, \texec=%4d\tnbind=%3d\tACTIVE,  %s\n",pag->idx,pag->ect,pag->nbind,pag->S);
-					fprintf(fp,"Agent %6d, \texec=%4d\tnbind=%3d\tPASSIVE, %s\n",pag->pass->idx,pag->pass->ect,pag->pass->nbind,pag->pass->S);
+					fprintf(fp,"Agent %6d,\texec=%4d\tnbind=%3d\t ACTIVE, %s\n",
+							pag->idx,pag->ect,pag->nbind,pag->S);
+					fprintf(fp,"Agent %6d,\texec=%4d\tnbind=%3d\tPASSIVE, %s\n",
+							pag->pass->idx,pag->pass->ect,pag->pass->nbind,
+							pag->pass->S);
 					//ReactionPrintState(stdout,pag,pag->pass);
 					break;
 				default:
@@ -3950,11 +3972,11 @@ void stringPM::energetic_TimestepIncrement(){
 
 
 
-/******************************************************************************
+/*******************************************************************************
  * @brief move "now" to "next" by pointer assignment
  *
  * @details nowhead = nexthead; nexthead = NULL;
- *****************************************************************************/
+ ******************************************************************************/
 void stringPM::UpdateNowNext(){
 
 	nowhead = nexthead;
@@ -3965,7 +3987,14 @@ void stringPM::UpdateNowNext(){
 
 
 
-void stringPM::free_swt(swt *pSWT, int verbose){
+/*******************************************************************************
+ * @brief free the swt object
+ *
+ * @param[in] pSWT pointer to the swt object
+ *
+ * @param[in] verbose flag
+ ******************************************************************************/
+void stringPM::SmithWatermanFree(swt *pSWT, int verbose){
 
 
 	//print for debug.
@@ -4019,7 +4048,13 @@ void stringPM::free_swt(swt *pSWT, int verbose){
 }
 
 
-void stringPM::free_grid(){
+
+
+
+/*******************************************************************************
+ * @brief free the grid
+ ******************************************************************************/
+void stringPM::GridFree(){
 
 	if(grid !=NULL){
 
@@ -4036,7 +4071,7 @@ void stringPM::free_grid(){
 
 
 
-/** Have to specifically ask for verbose output now... */
+// TODO(sjh): this should be the destructor! ~stringPM
 void stringPM::clearout(int verbose){
 
 	s_ag	*agp,*agp2;
@@ -4046,7 +4081,7 @@ void stringPM::clearout(int verbose){
 	}
 
 
-	free_swt(blosum,verbose);
+	SmithWatermanFree(blosum,verbose);
 
 	agp = nowhead;
 	while(agp!=NULL){
@@ -4062,13 +4097,15 @@ void stringPM::clearout(int verbose){
 		agp=agp2;
 	}
 
-	free_grid();
+	GridFree();
 
-	free_swlist(&swlist);
+	SmithWatermanListFree(&swlist);
 
-	preset();
+	SetHeadsAndDefaults();
 
 }
+
+
 
 
 
@@ -4095,24 +4132,28 @@ void stringPM::sanity_check(){
 
 
 
-//This is called from CLEAVE, otherwise we can't tell if its in the middle of being constructed....
-/******************************************************************************
- * @brief update the list of species with an agent
- *
- * @param[in] p the agent
- *
- * @param[in] sptype the 'type' of species
- *
- * @param[in] add flag to say whether to add to the list
- *
- * @param[in] paspp pointer to active species list (???)
- *
- * @param[in] ppspp pointer to passive species list (???)
- *
- * @param[in] mass the number of characters in the string (???)
- *
- * @return 0 regardless of succes (todo: fix this)
- *****************************************************************************/
+
+
+/*******************************************************************************
+* @brief update the list of species with an agent
+*
+* @details This is called from CLEAVE, otherwise we can't tell if its in
+*          the middle of being constructed....
+*
+* @param[in] p the agent
+*
+* @param[in] sptype the 'type' of species
+*
+* @param[in] add flag to say whether to add to the list
+*
+* @param[in] paspp pointer to active species list (???)
+*
+* @param[in] ppspp pointer to passive species list (???)
+*
+* @param[in] mass the number of characters in the string (???)
+*
+* @return 0 regardless of succes (todo: fix this)
+*******************************************************************************/
 int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp, int mass){
 
 	l_spp *sp;
@@ -4163,7 +4204,17 @@ int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_s
 }
 
 
-l_spp * stringPM::get_spp(int n){
+
+
+
+/*******************************************************************************
+* @brief update the list of species with an agent
+*
+* @param[in] n the index (id)
+*
+* @return the species, or NULL if not found;
+*******************************************************************************/
+l_spp * stringPM::SpeciesFromListByIndex(int n){
 	l_spp * sp;
 	sp = spl->species_list;
 	while(sp!=NULL){
@@ -4172,10 +4223,13 @@ l_spp * stringPM::get_spp(int n){
 		sp = sp->next;
 	}
 
-	printf("Species %d \n",n);
+	printf("Species %d not found\n",n);
 	return NULL;
 
 }
+
+
+
 
 
 int stringPM::get_ecosystem(){
@@ -4221,7 +4275,18 @@ int stringPM::get_ecosystem(){
 
 
 
-void stringPM::print_ancestry_dot(FILE *fp, int time,int step){
+
+
+/*******************************************************************************
+* @brief trace the ancestry of the current population and write to a dot file
+*
+* @param[in] fp the file path
+*
+* @param[in] time the current time
+*
+* @param[in] step unused - TODO(sjh) refactor!
+*******************************************************************************/
+void stringPM::SpeciesPrintAncestryDot(FILE *fp, int time){
 
 	l_spp *sp;
 	s_ag *ag;
@@ -4262,7 +4327,7 @@ void stringPM::print_ancestry_dot(FILE *fp, int time,int step){
 			if(sp->pf > minno || sp->anc){
 
 				if(sp->pp->pp != NULL){
-					sp2 = get_spp(sp->pp->pp->spp);
+					sp2 = SpeciesFromListByIndex(sp->pp->pp->spp);
 					if(sp2==NULL){
 						printf("NULL sp2\n");fflush(stdout);
 					}
@@ -4277,7 +4342,7 @@ void stringPM::print_ancestry_dot(FILE *fp, int time,int step){
 				}
 					//}
 				if(sp->pp->pp != NULL){
-					sp2 = get_spp(sp->pp->pa->spp);
+					sp2 = SpeciesFromListByIndex(sp->pp->pa->spp);
 					//if(sp2->sptype){//This means its not a "start" type...
 					if(!sp2->anc){
 						sp2->anc=1;
@@ -4341,14 +4406,14 @@ void stringPM::print_ancestry_dot(FILE *fp, int time,int step){
 			fprintf(fp,",label=\"\"]\n");
 			if(sp->pp->pa!=NULL){
 				fprintf(fp,"\t\t\t anc%03d -> cl%03d\n",sp->pp->pa->spp,sp->spp);
-				sp2=get_spp(sp->pp->pa->spp);
+				sp2=SpeciesFromListByIndex(sp->pp->pa->spp);
 				if(sp2->pf>0 && sp2->pf <=minno){
 					fprintf(fp,"\t\t\t {rank=same; %d;  anc%03d [label=\"%03d\"]}\n",sp2->tspp,sp2->spp,sp2->spp);
 				}
 			}
 			if(sp->pp->pp!=NULL){
 				fprintf(fp,"\t\t\t anc%03d -> cl%03d [color=grey]\n",sp->pp->pp->spp,sp->spp);
-				sp2=get_spp(sp->pp->pp->spp);
+				sp2=SpeciesFromListByIndex(sp->pp->pp->spp);
 				if(sp2->pf>0 && sp2->pf <=minno){
 					fprintf(fp,"\t\t\t {rank=same; %d;  anc%03d [label=\"%03d\"]}\n",sp2->tspp,sp2->spp,sp2->spp);
 				}
@@ -4356,12 +4421,8 @@ void stringPM::print_ancestry_dot(FILE *fp, int time,int step){
 			if(sp->pp->pa!=NULL || sp->pp->pp!=NULL)
 				fprintf(fp,"\t\t\t cl%03d -> anc%03d\n",sp->spp,sp->spp);
 		}
-
-
-
 		sp=sp->next;
 	}
-
 
 	fprintf(fp,"\n\n/* CURRENT ECOSYSTEM: */");
 	sp=spl->species_list;
@@ -4383,8 +4444,6 @@ void stringPM::print_ancestry_dot(FILE *fp, int time,int step){
 		fprintf(fp,"ancminno [style=invis]");
 		fprintf(fp,"\t\t\t ancminno -> minnos [color=red,headlabel=\"%d\"]\n\n",minnoct);
 	}
-
-
 	fprintf(fp,";\n}\n");
 	fflush(fp);
 	fclose(fp);
@@ -4392,7 +4451,19 @@ void stringPM::print_ancestry_dot(FILE *fp, int time,int step){
 }
 
 
-void stringPM::print_spp_strings(FILE *fp){
+
+
+
+/*******************************************************************************
+* @brief print the strings and associated data of species in the species list
+*
+* @param[in] fp the file path
+*
+* @param[in] time the current time
+*
+* @param[in] step unused - TODO(sjh) refactor!
+*******************************************************************************/
+void stringPM::SpeciesPrintStrings(FILE *fp){
 
 
 	if(fp==NULL)
@@ -4408,7 +4479,9 @@ void stringPM::print_spp_strings(FILE *fp){
 		s_parent *ppp;
 		for(ppp = sp->pp; ppp!= NULL; ppp=ppp->next){
 			if(sp->pp->pa!=NULL || sp->pp->pp!=NULL){
-				fprintf(fp,"%05d\t%06d\t%04d\t%d\t%d\t%d\t%d\t%s\t%p\n",sp->spp, sp->tspp, sp->pf, sp->pp->pp->spp, sp->pp->pa->spp, sp->sptype, len,  sp->S,  &(sp->S));
+				fprintf(fp,"%05d\t%06d\t%04d\t%d\t%d\t%d\t%d\t%s\t%p\n",
+						sp->spp, sp->tspp, sp->pf, sp->pp->pp->spp,
+						sp->pp->pa->spp, sp->sptype, len,  sp->S,  &(sp->S));
 			}
 		}
 	}
@@ -4444,6 +4517,9 @@ void stringPM::set_epochs(){
 	thisepoch=lastepoch;
 	nepochs=1;
 }*/
+
+
+
 
 
 int stringPM::share_agents(s_ag **hp){
@@ -4504,79 +4580,12 @@ int stringPM::share_agents(s_ag **hp){
 
 
 
-//A[c]->copy_agents(A[c2]->nowhead);
-//int stringPM::copy_agents(s_ag **head){
 
-//	s_ag *aa,*pa,*tmp;
-//	float rno;int ntot=0, ncop=0;
 
-//	pa=*head;
-//	while(pa!=NULL){
+// todo(sjh): copy_agents function in version 0.2.4 if needed
 
-		/*
-		aa = make_ag(pa->label,-324);
-		aa->S =(char *) malloc(maxl0*sizeof(char));
-		memset(aa->S,0,maxl0*sizeof(char));
-		strncpy(aa->S,pa->S,strlen(pa->S));
-		aa->len = strlen(aa->S);
-		append_ag(&nowhead,aa);
-		*/
 
-	/*
-		//It is actually EASIER to copy 1/2 the cell contents, since then we can just move stuff rather than
-		//restructure all the reactive environments. More realistic too!
-		ntot++;
-		if((rno = rand0to1()) < 0.5){
-			ncop++;
-			tmp=pa->next;
-			switch(pa->status){
-			case B_ACTIVE:
 
-				aa = pa->pass;
-				//make up for moving two across
-				//tmp=tmp->next;
-				//make sure tmp isn't about to be extracted
-				if(tmp==aa)
-					tmp=tmp->next;
-				extract_ag(head,pa);
-				append_ag(&nowhead,pa);
-				extract_ag(head,aa);
-				append_ag(&nowhead,aa);
-				ncop++;
-
-				break;
-			case B_PASSIVE:
-
-				aa = pa->exec;
-				//make up for moving two across
-				//tmp=tmp->next;
-				//make sure tmp isn't about to be extracted
-				if(tmp==aa)
-					tmp=tmp->next;
-				extract_ag(head,pa);
-				append_ag(&nowhead,pa);
-				extract_ag(head,aa);
-				append_ag(&nowhead,aa);
-				ncop++;
-
-				break;
-			case B_UNBOUND:
-				extract_ag(head,pa);
-				append_ag(&nowhead,pa);
-				break;
-			}
-			pa=tmp;
-		}
-		else{
-
-			pa = pa->next;
-		}
-
-	}
-	printf("Copied %d agents out of %d\n",ncop,ntot);
-	return 1;
-}
-*/
 
 
 void stringPM::print_agent_cfg(FILE *fp, s_ag *pa, const int pass_index = 0){
@@ -4945,75 +4954,15 @@ int stringPM::print_conf(FILE *fp){
 	free(extant);
 	free(lextant);
 
-/*
-
-
-	s_ag *spp,*pa;
-	int spc,count;
-	int finished = 0;
-	int nag,*done;
-	int i,found;
-
-	nag = nagents(nowhead,-1);
-
-	done = (int *) malloc(nag*sizeof(int));
-	memset(done,0,nag*sizeof(int));
-
-	do{
-		i = 0;
-		found=0;
-		finished = 1;
-		for(i=0,pa=nowhead;i<nag;i++,pa=pa->next){
-			if(!done[i]){
-				if(!found){
-					done[i]=1;
-					count=1;
-					finished=0;
-					found=1;
-					spp = pa;
-					spc = pa->spp->spp;
-				}
-				else{
-					if(pa->spp->spp==spc){
-						done[i]=1;
-						count++;
-					}
-				}
-			}
-		}
-
-
-		//% Basic seed replicase should look something like:
-		//AGENT OOGEOLHHHRLUEUOBBBRBXUUUDYGRHBLROORE$BLUBO^B>C$=?>$$BLUBO%}OYHOB 150 Q
-
-		//Write to file
-		if(!finished){
-			fprintf(fp,"\%\%\%\%\%\% UNBOUND SPECIES %d\n",spp->spp->spp);
-			fprintf(fp,"AGENT\t%s\t%d\tQ\n\n",spp->spp->S,count);
-		}
-
-	}while(!finished);
-
-	//Now write the reacting molecules (could be a bit tricky this)
-
-	int nreactions = 0;
-	for(i=0,pa=nowhead;i<nag;i++,pa=pa->next){
-		if(pa->status == B_ACTIVE){
-			fprintf(fp,"\%\%\%\%\%\% REACTION %d\nREACTION\n",++nreactions);
-			print_agent_cfg(fp, pa);
-			print_agent_cfg(fp,pa->pass);
-		}
-	}
-	free(done);
-*/
-
-
-
 	return 0;
 
 }
 
 
+
+
+
+//TODO(sjh): see if this works!
 /*void stringPM::print_grid(FILE *fp){
 
 	for(int j = 0; j< grid->gridy; j++){
@@ -5023,7 +4972,7 @@ int stringPM::print_conf(FILE *fp){
 			else{
 				switch(grid->grid[i][j]->status){
 				case B_UNBOUND:
-					fprintf(fp,"~");
+					fprintf(fp,"c");
 					break;
 				case B_ACTIVE:
 					fprintf(fp,"@");
@@ -5036,7 +4985,4 @@ int stringPM::print_conf(FILE *fp){
 		}
 		fprintf(fp,"|\n");
 	}
-
 }*/
-
-

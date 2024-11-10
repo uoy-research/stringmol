@@ -135,7 +135,7 @@ public:
 
 	s_ag * AgentMake(int alab);//, int randpos);
 
-	void preset();
+	void SetHeadsAndDefaults();
 	void clearout(int verbose = 0);
 
 	//return a string describing the error
@@ -193,7 +193,7 @@ public:
 	void update_aac();
 
 	//Diagnostics
-	void print_agents(FILE *fp, const char *spec, int verbose);
+	void AgentsPrint(FILE *fp, const char *spec, int verbose);
 	int AgentPrintWithIndex(FILE *fp, int det, int idx);
 	void testprop();
 	//void sanity_check();
@@ -206,7 +206,7 @@ public:
 	//Cellular Automaton stuff
 	smsprun *grid;
 	smsprun * init_smprun(const int gridx, const int gridy);
-	void free_grid();
+	void GridFree();
 	//void print_grid(FILE *fp);
 
 	//Loading from config file (see also agents_base)
@@ -229,7 +229,7 @@ public:
 			//print string stuff
 	void 	PointerPrintOffset(FILE *fp,const char *S,const char *p,int F, char c);
 	void 	ReactionPrintState(FILE *fp, s_ag *act, s_ag *pas);
-	void 	free_swt(swt *pSWT, int verbose);
+	void 	SmithWatermanFree(swt *pSWT, int verbose);
 	int 	AgentCheckZeroLengthString(s_ag* act);
 	int 	AgentRewindDanglingPtrs(s_ag* pag);
 
@@ -260,9 +260,9 @@ public:
 	int 		get_ecosystem();
 	int 		SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp, int mass);
 	void 		print_lineage_dot(FILE *fp, int time,int step); //traces everything descending from the initial set.
-	void 		print_ancestry_dot(FILE *fp, int time,int step); //takes all current agents and traces them back
-	void 		print_spp_strings(FILE *fp);
-	l_spp * 	get_spp(int n);
+	void 		SpeciesPrintAncestryDot(FILE *fp, int time); //takes all current agents and traces them back
+	void 		SpeciesPrintStrings(FILE *fp);
+	l_spp * 	SpeciesFromListByIndex(int n);
 	//int 		append_spp(s_spp *sp);
 	int 		append_lspp(l_spp *sp);
 	int 		SpeciesCount();

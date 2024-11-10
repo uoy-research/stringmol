@@ -22,7 +22,7 @@
 
 	/*Utilities */
 	//For restarted runs, we need to make sure we don't overwrite...
-	void get_unused_fn(char *fn);
+	void FilenameGetUnused(char *fn);
 
 
 	/*Flags and parameters that exist outside the stringPM object*/
@@ -36,7 +36,7 @@
     void clearfiles( char *argv[]);
 	void setupSMol(struct runparams &R, int argc, char *argv[]);
 	void record_spp(stringPM *A);
-	void printsppct(stringPM *A, int t);
+	void SpeciesPrintCounts(stringPM *A, int t);
 
 	void setmaxcode(stringPM *A, int *maxcode);
 	int run_one_comass_trial(const int rr, stringPM *A, int * params, struct runparams *R);
@@ -62,7 +62,7 @@
 	void print_params(stringPM *A, int ntrials, int nsteps);
 
 	/* set up the popdy file for writing*/
-	void initpopdyfile(stringPM *A, bool overwrite = false);
+	void PopdyInitFile(stringPM *A, bool overwrite = false);
 
 /************************************************************/
 

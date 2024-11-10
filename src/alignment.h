@@ -79,7 +79,7 @@ typedef struct s_swt{
 s_sw * 	ReactionReadAlignmentFromSWList(s_sw *swlist, int sp1, int sp2);
 int 	ReactionStoreAlignmentToSWList(s_sw **swlist, align * sw,int sp1, int sp2);
 int	SmithWatermanDataFromAlignmentObject(s_sw *b, align *sw);
-void 	free_swlist(s_sw **head);
+void 	SmithWatermanListFree(s_sw **head);
 
 
 //Important to have nonzero values for this enumerartion!

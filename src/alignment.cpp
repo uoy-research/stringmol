@@ -130,7 +130,12 @@ int SmithWatermanDataFromAlignmentObject(s_sw *b, align *sw){
 
 
 
-void free_swlist(s_sw **head){
+/*******************************************************************************
+* @brief free the list of Smith Waterman alignments
+*
+* @param[in] head the top of the list
+*******************************************************************************/
+void SmithWatermanListFree(s_sw **head){
 
 	s_sw *p,*pold;
 
