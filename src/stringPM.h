@@ -172,7 +172,7 @@ public:
 	int 	AgentsCount(s_ag *head, int state);
 	s_ag * 	AgentSelectRandomly(s_ag *head, int state);
 	int 	AgentFree(s_ag *pag);
-	bool 	ag_in_list(s_ag *list,const s_ag *tag);
+	bool 	AgentAddressInList(s_ag *list,const s_ag *tag);
 
 	//First version works fine, but no species analysis...
 	//void 	unbind_ag(s_ag * pag,char sptype);

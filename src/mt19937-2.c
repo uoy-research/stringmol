@@ -169,18 +169,43 @@ unsigned long genrandint()
 }
 
 /*UTILITY FUNCTION FOR RE-SEEDING ON RESTART*/
-int mt_get_mti(){
+//todo(sjh): needs a good tidy up!
+/*******************************************************************************
+* @brief get the current state of the Mersenne Twister RNG
+*
+* @details for the Mersenne Twister, ths is the index of the state vector array
+*          which is needed to reset the state on restart (the full state vector
+*          array is also needed). Other RNG engines will need other information!
+*
+* @return the index on the state array (for MT) -
+*******************************************************************************/
+int MersenneTwisterGetState(){
 	return mti;
 }
 
-/*TODO let's make this work!
+/*TODO(sjh) let's make this work!
 void mt_set_mti(int val){
 	mti = val;
 }*/
 
 
-/*RECORDING FUNCTION*/
-void print_mt(FILE *fp){
+
+
+
+/*******************************************************************************
+* @brief diagnostic printfs for MT load failure
+*
+* @details see Mersenne Twister documentation
+*
+* @param[in] ec error code
+*
+* @param[in] posn position of the error in the file
+*
+* @param[in] fn the file name
+*
+* @return mt_error_code
+*******************************************************************************/
+void MersenneTwisterPrintStatusToFile(FILE *fp){
 	int i=0;
 	fprintf(fp,"MTI %d\n",mti);
 	for(i=0;i<N;i++){
@@ -190,7 +215,22 @@ void print_mt(FILE *fp){
 
 
 
-int report_load_error(enum load_mt_errcode ec, int posn, const char *fn){
+
+
+/*******************************************************************************
+* @brief diagnostic printfs for MT load failure
+*
+* @details see Mersenne Twister documentation
+*
+* @param[in] ec error code
+*
+* @param[in] posn position of the error in the file
+*
+* @param[in] fn the file name
+*
+* @return mt_error_code
+*******************************************************************************/
+int MersenneTwisterReportLoadError(enum load_mt_errcode ec, int posn, const char *fn){
 	char msg[128];
 	switch(ec){
 	case load_mt_nofile:
@@ -217,8 +257,16 @@ int report_load_error(enum load_mt_errcode ec, int posn, const char *fn){
 
 
 
-/*LOADING FUNCTION */
-int load_mt(const char *fn){
+
+
+/*******************************************************************************
+* @brief load a MersenneTwister array from file
+*
+* @details see Mersenne Twister documentation
+*
+* @return mt_error_code
+*******************************************************************************/
+int MersenneTwisterLoadState(const char *fn){
 
 	FILE *fp;
 	const int maxl = 128;
@@ -269,7 +317,7 @@ int load_mt(const char *fn){
 		errcode = load_mt_nofile;
 	}
 
-	return report_load_error(errcode,ii,fn);
+	return MersenneTwisterReportLoadError(errcode,ii,fn);
 }
 
 

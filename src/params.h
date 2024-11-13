@@ -26,7 +26,7 @@
 
 int ParameterReadFloat(FILE *fp, const char *label, float *val, int verbose);
 int ParameterReadUnsignedInt(FILE *fp,const char *label, unsigned int *val, int verbose);
-char * read_param_string(FILE **pfp,const char *label, int verbose);
+char * ParameterReadString(FILE **pfp,const char *label, int verbose);
 
 int ParameterReadOrDefineUnsignedInt(const char *fn, const char *label, unsigned int *val, const int defaultvalue, const int verbose);
 

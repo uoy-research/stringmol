@@ -69,10 +69,10 @@
 
 
 	/* Spatial Stringmol functions */
-	int randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout);
-	int smspatial(int argc, char *argv[]);
-	int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno);
-	int smspatial_step(stringPM *A, smsprun *run);
+	int GridSelectRandomMooreNeighbour(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout);
+	int StringmolSpatial(int argc, char *argv[]);
+	int StringmolSpatialConfigureFromFile(const char *fn, stringPM *A, smsprun **run, int runno);
+	int TimestepIncrementSpatial(stringPM *A, smsprun *run);
 
 	/* diagnostics for spatial stringmol */
 	int smspatial_ancestry(int argc, char *argv[]);
@@ -86,5 +86,5 @@
 		smpic_len
 	};
 
-	int smspatial_pic(stringPM *A, smpic pt);
+	int GridSavePNG(stringPM *A, smpic pt);
 #endif /* SETUPSM_H_ */

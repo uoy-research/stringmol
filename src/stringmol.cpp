@@ -1131,7 +1131,7 @@ int comass_GA(int argc, char *argv[]){
         fclose(fpr);
     }
 
-    unsigned long rseed = longinitmyrand(&seedin);//437);//-1);//437);
+    unsigned long rseed = RandomInitLong(&seedin);//437);//-1);//437);
     //unsigned long rseed = longinitmyrand(NULL);//437);//-1);//437);
     FILE *frs;
     if((frs=fopen("randseed.txt","w"))==NULL){
@@ -1756,10 +1756,10 @@ int SmPm_conpop(int argc, char *argv[]){
 
 
     if(seedin){
-        rseed = longinitmyrand(&seedin);//437);//-1);//437);
+        rseed = RandomInitLong(&seedin);//437);//-1);//437);
     }
     else{
-        rseed = longinitmyrand(NULL);
+        rseed = RandomInitLong(NULL);
     }
 
     printf("rseed = %lu, seedin = %lu, NCON = %d\n",rseed,seedin,NCON);
@@ -2652,7 +2652,7 @@ int main(int argc, char *argv[]) {
 
         /*************************************************/
         case 33:  // Spatial stringmol experiments, summer 2016
-            smspatial(argc, argv);
+            StringmolSpatial(argc, argv);
             break;
 
         /*************************************************/
