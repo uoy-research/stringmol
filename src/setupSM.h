@@ -79,7 +79,7 @@
 	int smspatial_community(int argc, char *argv[]);
 	int smspatial_lengthpicsfromlogs(int argc, char *argv[]);
 
-	void encodeOneStep(const char* filename, const std::vector<unsigned char>& image, unsigned width, unsigned height);
+	void PNGEncodeAndSave(const char* filename, const std::vector<unsigned char>& image, unsigned width, unsigned height);
 
 	enum smpic{
 		smpic_spp,

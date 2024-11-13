@@ -699,7 +699,15 @@ s_ag * ReactionSeekRandomSpatialPartner(stringPM *A, smsprun *run,int x, int y){
 }
 
 
-void update_grid(smsprun *run){
+
+
+
+/*******************************************************************************
+* @brief set the 'next' grid entries to 'now'
+*
+* @param[in] run the grid info
+*******************************************************************************/
+void TimestepGridIncrement(smsprun *run){
 	for(int i=0;i<run->gridx;i++){
 		for(int j = 0;j<run->gridy;j++){
 			if(run->grid[i][j]!=NULL){
@@ -1560,7 +1568,7 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 	}
 
 	A->UpdateNowNext();
-	update_grid(run);
+	TimestepGridIncrement(run);
 
 
 
@@ -1696,7 +1704,7 @@ int StringmolSpatialConfigureFromFile(const char *fn, stringPM *A, smsprun **run
 			AgentPlaceOnGrid(pag,*run,pag->x,pag->y);
 		}
 
-		update_grid(A->grid);
+		TimestepGridIncrement(A->grid);
 	}
 
 
@@ -1833,10 +1841,25 @@ int StringmolSpatial(int argc, char *argv[]) {
 
 
 
-//Example 1
-//Encode from raw pixels to disk with a single function call
-//The image argument has width * height RGBA pixels or width * height * 4 bytes
-void encodeOneStep(const char* filename, const std::vector<unsigned char>& image, unsigned width, unsigned height)
+
+
+/*******************************************************************************
+* @brief wrapper function for lodepng to write png to file
+*
+* @details Encode from raw pixels to disk with a single function call. The image
+*          argument has width * height RGBA pixels or width * height * 4 bytes
+*
+* @param[in] filename the png file name
+*
+* @param[in] image the image data
+*
+* @param[in] width the width of the image (x)
+*
+* @param[in] height the height of the image (y)
+*
+* @return 0 always
+*******************************************************************************/
+void PNGEncodeAndSave(const char* filename, const std::vector<unsigned char>& image, unsigned width, unsigned height)
 {
 	//Encode the image
 	unsigned error = lodepng::encode(filename, image, width, height);
@@ -1955,7 +1978,7 @@ int GridSavePNG(stringPM *A, smpic pt){
 		break;
 
 	}
-	encodeOneStep(filename, image, run->gridx, run->gridy);
+	PNGEncodeAndSave(filename, image, run->gridx, run->gridy);
 
 	return 0;
 }
@@ -2050,7 +2073,7 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 
 				char filename[128];
 				sprintf(filename,"lenkey.png");
-				encodeOneStep(filename, image, run->gridx, run->gridy);
+				PNGEncodeAndSave(filename, image, run->gridx, run->gridy);
 
 
 				/* Make the rgb species pallette
@@ -2090,7 +2113,7 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 				}
 
 				sprintf(filename,"sppkey.png");
-				encodeOneStep(filename, image, run->gridx, run->gridy);
+				PNGEncodeAndSave(filename, image, run->gridx, run->gridy);
 
 			}
 
@@ -2135,7 +2158,7 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 
 			char filename[128];
 			sprintf(filename,"lenframe%07u.png",A.timestep);
-			encodeOneStep(filename, image, run->gridx, run->gridy);
+			PNGEncodeAndSave(filename, image, run->gridx, run->gridy);
 
 			A.clearout();
 			SP.SpeciesListClear();
