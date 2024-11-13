@@ -10,7 +10,7 @@
 
 
 
-int smspatial(int argc, char *argv[]);
+int StringmolSpatial(int argc, char *argv[]);
 
 void pics_from_config(int s, int f, int step);
 

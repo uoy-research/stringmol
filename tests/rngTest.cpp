@@ -116,7 +116,7 @@ TEST_CASE("save and load RNG to/from file"){
 
 	if((mtf = fopen(fn,"w"))!=NULL){
         //Save the RNG
-		print_mt(mtf);
+		MersenneTwisterPrintStatusToFile(mtf);
 		fclose(mtf);
 	}
 	else{
@@ -130,7 +130,7 @@ TEST_CASE("save and load RNG to/from file"){
     }
 
     //Restore the RNG
-    load_mt(fn);
+    MersenneTwisterLoadState(fn);
 
     //Run the RNG forward into array2 and test
     for(int rr=0;rr<nrand;rr++){

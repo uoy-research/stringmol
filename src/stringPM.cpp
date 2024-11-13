@@ -1542,7 +1542,16 @@ int stringPM::AgentAppend(s_ag **list, s_ag *ag){
 
 
 
-bool stringPM::ag_in_list(s_ag *list,const s_ag *tag){
+/*******************************************************************************
+* @brief determine whether an agent is present in a list (by address)
+*
+* @param[in] list the list
+*
+* @param[in] tag the agent
+*
+* @return true or false
+*******************************************************************************/
+bool stringPM::AgentAddressInList(s_ag *list,const s_ag *tag){
 
 	s_ag *pag;
 
@@ -1551,7 +1560,6 @@ bool stringPM::ag_in_list(s_ag *list,const s_ag *tag){
 			return true;
 		}
 	}
-
 	return false;
 }
 
@@ -4889,7 +4897,7 @@ int stringPM::print_conf(FILE *fp){
 	FILE *fp2;
 	sprintf(mt_file,"RNGstate_%u.txt",timestep);
 	if((fp2 = fopen(mt_file,"w"))!=NULL){
-		print_mt(fp2);
+		MersenneTwisterPrintStatusToFile(fp2);
 		fclose(fp2);
 	}
 	else{

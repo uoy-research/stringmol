@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 	smsprun *run;
 	run = NULL;
 
-	smspatial_init(argv[2],&A,&run,1);
+	StringmolSpatialConfigureFromFile(argv[2],&A,&run,1);
 
 	int bt,ct=0;
 	ct = A.AgentsCount(A.nowhead,-1);
@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
 //	while(A.nagents(A.nowhead,-1)){
 	while(A.timestep < 1000000){// && A.nagents(A.nowhead,-1)>0){
 
-		smspatial_step(&A,run);
+		TimestepIncrementSpatial(&A,run);
 		ct = A.AgentsCount(A.nowhead,-1);
 		bt = ct - A.AgentsCount(A.nowhead,B_UNBOUND);
 #ifdef DODEBUG

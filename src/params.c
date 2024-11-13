@@ -156,9 +156,23 @@ int ParameterReadFloat(FILE *fp,const char *label, float *val, int verbose){
 
 
 
-char * read_param_string(FILE **pfp,const char *label, int verbose){
 
-	const int maxl = 128;
+
+/*******************************************************************************
+* @brief read a parameter from a config file to string
+*
+* @param[in] pfp file pointer
+*
+* @param[in] label the keyword in the config file, eg "AGENT"
+*
+* @param[in] verbose verbose output
+*
+* @return NULL if error; string if success
+*******************************************************************************/
+
+char * ParameterReadString(FILE **pfp,const char *label, int verbose){
+
+	const int maxl = 128;//todo(sjh): #define in a consts file
 	char line[maxl];
 	char st[maxl];
 	char *s;
@@ -196,7 +210,7 @@ char * read_param_string(FILE **pfp,const char *label, int verbose){
 
 
 
-/******************************************************************************
+/*******************************************************************************
 * @brief read a parameter from a config file; use a default if not found
 *
 * @param[in] fn name of the config file
@@ -210,7 +224,7 @@ char * read_param_string(FILE **pfp,const char *label, int verbose){
 * @param[in] verbose verbose output
 *
 * @return 0 if error; 1 if success... todo reverse
-*****************************************************************************/
+*******************************************************************************/
 int ParameterReadOrDefineUnsignedInt(const char *fn, const char *label, unsigned int *val, const int defaultvalue, const int verbose){
 
 	int errcode = 3;

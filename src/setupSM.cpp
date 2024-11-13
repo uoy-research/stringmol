@@ -473,7 +473,7 @@ void init_randseed_config(int argc, char *argv[]){
 		fclose(fpr);
 	}
 
-	unsigned long rseed = longinitmyrand(&seedin);//437);//-1);//437);
+	unsigned long rseed = RandomInitLong(&seedin);//437);//-1);//437);
 	//unsigned long rseed = longinitmyrand(NULL);//437);//-1);//437);
 	FILE *frs;
 	if((frs=fopen("randseed.txt","w"))==NULL){
@@ -561,7 +561,26 @@ int run_one_AlifeXII_trial(stringPM *A){
 
 
 
-int randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout){
+
+
+/*******************************************************************************
+* @brief select a random cell in the moore neighbourhood
+*
+* @param[in] X the x position of the cell
+*
+* @param[in] Y the y position of the cell
+*
+* @param[in] Xlim the X dimension of the grid
+*
+* @param[in] Ylim the Y dimension of the grid
+*
+* @param[in] xout pointer to the x position of the neighbour
+*
+* @param[in] yout pointer to the y position of the neighbour
+*
+* @return 0 always
+*******************************************************************************/
+int GridSelectRandomMooreNeighbour(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout){
 
 	int pos = 8. * RandomBetween0And1();
 
@@ -612,9 +631,21 @@ int randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *x
 
 
 
-
-
-s_ag * pick_partner(stringPM *A, smsprun *run,int x, int y){
+//todo(sjh): check whether x and y are members of A - delete if so!
+/*******************************************************************************
+* @brief find a partner to react with (if one exists) on a grid
+*
+* @param[in] A the current agent
+*
+* @param[in] run the grid data
+*
+* @param[in] x the x position of the agent
+*
+* @param[in] y the y position of the agent
+*
+* @return mt_error_code
+*******************************************************************************/
+s_ag * ReactionSeekRandomSpatialPartner(stringPM *A, smsprun *run,int x, int y){
 
 	int i,j,xx,yy;
 
@@ -662,7 +693,7 @@ s_ag * pick_partner(stringPM *A, smsprun *run,int x, int y){
 		}
 	}
 
-	//We should never get to here
+	//We should never get to here! todo(sjh): exit with error code
 	printf("Something's wrong - neighbour detected in first pass but none selected\n");
 	return NULL;
 }
@@ -682,7 +713,20 @@ void update_grid(smsprun *run){
 	}
 }
 
-void place_mol(s_ag *ag,smsprun *run,int x, int y){
+
+
+
+
+/*******************************************************************************
+* @brief position an agent on the grid
+*
+* @param[in] ag the agent
+*
+* @param[in] x the x position
+*
+* @param[in] y the y position
+*******************************************************************************/
+void AgentPlaceOnGrid(s_ag *ag,smsprun *run,int x, int y){
 	//TODO: error checking!
 	run->grid[x][y] = ag;
 	//Set status to next - placing the molecule has used up the 'now'
@@ -693,7 +737,25 @@ void place_mol(s_ag *ag,smsprun *run,int x, int y){
 }
 
 
-s_ag * place_neighbor(stringPM *A, smsprun *run,s_ag *c,int x,int y){
+
+
+
+/*******************************************************************************
+* @brief place a new agent in the Moore neighbourhood
+*
+* @param[in] A the stringmol bucket
+*
+* @param[in] run the grid info
+*
+* @param[in] c the agent
+*
+* @param[in] x the x position
+*
+* @param[in] y the y position
+*
+* @return c if placed, else NULL
+*******************************************************************************/
+s_ag * AgentPlaceInMooreNeighbourhood(stringPM *A, smsprun *run,s_ag *c,int x,int y){
 
 
 	int xx,yy;
@@ -718,7 +780,7 @@ s_ag * place_neighbor(stringPM *A, smsprun *run,s_ag *c,int x,int y){
 				//No need to ingnore x,y because it is occupied by the parent!
 				if(run->grid[xx][yy]==NULL){
 					if(here == pos){
-						place_mol(c,run,xx,yy);
+						AgentPlaceOnGrid(c,run,xx,yy);
 						return c;
 					}
 					here++;
@@ -730,7 +792,7 @@ s_ag * place_neighbor(stringPM *A, smsprun *run,s_ag *c,int x,int y){
 		return NULL;
 	}
 	return NULL;
-	/*TODO: Need to decide whether to replace or not
+	/*TODO(sjh): Need to decide whether to replace or not
 	else{
 		int noccupied = 8-nvacant;
 		if(run->grid[x][y]==NULL){
@@ -766,7 +828,21 @@ s_ag * place_neighbor(stringPM *A, smsprun *run,s_ag *c,int x,int y){
 
 
 
-int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
+
+
+/*******************************************************************************
+* @brief cleave
+*
+* @param[in] A the stringmol bucket
+*
+* @param[in] run the grid info
+*
+* @param[in] act the agent
+*
+* @return which agents have been destroyed (if any) 0: none; 1: active only
+ *         2: passive only; 3: both
+*******************************************************************************/
+int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 	int dac = 0,cpy;
 	s_ag *c,*pass,*csite;
@@ -814,7 +890,7 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 			act->biomass=0; //reset this; we might continue to make stuff!
 
 			//TODO: place the new agent on the grid
-			if((place_neighbor(A,run,c,act->x,act->y))!=NULL){//,x,y))!=NULL){
+			if((AgentPlaceInMooreNeighbourhood(A,run,c,act->x,act->y))!=NULL){//,x,y))!=NULL){
 				//append the agent to nexthead
 				A->AgentAppend(&(A->nexthead),c);
 			}
@@ -901,8 +977,21 @@ int spatial_cleave(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 
 
-
-int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int x, int y){
+//todo(sjh): this should be part of the smspatial subclass
+/*******************************************************************************
+* @brief execute the current opcode in a reaction
+*
+* @param[in] A the stringmol bucket
+*
+* @param[in] run the grid information
+*
+* @param[in] act the first agent
+*
+* @param[in] pass the second agent
+*
+* @return 1 if decay happens, 0 if not
+*******************************************************************************/
+int ReactionExecuteOpcodeSpatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int x, int y){
 
 	char *tmp;
 	int safe_append=1;
@@ -1028,7 +1117,7 @@ int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int 
 	 ************/
 	case '%':
 			//Decide where to put the cleaved molecule
-			if((/*dac = */spatial_cleave(A,run,act))){//,x,y))){
+			if((/*dac = */OpcodeCleaveSpatial(A,run,act))){//,x,y))){
 				//TODO: Need to determine what safe_append is used for (after looking at cleave)
 				safe_append=0;	//extract_ag(&nowhead,p);
 			}
@@ -1077,7 +1166,23 @@ int spatial_exec_step(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int 
 
 }
 
-int spatial_testdecay(stringPM *A, smsprun *run, s_ag *pag){
+
+
+
+
+//todo(sjh): this should be part of the smspatial subclass
+/*******************************************************************************
+* @brief attempt decay of a spatial agent
+*
+* @param[in] A the stringmol bucket
+*
+* @param[in] run the grid information
+*
+* @param[in] pag the agent
+*
+* @return 1 if decay happens, 0 if not
+*******************************************************************************/
+int AgentAttemptDecaySpatial(stringPM *A, smsprun *run, s_ag *pag){
 
  	float prob = A->decayrate;//1./pow(65,2);//4./3.); //This is now done in load_decay...
 
@@ -1198,10 +1303,19 @@ void FilenameGetUnused(char *fn){
 
 
 
-/* Another attempt to do randseed properly
- *
- */
-unsigned long init_randseed(char *fn, int printrandseed=0){
+
+/*******************************************************************************
+* @brief diagnostic printfs for MT load failure
+*
+* @details todo(sjh): "another attempt to do randseed properly"
+*
+* @param[in] fn the file name where the rng seed is found
+*
+* @param[in] printrandseed flag to print the seed
+*
+* @return the random seed
+*******************************************************************************/
+unsigned long RandomSeedInitFromFile(char *fn, int printrandseed=0){
 
 	//TODO: more work needed with the rand seed and rng logic!!
 	unsigned long seedin{42};
@@ -1218,7 +1332,7 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 		//rngfn = (char *) malloc (256*sizeof(char));
 		rngpath = (char *) malloc (512*sizeof(char));
 		memset(rngpath,0,512*sizeof(char));
-		rngfn =  read_param_string(&fpr, "RNGFILE",0);
+		rngfn =  ParameterReadString(&fpr, "RNGFILE",0);
 
 		if(rngfn !=NULL){
 			//Add the file path from the input file to the RNGfile
@@ -1237,7 +1351,7 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 			//TODO: check the logic of the following! Write in the usr guide..!
 			FILE *fprng;
 			if((fprng = fopen(rngpath,"r"))!=NULL){
-				if(load_mt(rngpath) != load_mt_success){
+				if(MersenneTwisterLoadState(rngpath) != load_mt_success){
 					printf("ERROR reading Random Number Generator config %s\n",rngfn);
 					foundrng = false;
 				}
@@ -1245,7 +1359,7 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 					//Record the RNG state (for debugging)
 					FILE *rfp;
 					rfp=fopen("RNGsmsp_initX_shouldwork.dat","w");
-					print_mt(rfp);
+                    MersenneTwisterPrintStatusToFile(rfp);
 					fclose(rfp);
 				}
 				fclose(fprng);
@@ -1277,10 +1391,10 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 	if(!foundrng){
 		if(stmp){//This means we have read it from the file...
 			sl = stmp;
-			rseed = longinitmyrand(&sl);
+			rseed = RandomInitLong(&sl);
 		}
 		else{
-			rseed = longinitmyrand(NULL);
+			rseed = RandomInitLong(NULL);
 		}
 	}
 	else{
@@ -1313,7 +1427,21 @@ unsigned long init_randseed(char *fn, int printrandseed=0){
 
 
 
-int smspatial_step(stringPM *A, smsprun *run){
+//todo(sjh): integrate this with stringPM::TimestepUpdate
+/*******************************************************************************
+* @brief diagnostic printfs for MT load failure
+*
+* @details see Mersenne Twister documentation
+*
+* @param[in] ec error code
+*
+* @param[in] posn position of the error in the file
+*
+* @param[in] fn the file name
+*
+* @return mt_error_code
+*******************************************************************************/
+int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 
 	//again, we follow TimestepIncrement, but are a little more careful with the binding and uncoupling
 	s_ag *pag;
@@ -1337,7 +1465,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 		if(A->timestep == 90001){
 			printf("%d\t%d\t%d\t\n",//%c%c%c%c\n",
 					ct++,
-					get_mti(),
+					RandomNumberGeneratorGetState(),
 					pag->idx//,
 					//&pag->i[pag->it],
 					//&pag->r[pag->rt],
@@ -1364,7 +1492,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 			break;
 		}
 
-		if(!spatial_testdecay(A,run,pag)){
+		if(!AgentAttemptDecaySpatial(A,run,pag)){
 			int changed = 0;
 			if(A->energy>0){
 				switch(pag->status){
@@ -1379,7 +1507,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 					//find_ag_gridpos(pag,run,&x,&y);
 					run->status[pag->x][pag->y]=G_NEXT;
 
-					if((bag = pick_partner(A,run,pag->x,pag->y))!=NULL){
+					if((bag = ReactionSeekRandomSpatialPartner(A,run,pag->x,pag->y))!=NULL){
 
 						//TODO: We need to make sure that bag is in nowhead first!
 						A->AgentExtract(&(A->nowhead),bag);
@@ -1410,13 +1538,13 @@ int smspatial_step(stringPM *A, smsprun *run){
 
 					//find_ag_gridpos(pag->exec,run,&x,&y);
 
-					changed = spatial_exec_step(A,run,pag->exec,pag);//,x,y);
+					changed = ReactionExecuteOpcodeSpatial(A,run,pag->exec,pag);//,x,y);
 
 					break;
 				case B_ACTIVE:
 
 					//find_ag_gridpos(pag,run,&x,&y);
-					changed = spatial_exec_step(A,run,pag,pag->pass);//,x,y);
+					changed = ReactionExecuteOpcodeSpatial(A,run,pag,pag->pass);//,x,y);
 					break;
 				default:
 					printf("ERROR: agent with unknown state encountered!\n");
@@ -1440,7 +1568,7 @@ int smspatial_step(stringPM *A, smsprun *run){
 	for(int x=0;x<run->gridx;x++){
 		for(int y=0;y<run->gridy;y++){
 			if(run->grid[x][y]!=NULL){
-				if(!(A->ag_in_list(A->nowhead,run->grid[x][y]))){
+				if(!(A->AgentAddressInList(A->nowhead,run->grid[x][y]))){
 					printf("Agent species %d not in nowhead at %d, %d\n", run->grid[x][y]->spp->spp, x, y);
 				}
 			}
@@ -1457,9 +1585,21 @@ int smspatial_step(stringPM *A, smsprun *run){
 
 
 
-int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
-
-
+//todo(sjh): integrate the smsprun struct with stringPM
+/*******************************************************************************
+* @brief reads a config file and sets up a Spatial Stringmol run
+*
+* @param[in] fn the config file name
+*
+* @param[in] A the stringPM object
+*
+* @param[in] run grid data in an smsprun struct
+*
+* @param[in] runno the run number
+*
+* @return 0 always
+*******************************************************************************/
+int StringmolSpatialConfigureFromFile(const char *fn, stringPM *A, smsprun **run, int runno){
 
 	A->ConfigLoad(fn,NULL,0,1);
 
@@ -1490,7 +1630,7 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 			//Check to see if a position has been set for each molecule..
 			if( pag->x > -1 ){
 				if( pag->y > -1){
-					place_mol(pag,*run,pag->x,pag->y);
+					AgentPlaceOnGrid(pag,*run,pag->x,pag->y);
 					A->AgentAppend(&(A->nexthead),pag);
 					found = 1;
 				}
@@ -1518,13 +1658,13 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 					while(!ffound){
 						int xx,yy;
 						//randy_Moore(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout){
-						randy_Moore(x,y,(*run)->gridx,(*run)->gridy,&xx,&yy);
+						GridSelectRandomMooreNeighbour(x,y,(*run)->gridx,(*run)->gridy,&xx,&yy);
 						if((*run)->grid[xx][yy]==0){
 
 							ffound=found=1;
 
 							//Place each agent on the list
-							place_mol(pag,*run,x,y);
+							AgentPlaceOnGrid(pag,*run,x,y);
 
 							//Move to the 'used' bucket
 							A->AgentAppend(&(A->nexthead),pag);
@@ -1533,7 +1673,7 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 							bag = A->AgentSelectRandomly(A->nowhead,-1);
 							if(bag != NULL){
 								A->AgentExtract(&(A->nowhead),bag);
-								place_mol(bag,*run,xx,yy);
+								AgentPlaceOnGrid(bag,*run,xx,yy);
 								A->AgentAppend(&(A->nexthead),bag);
 							}
 						}
@@ -1553,7 +1693,7 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 				(*run)->grid[x][y] =NULL;
 
 		for(pag=A->nowhead; pag != NULL; pag=pag->next){
-			place_mol(pag,*run,pag->x,pag->y);
+			AgentPlaceOnGrid(pag,*run,pag->x,pag->y);
 		}
 
 		update_grid(A->grid);
@@ -1564,7 +1704,7 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 	for(int x=0;x<(*run)->gridx;x++){
 		for(int y=0;y<(*run)->gridy;y++){
 			if((*run)->grid[x][y]!=NULL){
-				if(!(A->ag_in_list(A->nowhead,(*run)->grid[x][y]))){
+				if(!(A->AgentAddressInList(A->nowhead,(*run)->grid[x][y]))){
 					printf("Agent species %d not in nowhead at %d, %d\n", (*run)->grid[x][y]->spp->spp, x, y);
 				}
 			}
@@ -1579,9 +1719,18 @@ int smspatial_init(const char *fn, stringPM *A, smsprun **run, int runno){
 
 
 
-
-
-int smspatial(int argc, char *argv[]) {
+/*******************************************************************************
+* @brief stringmol on a grid
+*
+* @details "Nothing makes sense in evolutin except in the light of parasitism"
+*
+* @param[in] argc number of arguments
+*
+* @param[in] argv the arguments
+*
+* @return 0 unless there's an error
+*******************************************************************************/
+int StringmolSpatial(int argc, char *argv[]) {
 
 	printf("Hello spatial stringmol world\n");
 
@@ -1591,8 +1740,8 @@ int smspatial(int argc, char *argv[]) {
 	smsprun *run{};
 	run = NULL;
 
-	A.randseed = init_randseed(argv[2]);
-	smspatial_init(argv[2],&A,&run,1);
+	A.randseed = RandomSeedInitFromFile(argv[2]);
+	StringmolSpatialConfigureFromFile(argv[2],&A,&run,1);
 
 	int bt,ct{0};
 	ct = A.AgentsCount(A.nowhead,-1);
@@ -1627,8 +1776,8 @@ int smspatial(int argc, char *argv[]) {
 			bt = ct - A.AgentsCount(A.nowhead,B_UNBOUND);
 			printf("Step %u done, number of molecules is %d, nbound = %d\n",A.timestep,ct,bt);
 
-			smspatial_pic(&A, smpic_spp);
-			smspatial_pic(&A, smpic_len);
+			GridSavePNG(&A, smpic_spp);
+			GridSavePNG(&A, smpic_len);
 		}
 
 		//When debugging you can set specific timesteps here (not elegant, but quick!)
@@ -1656,7 +1805,7 @@ int smspatial(int argc, char *argv[]) {
 
 		}
 
-		smspatial_step(&A,run);
+		TimestepIncrementSpatial(&A,run);
 
 #ifdef DODEBUG
 		printf("Nowhead is %p, Nexthead is %p\n",A.nowhead,A.nexthead);
@@ -1698,7 +1847,20 @@ void encodeOneStep(const char* filename, const std::vector<unsigned char>& image
 
 
 
-int smspatial_pic(stringPM *A, smpic pt){
+
+
+/*******************************************************************************
+* @brief save the grid state as a png
+*
+* @details "Nothing makes sense in evolutin except in the light of parasitism"
+*
+* @param[in] A the stringmol bucket
+*
+* @param[in] pt enum to say whether length or species no. will be coloured.
+*
+* @return 0 always
+*******************************************************************************/
+int GridSavePNG(stringPM *A, smpic pt){
 
 
 	smsprun *run;
@@ -1843,7 +2005,7 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 
 	smsprun *run;
 
-	smspatial_init("out1_00100.conf",&A,&run,1);
+	StringmolSpatialConfigureFromFile("out1_00100.conf",&A,&run,1);
 
 
 	for(int i=s;i<=f;i+=step){
@@ -1853,7 +2015,7 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 		sprintf(fn,"out1_%05d.conf",i);
 
 
-		if((smspatial_init(fn,&A,&run,1))==0){
+		if((StringmolSpatialConfigureFromFile(fn,&A,&run,1))==0){
 
 			//Should be able to dump the grid image now...
 
@@ -2308,7 +2470,7 @@ int smspatial_community(int argc, char *argv[]){
 	smsprun *run;
 	run = NULL;
 
-	smspatial_init(argv[2],&A,&run,1);
+	StringmolSpatialConfigureFromFile(argv[2],&A,&run,1);
 
 	s_ag *ag;
 

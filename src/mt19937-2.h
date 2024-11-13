@@ -34,12 +34,12 @@ void	SetRNGSeed(unsigned long seed);
 double 	GenerateRandomDouble(); /* generating reals */
 unsigned long genrandint();/* unsigned long */ /* for integer generation */
 
-int mt_get_mti();
+int MersenneTwisterGetState();
 void mt_set_mti(int val);
 
 /*read/write mt state */
-void print_mt(FILE *fp);
-int load_mt(const char *fn);
+void MersenneTwisterPrintStatusToFile(FILE *fp);
+int MersenneTwisterLoadState(const char *fn);
 
 /* ERROR CODES FOR LOADING THE MT STATE */
 enum load_mt_errcode{

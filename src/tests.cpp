@@ -319,10 +319,10 @@ void test_rand_config(int argc, char *argv[]){
 	printf("\nMTSTATE IS:\n");
 
 	//Save the state:
-	print_mt(stdout);
+	MersenneTwisterPrintStatusToFile(stdout);
 	FILE *fp,*tfp1,*tfp2;
 	fp = fopen("TestMT1.dat","w");
-	print_mt(fp);
+	MersenneTwisterPrintStatusToFile(fp);
 	fclose(fp);
 
 	//Run the rng on another 1000, save output to file
@@ -333,7 +333,7 @@ void test_rand_config(int argc, char *argv[]){
 	}
 	fclose(fp);
 
-	load_mt("TestMT1.dat");
+	MersenneTwisterLoadState("TestMT1.dat");
 
 
 	fp = fopen("testdata1_again.dat","w");

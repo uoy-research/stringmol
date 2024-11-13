@@ -27,7 +27,7 @@
 		double raisin();
 
 		int RandomInit(int seed);
-		unsigned long longinitmyrand(const unsigned long *inseed);
+		unsigned long RandomInitLong(const unsigned long *inseed);
 
 		double RandomBetween0And1();
 		int rand_in_rad(const float rad, float *x, float *y);
@@ -37,7 +37,7 @@
 		int * randboolarray(const int size);
 
 		//functions to get and set the Mersenne Twister index
-		int get_mti();
+		int RandomNumberGeneratorGetState();
 		void set_mti(int val);
 
 #endif /*RANDUTIL_H_*/

@@ -37,6 +37,10 @@
 
 
 
+/*
+ * Obtain a seed from /dev/random - better than using clock, especially for array jobs
+ * todo(sjh): this will only work if /dev/random is set up!
+ */
 /*******************************************************************************
 * @brief initialise the random number generator from the OS
 *
@@ -44,10 +48,6 @@
 *
 * @return a random integer
 *******************************************************************************/
-/*
- * Obtain a seed from /dev/random - better than using clock, especially for array jobs
- * NB: this will only work if /dev/random is set up!
- */
 int RandomSeedFromSystem(){
 
 	int randomData = open("/dev/random", O_RDONLY);
@@ -76,7 +76,7 @@ int RandomSeedFromSystem(){
 *
 * @param[in] seed used to seed the rng. if <0, chosen by the program
 *
-* @return a double between 0 and 1
+* @return the value of the seed, however it was chosen
 *******************************************************************************/
 int RandomInit(int seed){
 
@@ -103,7 +103,17 @@ int RandomInit(int seed){
 
 
 
-unsigned long longinitmyrand(const unsigned long *inseed){
+/*******************************************************************************
+* @brief initialise the random number generator with a seed or time
+*
+* @details uses the Mersenne Twister algorithm (TODO: check range is [0,1)
+*          TODO(sjh) check why we need this as well as the above...
+*
+* @param[in] seed used to seed the rng. if <0, chosen by the program
+*
+* @return the value of the seed, however it was chosen
+*******************************************************************************/
+unsigned long RandomInitLong(const unsigned long *inseed){
 
 	unsigned long seed;
 	if(inseed==NULL){
@@ -127,6 +137,7 @@ unsigned long longinitmyrand(const unsigned long *inseed){
 
 	return seed;
 }
+
 
 
 
@@ -194,9 +205,19 @@ int * randboolarray(const int size){
 
 
 /*UTILITY FUNCTION FOR RE-SEEDING ON RESTART*/
-int get_mti(){
+//todo(sjh): needs a good tidy up!
+/*******************************************************************************
+* @brief get the current state of the RNG
+*
+* @details for the Mersenne Twister, ths is the index of the state vector array
+*          which is needed to reset the state on restart (the full state vector
+*          array is also needed). Other RNG engines will need other information!
+*
+* @return the index on the state array (for MT) -
+*******************************************************************************/
+int RandomNumberGeneratorGetState(){
 #ifdef USING_MT
-	return mt_get_mti();
+	return MersenneTwisterGetState();
 #else
 	printf("NOT USING MERSENNE TWISTER - CAN'T GET MTI!!\n");
 	return 0;
