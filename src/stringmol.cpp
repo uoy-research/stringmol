@@ -2658,7 +2658,7 @@ int main(int argc, char *argv[]) {
         /*************************************************/
         case 34:  // Analyse spatial stringmol experiments
                   // - generate ancestry
-            smspatial_ancestry(argc, argv);
+            StringmolSpatialAncestry(argc, argv);
             break;
 
         /*************************************************/
@@ -2710,7 +2710,10 @@ int main(int argc, char *argv[]) {
         printf("Comass ALXII     (8)\n");
         printf("speigmonst       (9)\n");
         printf("Check setup       10          1: .conf;  (2: .mtx)\n");
-        printf("Spatial Stringmol(33)         1: .conf;  (2: .mtx)\n");
+        printf("Spatial Stringmol 33          1: .conf;  (2: .mtx)\n");
+        printf("SMSp ancestry    (34)         1: .conf;  (2: .mtx)\n");
+        printf("SMSp pix from log(35)         1: .conf;  (2: .mtx)\n");
+        printf("SMSp community   (36)         1: .conf;  (2: .mtx)\n");
         printf("Comass GA boost   44          1: .conf;   2: boost.dat\n\n\n");
         printf("Test All          99          1: .conf;  (2: .mtx)\n\n\n");
         printf("Test RNG         (901)       (1: .conf;) (2: .mtx)\n\n\n");

@@ -555,10 +555,6 @@ int run_one_AlifeXII_trial(stringPM *A){
 	return 0;
 }
 
-//////////////////////////////////////////////////////////////////////////
-// SPATIAL STRINGMOL CODE - CALLED FROM stringmol.cpp AND smspatial.cpp //
-//////////////////////////////////////////////////////////////////////////
-
 
 
 
@@ -627,6 +623,7 @@ int GridSelectRandomMooreNeighbour(const int X, const int Y, const int Xlim, con
 	*yout = (Y+Ylim+yoff)%Ylim;
 	return 0;
 }
+
 
 
 
@@ -1482,8 +1479,6 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 					);
 		}
 
-
-
 		//extract any partner:
 		bag = NULL;
 
@@ -1583,12 +1578,9 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 		}
 	}
 
-
-
-	//printf("After step, energy is %d\n",A->energy);
-
 	return 0;
 }
+
 
 
 
@@ -2324,10 +2316,27 @@ void find_parents(anc_node *aa, int timestep, int depth, char * ofn, int *found_
 }
 
 
-/**Strategy is to create a text file containing the ancestry. We'll write an R or graphviz script to
- * parse this and generate figures.
- */
-int smspatial_ancestry(int argc, char *argv[]){
+
+
+
+
+/*******************************************************************************
+* @brief stringmol on a grid - calculate ancestry
+*
+* @details Strategy is to create a text file containing the ancestry. We'll
+*          write an R or graphviz script to parse this and generate figures.
+*          argv[1] 34
+*          argv[2] species number
+*          argv[3] timestep
+*          argv[4] outfile name
+*
+* @param[in] argc number of arguments
+*
+* @param[in] argv the arguments
+*
+* @return 0 always
+*******************************************************************************/
+int StringmolSpatialAncestry(int argc, char *argv[]){
 
 
 	if(argc != 4 && argc !=5){
@@ -2349,7 +2358,6 @@ int smspatial_ancestry(int argc, char *argv[]){
 		printf("Problem opening output file %s\n",ofn);
 		exit(341);
 	}
-
 
 	fprintf(ofp,"depth,time,spp,act,pass,sequence\n");
 	fclose(ofp);
@@ -2373,12 +2381,8 @@ int smspatial_ancestry(int argc, char *argv[]){
 
 	find_parents(aa,timestep,0,ofn,found_spp);
 
-
 	/*
 	while(!found_luca){
-
-
-
 
 		sprintf(fn,"splist%d.dat",timestep);
 		if((fp=fopen(fn,"r"))==NULL){
@@ -2412,13 +2416,13 @@ int smspatial_ancestry(int argc, char *argv[]){
 	}
 	*/
 
-
 	/*Open the splist file and find the entries for the species*/
-
-
 
 	return 0;
 }
+
+
+
 
 
 struct comm_node{
@@ -2429,6 +2433,9 @@ struct comm_node{
 	char * Sp;
 	comm_node *next;
 };
+
+
+
 
 
 comm_node * alloc_comm_node(){
@@ -2448,6 +2455,9 @@ comm_node * alloc_comm_node(){
 }
 
 
+
+
+
 char * set_seq(char *S){
 	char *out;
 	int len = 1+strlen(S);
@@ -2458,6 +2468,9 @@ char * set_seq(char *S){
 	return out;
 
 }
+
+
+
 
 
 comm_node * new_comm_node(int ac, int pa, char *Sa, char *Sp){
@@ -2477,6 +2490,10 @@ comm_node * new_comm_node(int ac, int pa, char *Sa, char *Sp){
 
 	return aa;
 }
+
+
+
+
 
 int smspatial_community(int argc, char *argv[]){
 
@@ -2536,6 +2553,3 @@ int smspatial_community(int argc, char *argv[]){
 	fclose(fp);
 	return 1;
 }
-
-
-
