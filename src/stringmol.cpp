@@ -447,7 +447,9 @@ int origlife(int argc, char *argv[]){
 
             //SP.clear_list();
 
-            A.ConfigLoad(argv[2],NULL,0,1);
+            //A.ConfigLoad(argv[2],NULL,0,1);
+            A.ParametersLoad(argv[2],0,1);
+            A.AgentsLoad(argv[2],NULL,0,1);
 
             test_adj(A.blosum);
 
@@ -863,7 +865,10 @@ int comass_AlifeXII(int argc, char *argv[]){
 
         SP.SpeciesListClear();
 
-        A.ConfigLoad(argv[2],NULL,0,1);
+        //A.ConfigLoad(argv[2],NULL,0,1);
+        A.ParametersLoad(argv[2],0,1);
+        A.AgentsLoad(argv[2],NULL,0,1);
+
         A.load_comass(argv[2],1);
         A.AgentsPrint(stdout,"NOW",0);
 
@@ -1169,7 +1174,6 @@ int comass_GA(int argc, char *argv[]){
         //todo: check we aren't violating comass when we init - what do we do if we do???
         if(!ParametersLoadFromMainArgs(&A, argc, argv))
             return 0;
-        //A.ConfigLoad(argv[2],NULL,0,1);
 
         if(argc<4){
 
@@ -1230,7 +1234,9 @@ int comass_GA(int argc, char *argv[]){
         A.spl->SpeciesListClear();
 
         //todo: check we aren't violating comass when we init - what do we do if we do???
-        A.ConfigLoad(argv[2],NULL,0,1);
+        //A.ConfigLoad(argv[2],NULL,0,1);
+        A.ParametersLoad(argv[2],0,1);
+        A.AgentsLoad(argv[2],NULL,0,1);
 
         //int ga_step_int(int **pop, double *eval, const int POPSIZE, const int PARAMETERS);
         //int ll;
@@ -1472,7 +1478,9 @@ int comass_GA_boostwinners(int argc, char *argv[]){
 
         //Reload the config:
         A.spl->SpeciesListClear();
-        A.ConfigLoad(argv[2],NULL,0,1);
+        //A.ConfigLoad(argv[2],NULL,0,1);
+        A.ParametersLoad(argv[2],0,1);
+        A.AgentsLoad(argv[2],NULL,0,1);
 
 
         A.set_mass(concs);
@@ -1593,7 +1601,10 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
         SP.SpeciesListClear();
 
-        A.ConfigLoad(argv[2],NULL,0,1);
+        //A.ConfigLoad(argv[2],NULL,0,1);
+        A.ParametersLoad(argv[2],0,1);
+        A.AgentsLoad(argv[2],NULL,0,1);
+
 
         //test_adj(A.blosum);
 
@@ -1795,25 +1806,11 @@ int SmPm_conpop(int argc, char *argv[]){
         SP[c] = new SMspp();
         A[c] = new stringPM(SP[c]);
 
-        //A[c]->signal = signal;
-        //A[c]->ConfigLoad(argv[2],NULL,0,1);
         if(!ParametersLoadFromMainArgs(A[c], argc, argv))
             return 0;
 
-
         A[c]->biomass=A[c]->bstart = 0;
         A[c]->domut=1;
-
-        //sprintf(fn,"numbers%03d.dat",c);
-        //fpo = fopen(fn,"w");
-
-        //sprintf(fn,"divs%03d.dat",c);
-        //fpdiv = fopen(fn,"w");
-        //A[c]->AgentsPrint_header(fpo);
-        //A[c]->AgentsPrint(stdout,"NOW",0);
-        //fprintf(fpdiv,"div\te\t");
-        //A[c]->AgentsPrint_header(fpdiv);
-
 
         sprintf(pfn,"popdy%03d.dat",c);
         ftmp = fopen(pfn,"w");
@@ -2061,21 +2058,7 @@ void SmPm_1on1(int argc,char *argv[]){
 
     if(!ParametersLoadFromMainArgs(&A, argc, argv))
         return;
-    /*switch(argc){
-    case 3:
-        printf("Traditional config\n");
-        A.ConfigLoad(argv[2],NULL,1,1);
-        break;
-    case 4:
-        printf("youShare-compatible config\n");
-        A.ConfigLoad(argv[2],argv[3],1,1);
-        break;
-    default:
-        printf("Error: wrong number of arguments - try 2 or 3\n");
-        return;
-    }*/
 
-    //
     unsigned int dont_interrupt = 0;
     int gg = ParameterReadOrDefineUnsignedInt(argv[2], "NOINTERRUPT", &dont_interrupt, -1, 1);
     if(gg==1){
@@ -2083,7 +2066,6 @@ void SmPm_1on1(int argc,char *argv[]){
         A.granular_1 = 0;
     }
     else{
-
         printf("GRANULAR was specified. Simulations will use+standard operators");
         A.granular_1 = 1;
     }
@@ -2216,7 +2198,9 @@ void swdist(int argc, char *argv[]){
 
     FILE *fin;
 
-    A.ConfigLoad(argv[2],NULL,0,1);
+    A.ParametersLoad(argv[2],0,1);
+    A.AgentsLoad(argv[2],NULL,0,1);
+
     align sw;
 
     char s1[A.maxl0], s2[A.maxl0];
@@ -2442,7 +2426,9 @@ int speigmonst(int argc, char *argv[]){
         int div= 0;
 
         if(!rr){
-            A.ConfigLoad(argv[2],NULL,0,1);
+            A.ParametersLoad(argv[2],0,1);
+            A.AgentsLoad(argv[2],NULL,0,0);
+
             A.load_comass(argv[2],1);
             strncpy(repstring,SP.species_list->next->S,A.maxl0);
         }

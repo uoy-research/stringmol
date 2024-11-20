@@ -136,7 +136,9 @@ stringPM * test_config_settings( int argc, char *argv[], int return_SM){
 	ParameterReadOrDefineUnsignedInt(argv[2], "NTRIALS", &ntrials, 1, 1);
 	int nns = ParameterReadOrDefineUnsignedInt(argv[2], "NSTEPS", &nsteps, -1, 1);
 
-	A->ConfigLoad(argv[2],NULL,0,1);
+	//A->ConfigLoad(argv[2],NULL,0,1);
+    A->ParametersLoad(argv[2],0,1);
+    A->AgentsLoad(argv[2],NULL,0,1);
 	//if(!arg_load(A, argc, argv, 0))
 	//	return NULL;
 

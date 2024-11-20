@@ -204,17 +204,6 @@ void agents_base::ParametersSetDefaults(){
 
 
 
-// VJH - added this function for youShare - some alterations on merge
-void agents_base::ConfigLoad(const char *fn, char *fninput, int test=0, int verbose=0){
-
-	ParametersLoad(fn,test,verbose);
-
-	// VJH load_agents(fn,test);
-	AgentsLoad(fn,fninput,test);
-}
-
-
-
 
 /*******************************************************************************
 * @brief Load the parameters set from a config file

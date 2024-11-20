@@ -143,19 +143,11 @@ public:
 
 	//Loading
 	int load_splist(const char *fn,int verbose);
-
-	//int load_agents(char *fn,                int test, int verbose);
-	// VJH version for youShare
-	int AgentsLoad(const char *fn, char *fninput, int test, int verbose) override;
-
+	int AgentsLoad(const char *fn, char *fninput, int test=0, int verbose=0);
 	float load_mut(const char *fn, int verbose); //load the mutation rate
 	float load_decay(const char *fn, int verbose); //load the decay rate
-
 	int load_reactions(const char *fn, char *fntab, int test, int verbose);
-
 	int load_table_matrix(const char *fn);
-	//int load(char *fn);
-
 
 	//Iteration
 	void TimestepIncrement() override;
@@ -173,6 +165,7 @@ public:
 	s_ag * 	AgentSelectRandomly(s_ag *head, int state);
 	int 	AgentFree(s_ag *pag);
 	bool 	AgentAddressInList(s_ag *list,const s_ag *tag);
+
 
 	//First version works fine, but no species analysis...
 	//void 	unbind_ag(s_ag * pag,char sptype);
@@ -257,7 +250,7 @@ public:
 
 	//Molecular species analysis:
 	//void 		update_lineage(s_ag *p,char sptype);
-	int 		get_ecosystem();
+	int 		get_ecosystem(); //TODO: sjh - is tis the same as Spatial Community stuff
 	int 		SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp, int mass);
 	void 		print_lineage_dot(FILE *fp, int time,int step); //traces everything descending from the initial set.
 	void 		SpeciesPrintAncestryDot(FILE *fp, int time); //takes all current agents and traces them back

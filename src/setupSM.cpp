@@ -389,11 +389,13 @@ int ParametersLoadFromMainArgs(stringPM *A, int argc, char *argv[], int verbose 
 	switch(argc){
 	case 3:
 		if(verbose)printf("Traditional config\n");
-		A->ConfigLoad(argv[2],NULL,0,1);
+		A->ParametersLoad(argv[2],0,1);
+		A->AgentsLoad(argv[2],NULL,0,0);
 		return 1;
 	case 4:
-		if(verbose)printf("youShare-compatible config\n");
-		A->ConfigLoad(argv[2],argv[3],0,1);
+		if(verbose)printf("ATTENTION! loading with separate .mtx file!\n");
+		A->ParametersLoad(argv[2],0,1);
+		A->AgentsLoad(argv[2],argv[3],0,0);
 		return 1;
 	default:
 		if(verbose)printf("Error: wrong number of arguments - try 2 or 3\n");
@@ -402,6 +404,10 @@ int ParametersLoadFromMainArgs(stringPM *A, int argc, char *argv[], int verbose 
 
 
 }
+
+
+
+
 
 void print_params(stringPM *A, int ntrials, int nsteps){
 
@@ -434,6 +440,10 @@ void print_params(stringPM *A, int ntrials, int nsteps){
 
 
 }
+
+
+
+
 
 /* This is used in the comass GA - see test.cpp for how to set up randseed properly
  *
@@ -486,9 +496,6 @@ void init_randseed_config(int argc, char *argv[]){
 	}
 
 }
-
-
-
 
 
 
@@ -1601,15 +1608,15 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 *******************************************************************************/
 int StringmolSpatialConfigureFromFile(const char *fn, stringPM *A, smsprun **run, int runno){
 
-	A->ConfigLoad(fn,NULL,0,1);
+	A->ParametersLoad(fn,0,1);
+	A->AgentsLoad(fn,NULL,0,0);
 
 	A->run_number = runno;
 
 	//Initialize the popdy file...
 	PopdyInitFile(A);
 
-
-	//TODO: It's a little perverse getting this run object out, but we have to decide whether the grid is 'core' stringmol...
+	//TODO(sjh): It's a little perverse getting this run object out, but we have to decide whether the grid is 'core' stringmol...
 	*run = A->grid;
 	//if(run == NULL){
 	if(*run == NULL){
