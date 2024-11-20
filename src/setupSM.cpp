@@ -555,10 +555,6 @@ int run_one_AlifeXII_trial(stringPM *A){
 	return 0;
 }
 
-//////////////////////////////////////////////////////////////////////////
-// SPATIAL STRINGMOL CODE - CALLED FROM stringmol.cpp AND smspatial.cpp //
-//////////////////////////////////////////////////////////////////////////
-
 
 
 
@@ -627,6 +623,7 @@ int GridSelectRandomMooreNeighbour(const int X, const int Y, const int Xlim, con
 	*yout = (Y+Ylim+yoff)%Ylim;
 	return 0;
 }
+
 
 
 
@@ -1482,8 +1479,6 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 					);
 		}
 
-
-
 		//extract any partner:
 		bag = NULL;
 
@@ -1583,12 +1578,9 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 		}
 	}
 
-
-
-	//printf("After step, energy is %d\n",A->energy);
-
 	return 0;
 }
+
 
 
 
@@ -1986,7 +1978,25 @@ int GridSavePNG(stringPM *A, smpic pt){
 
 
 
-int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
+
+//todo(sjh): The fails with segfaults - fix!
+/*******************************************************************************
+* @brief stringmol on a grid - calculate ancestry
+*
+* @details Strategy is to create a text file containing the ancestry. We'll
+*          write an R or graphviz script to parse this and generate figures.
+*          argv[1] 35
+*          argv[2] first timestep for pics
+*          argv[3] last timestep for pics
+*          argv[4] step between timesteps
+*
+* @param[in] argc number of arguments
+*
+* @param[in] argv the arguments
+*
+* @return 0 always
+*******************************************************************************/
+int StringmolSpatialPicsFromLogs(int argc, char *argv[]){
 
 	/*This colormap was generated using the following R script:
 	 *
@@ -2160,7 +2170,7 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 			sprintf(filename,"lenframe%07u.png",A.timestep);
 			PNGEncodeAndSave(filename, image, run->gridx, run->gridy);
 
-			A.clearout();
+			A.BucketReset();
 			SP.SpeciesListClear();
 
 
@@ -2176,6 +2186,9 @@ int smspatial_lengthpicsfromlogs(int argc, char *argv[]){
 }
 
 
+
+
+
 struct anc_node{
 	int spno;
 	int origintime;
@@ -2187,7 +2200,15 @@ struct anc_node{
 };
 
 
-anc_node * alloc_anc_node(){
+
+
+
+/*******************************************************************************
+* @brief allocate memory for a new ancestry node
+*
+* @return the node
+*******************************************************************************/
+anc_node * AncestryAllocNode(){
 	anc_node *node;
 
 	node = static_cast<anc_node *>(malloc(sizeof(anc_node)));
@@ -2205,17 +2226,61 @@ anc_node * alloc_anc_node(){
 	return node;
 }
 
-anc_node * new_anc_node(int sp, int time){
-	anc_node *aa;
 
-	aa = alloc_anc_node();
-	aa->spno = sp;
-	aa->origintime = time;
-	return aa;
+
+
+
+/*******************************************************************************
+* @brief create a new ancestry node
+*
+* @param[in] sp the species
+*
+* @param[in] time the time found
+*
+* @return 0 always
+*******************************************************************************/
+anc_node * AncestryNewNode(int sp, int time){
+	anc_node *node;
+
+	//node = AncestryAllocNode();
+	node = static_cast<anc_node *>(malloc(sizeof(anc_node)));
+
+	node->spno=0;
+	node->origintime=0;
+
+	node->S = NULL;
+
+	node->aa = NULL;
+	node->pp = NULL;
+	node->dd = NULL;
+	node->ss = NULL;
+
+
+	node->spno = sp;
+	node->origintime = time;
+	return node;
 }
 
 
-void find_parents(anc_node *aa, int timestep, int depth, char * ofn, int *found_spp){
+
+
+
+/*******************************************************************************
+* @brief find the parents of a species
+*
+* @param[in] aa anc_node - position in the ancestry
+*
+* @param[in] timestep
+*
+* @param[in] depth how far back to search
+*
+* @param[in] ofn output file name
+*
+* @param[in] found_spp the number of species found so far
+*
+* @return 0 always
+*******************************************************************************/
+void AncestryFindParents(anc_node *aa, int timestep, int depth, char * ofn, int *found_spp){
 
 	FILE *ofp;
 	const int llen = 3000;
@@ -2312,22 +2377,39 @@ void find_parents(anc_node *aa, int timestep, int depth, char * ofn, int *found_
 	if(!found_spp[aa->spno]){
 
 		found_spp[aa->spno]=1;
-		aa->aa = new_anc_node(a1,-1);
-		find_parents(aa->aa,timestep,depth+1,ofn,found_spp);
+		aa->aa = AncestryNewNode(a1,-1);
+		AncestryFindParents(aa->aa,timestep,depth+1,ofn,found_spp);
 		//Don't bother tracing the passive branch if parents are the same species..
 		if(a1 != p1){
-			aa->pp = new_anc_node(p1,-1);
-			find_parents(aa->pp,timestep,depth+1,ofn,found_spp);
+			aa->pp = AncestryNewNode(p1,-1);
+			AncestryFindParents(aa->pp,timestep,depth+1,ofn,found_spp);
 		}
 	}
 
 }
 
 
-/**Strategy is to create a text file containing the ancestry. We'll write an R or graphviz script to
- * parse this and generate figures.
- */
-int smspatial_ancestry(int argc, char *argv[]){
+
+
+
+
+/*******************************************************************************
+* @brief stringmol on a grid - calculate ancestry
+*
+* @details Strategy is to create a text file containing the ancestry. We'll
+*          write an R or graphviz script to parse this and generate figures.
+*          argv[1] 34
+*          argv[2] species number
+*          argv[3] timestep
+*          argv[4] outfile name
+*
+* @param[in] argc number of arguments
+*
+* @param[in] argv the arguments
+*
+* @return 0 always
+*******************************************************************************/
+int StringmolSpatialAncestry(int argc, char *argv[]){
 
 
 	if(argc != 4 && argc !=5){
@@ -2350,13 +2432,12 @@ int smspatial_ancestry(int argc, char *argv[]){
 		exit(341);
 	}
 
-
 	fprintf(ofp,"depth,time,spp,act,pass,sequence\n");
 	fclose(ofp);
 
 	anc_node *aa;
 
-	aa = alloc_anc_node();
+	aa = AncestryAllocNode();
 
 	int spno = atoi(argv[2]);
 	int timestep = atoi(argv[3]);
@@ -2371,14 +2452,10 @@ int smspatial_ancestry(int argc, char *argv[]){
 
 	aa->spno = spno;
 
-	find_parents(aa,timestep,0,ofn,found_spp);
-
+	AncestryFindParents(aa,timestep,0,ofn,found_spp);
 
 	/*
 	while(!found_luca){
-
-
-
 
 		sprintf(fn,"splist%d.dat",timestep);
 		if((fp=fopen(fn,"r"))==NULL){
@@ -2412,13 +2489,13 @@ int smspatial_ancestry(int argc, char *argv[]){
 	}
 	*/
 
-
 	/*Open the splist file and find the entries for the species*/
-
-
 
 	return 0;
 }
+
+
+
 
 
 struct comm_node{
@@ -2431,7 +2508,15 @@ struct comm_node{
 };
 
 
-comm_node * alloc_comm_node(){
+
+
+
+/*******************************************************************************
+* @brief Allocate and initialise a new comm_node object
+*
+* @return the node object. todo(sjh): no failure reporting
+*******************************************************************************/
+comm_node * ReactionObservedAlloc(){
 	comm_node *node;
 
 	node = static_cast<comm_node *>(malloc(sizeof(comm_node)) );
@@ -2448,7 +2533,17 @@ comm_node * alloc_comm_node(){
 }
 
 
-char * set_seq(char *S){
+
+
+
+/*******************************************************************************
+* @brief allocate memory and copy the string into it
+*
+* @param[in] S the sequence string
+*
+* @return the allocated string
+*******************************************************************************/
+char * SequenceAllocAndCopy(char *S){
 	char *out;
 	int len = 1+strlen(S);
 	out = (char *) malloc((len)*sizeof(char));
@@ -2460,17 +2555,33 @@ char * set_seq(char *S){
 }
 
 
-comm_node * new_comm_node(int ac, int pa, char *Sa, char *Sp){
+
+
+
+/*******************************************************************************
+* @brief A new comm_node object recording an observed bind
+*
+* @param[in] ac the active species number
+*
+* @param[in] pa the passive species number
+*
+* @param[in] Sa the active species' sequence
+*
+* @param[in] Sp the passive species' sequence
+*
+* @return the node
+*******************************************************************************/
+comm_node * ReactionNewObservedPairing(int ac, int pa, char *Sa, char *Sp){
 	comm_node *aa;
 
-	aa = alloc_comm_node();
+	aa = ReactionObservedAlloc();
 
 	aa->aspno = ac;
 	aa->pspno = pa;
 	aa->count = 1;
 
-	aa->Sa = set_seq(Sa);
-	aa->Sp = set_seq(Sp);
+	aa->Sa = SequenceAllocAndCopy(Sa);
+	aa->Sp = SequenceAllocAndCopy(Sp);
 
 
 	//TODO: copy the strings - if necessary...
@@ -2478,7 +2589,26 @@ comm_node * new_comm_node(int ac, int pa, char *Sa, char *Sp){
 	return aa;
 }
 
-int smspatial_community(int argc, char *argv[]){
+
+
+
+
+//todo(sjh) have a 1m timestep file to see what this puts out!
+/*******************************************************************************
+* @brief stringmol on a grid - calculate community - not sure how this works!
+*
+* @details Strategy is to create a text file containing the ancestry. We'll
+*          write an R or graphviz script to parse this and generate figures.
+*          argv[1] 36
+*          argv[2] config file
+*
+* @param[in] argc number of arguments
+*
+* @param[in] argv the arguments
+*
+* @return 0 always
+*******************************************************************************/
+int StringmolSpatialCommunity(int argc, char *argv[]){
 
 	comm_node * bbb;
 	bbb = NULL;
@@ -2514,9 +2644,9 @@ int smspatial_community(int argc, char *argv[]){
 			}
 			if(!found){
 				if(bbb == NULL)
-					bbb = new_comm_node(ag->spp->spp,ag->pass->spp->spp,ag->spp->S,ag->pass->spp->S);
+					bbb = ReactionNewObservedPairing(ag->spp->spp,ag->pass->spp->spp,ag->spp->S,ag->pass->spp->S);
 				else
-				pend->next = new_comm_node(ag->spp->spp,ag->pass->spp->spp,ag->spp->S,ag->pass->spp->S);
+				pend->next = ReactionNewObservedPairing(ag->spp->spp,ag->pass->spp->spp,ag->spp->S,ag->pass->spp->S);
 			}
 		}
 	}
@@ -2536,6 +2666,3 @@ int smspatial_community(int argc, char *argv[]){
 	fclose(fp);
 	return 1;
 }
-
-
-

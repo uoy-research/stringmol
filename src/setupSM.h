@@ -75,9 +75,9 @@
 	int TimestepIncrementSpatial(stringPM *A, smsprun *run);
 
 	/* diagnostics for spatial stringmol */
-	int smspatial_ancestry(int argc, char *argv[]);
-	int smspatial_community(int argc, char *argv[]);
-	int smspatial_lengthpicsfromlogs(int argc, char *argv[]);
+	int StringmolSpatialAncestry(int argc, char *argv[]);
+	int StringmolSpatialCommunity(int argc, char *argv[]);
+	int StringmolSpatialPicsFromLogs(int argc, char *argv[]);
 
 	void PNGEncodeAndSave(const char* filename, const std::vector<unsigned char>& image, unsigned width, unsigned height);
 

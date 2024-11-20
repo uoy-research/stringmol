@@ -164,7 +164,7 @@ stringPM::stringPM(const stringPM& spm){
 
 
 stringPM::~stringPM() {
-	clearout(0);
+	BucketReset(0);
 }
 
 
@@ -4079,15 +4079,19 @@ void stringPM::GridFree(){
 
 
 
-// TODO(sjh): this should be the destructor! ~stringPM
-void stringPM::clearout(int verbose){
+// TODO(sjh): this should (should this?) be the destructor! ~stringPM
+/*******************************************************************************
+* @brief clear the structures in a run so the run can be repeated
+*
+* @param[in] verbose verbose output
+*******************************************************************************/
+void stringPM::BucketReset(int verbose){
 
 	s_ag	*agp,*agp2;
 
 	if(verbose){
 		printf("Starting spatial clearout..");fflush(stdout);
 	}
-
 
 	SmithWatermanFree(blosum,verbose);
 
@@ -4117,7 +4121,7 @@ void stringPM::clearout(int verbose){
 
 
 
-//written to check buffer overruns on strings - potentially useful! 
+//todo(sjh): written to check buffer overruns on strings - potentially useful!
 /*
 void stringPM::sanity_check(){
 	s_ag *pag;
