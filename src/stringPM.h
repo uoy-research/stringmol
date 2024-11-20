@@ -136,7 +136,7 @@ public:
 	s_ag * AgentMake(int alab);//, int randpos);
 
 	void SetHeadsAndDefaults();
-	void clearout(int verbose = 0);
+	void BucketReset(int verbose = 0);
 
 	//return a string describing the error
 	char * parse_error(int errno);

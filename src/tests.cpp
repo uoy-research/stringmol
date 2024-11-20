@@ -149,7 +149,7 @@ stringPM * test_config_settings( int argc, char *argv[], int return_SM){
 	if(return_SM)
 		return A;
 	else{
-		A->clearout();
+		A->BucketReset();
 		delete A;
 		return NULL;
 	}

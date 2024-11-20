@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h>//for getopt
 
 
 
@@ -528,7 +529,7 @@ int origlife(int argc, char *argv[]){
             printf("Finished - alls well!\nclear out memory now:\n");
             fflush(stdout);
 
-            A.clearout();
+            A.BucketReset();
         }
     }
     //A.PropensityPrint(fsumm);
@@ -549,7 +550,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
     int i,div;
 
     SMspp        SP;
-    stringPM    A(&SP);
+    stringPM    BucketA(&SP);
     FILE *fp;
     int indefinite=1;
 
@@ -615,58 +616,58 @@ int SmPm_AlifeXII(int argc, char *argv[]){
         SP.SpeciesListClear();
 
         //A.ConfigLoad(argv[2],NULL,0,1);
-        if(!ParametersLoadFromMainArgs(&A, argc, argv))
+        if(!ParametersLoadFromMainArgs(&BucketA, argc, argv))
             return 0;
 
         unsigned int dummy;
         int gg = ParameterReadOrDefineUnsignedInt(argv[2], "GRANULAR", &dummy, -1, 1);
         if(gg==1){
             printf("GRANULAR was not specified. Simulations will use standard operators");
-            A.granular_1 = 0;
+            BucketA.granular_1 = 0;
         }
         else{
 
             printf("GRANULAR was specified. Simulations will use+standard operators");
-            A.granular_1 = 1;
+            BucketA.granular_1 = 1;
         }
 
 
 
 
-        A.AgentsPrint(stdout,"NOW",0);
+        BucketA.AgentsPrint(stdout,"NOW",0);
 
-        A.run_number=rr;
-        PopdyInitFile(&A);
+        BucketA.run_number=rr;
+        PopdyInitFile(&BucketA);
 
-        sprintf(pfn,"popdy%d%02d.dat",proc,A.run_number);
+        sprintf(pfn,"popdy%d%02d.dat",proc,BucketA.run_number);
         ftmp = fopen(pfn,"w");
         fclose(ftmp);
 
 #ifdef DO_ANCESTRY
-        int lastepoch=A.get_ecosystem(),thisepoch,nepochs=1;
+        int lastepoch=BucketA.get_ecosystem(),thisepoch,nepochs=1;
 #endif
 
-        A.domut=1;
+        BucketA.domut=1;
         nsteps=0;
         for(i=0;indefinite || nsteps <= maxnsteps;i++){
 
-            A.timestep = i;
+        	BucketA.timestep = i;
 
-            A.TimestepIncrement();
+        	BucketA.TimestepIncrement();
 
             if(!(i%1000)){
-                A.SpeciesPrintCount(stdout,0,-1);
+            	BucketA.SpeciesPrintCount(stdout,0,-1);
 
-                printf("%d%02u At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\n",proc,rr,i,(int)A.energy,div,A.subrate,A.indelrate);
+                printf("%d%02u At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\n",proc,rr,i,(int)BucketA.energy,div,BucketA.subrate,BucketA.indelrate);
                 //A.AgentsPrint_count(stdout);
 
-                SpeciesPrintCounts(&A,i);
+                SpeciesPrintCounts(&BucketA,i);
 
             }
 
 
 #ifdef DO_ANCESTRY
-            thisepoch = A.get_ecosystem();
+            thisepoch = BucketA.get_ecosystem();
 
             if(!(i%1000)){
                 if(thisepoch != lastepoch){
@@ -678,18 +679,18 @@ int SmPm_AlifeXII(int argc, char *argv[]){
                     sprintf(fn, "ancestry%d%02u_%07d.txt",
                         proc,rr,i);
                     afp = fopen(fn,"w");
-                    A.SpeciesPrintStrings(afp);
+                    BucketA.SpeciesPrintStrings(afp);
                     printf("Done ancestry printing\n");//afp is closed in this function
 
                     sprintf(fn,"ancestry%d%02u_%07d.dot",proc,rr,i);
                     afp = fopen(fn,"w");
-                    A.SpeciesPrintAncestryDot(afp,i,10000);
+                    BucketA.SpeciesPrintAncestryDot(afp,i,10000);
 
                 }
 
 
                 //printf("Printing species list\n");
-                sprintf(fn,"splist%d%02d.dat",proc,A.run_number);
+                sprintf(fn,"splist%d%02d.dat",proc,BucketA.run_number);
                 if((fp = fopen(fn,"w"))!=NULL){
                     SP.SpeciesListPrint(fp);
                     fclose(fp);
@@ -701,28 +702,28 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
             //PRINT OUT THE EPOCH DATA:
             ftmp = fopen("epochs.dat","a");
-            fprintf(ftmp,"%u\t%d\t%d\t%d\n",rr,i,A.spp_count-1,nepochs);
+            fprintf(ftmp,"%u\t%d\t%d\t%d\n",rr,i,BucketA.spp_count-1,nepochs);
             fclose(ftmp);
 
 #endif
 
-            if(!A.AgentsCount(A.nowhead,-1) || (!rr && nsteps >15000000) || nsteps >15000000){
+            if(!BucketA.AgentsCount(BucketA.nowhead,-1) || (!rr && nsteps >15000000) || nsteps >15000000){
                 printf("DEATH\n");
                 //fprintf(fpdiv,"%d\t%d\t%d",div,i,(int)A.energy);
-                //A.AgentsPrint_count(fpdiv);
-                //A.SpeciesPrintCount(fpdiv,0,-1);
+                //BucketA.AgentsPrint_count(fpdiv);
+                //BucketA.SpeciesPrintCount(fpdiv,0,-1);
                 //fflush(fpdiv);
 
 
-                printf("At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\t",i,(int)A.energy,div,A.indelrate,A.subrate);
-                //A.AgentsPrint_count(stdout);
-                A.SpeciesPrintCount(stdout,0,-1);
+                printf("At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\t",i,(int)BucketA.energy,div,BucketA.indelrate,BucketA.subrate);
+                //BucketA.AgentsPrint_count(stdout);
+                BucketA.SpeciesPrintCount(stdout,0,-1);
 
                 break;
             }
             nsteps++;
 
-            A.energy += A.estep;
+            BucketA.energy += BucketA.estep;
         }
 
 
@@ -730,21 +731,12 @@ int SmPm_AlifeXII(int argc, char *argv[]){
         if(divct)
             fprintf(fsumm,"%d\t%d\t%d\t%f\n",divct,divit,diven,(float) divct/divit);
         else
-            fprintf(fsumm,"%d\t%d\t%d\t%f\n",div,i,(int)A.energy,-1.);
+            fprintf(fsumm,"%d\t%d\t%d\t%f\n",div,i,(int)BucketA.energy,-1.);
         fflush(fsumm);
-
-        //Terminate the printout
-        //fflush(fpo);
-        //fclose(fpo);
-
-        //fflush(fpdiv);
-        //fclose(fpdiv);
 
         printf("Finished - alls well!\nclear out memory now:\n");
 
-
-        //printf("Printing species list\n");
-        sprintf(fn,"splist%d%02d.dat",proc,A.run_number);
+        sprintf(fn,"splist%d%02d.dat",proc,BucketA.run_number);
         if((fp = fopen(fn,"w"))!=NULL){
             SP.SpeciesListPrint(fp);
             fclose(fp);
@@ -756,13 +748,13 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
         fflush(stdout);
 
-        A.clearout();
+        BucketA.BucketReset();
     }
 
-    A.PropensityPrint(fsumm);
+    BucketA.PropensityPrint(fsumm);
 
     ////print the rule firings:
-    //A.printfr(fsumm,&R);
+    //BucketA.printfr(fsumm,&R);
 
     fclose(fsumm);
     return 0;
@@ -965,7 +957,7 @@ int comass_AlifeXII(int argc, char *argv[]){
         fclose(mc);
 
 
-        A.clearout();
+        A.BucketReset();
     }
 
     A.PropensityPrint(fsumm);
@@ -1219,7 +1211,7 @@ int comass_GA(int argc, char *argv[]){
         print_ga(gafp,rr,0,eval,params,A.blosum->N,lifetime);
         fclose(gafp);
 
-        A.clearout();
+        A.BucketReset();
     }
 
     //printf("Seed Evaluations:\n");
@@ -1264,7 +1256,7 @@ int comass_GA(int argc, char *argv[]){
             eval[rr]=lifetime;
         }
 
-        A.clearout();
+        A.BucketReset();
 
         gafp = fopen("garun.txt","a");
         print_ga(gafp,rr,gg,eval,params,A.blosum->N,lifetime);
@@ -1495,7 +1487,7 @@ int comass_GA_boostwinners(int argc, char *argv[]){
         else
             eval=0;
 
-        A.clearout();
+        A.BucketReset();
 
         gafp = fopen("boostgarun.txt","a");
         //print_ga(gafp,crow,crow,eval,concs,A.blosum->N,lifetime);
@@ -1702,7 +1694,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
         printf("Finished - alls well!\nclear out memory now:\n");
         fflush(stdout);
 
-        A.clearout();
+        A.BucketReset();
     }
 
     A.PropensityPrint(fsumm);
@@ -2582,142 +2574,170 @@ int speigmonst(int argc, char *argv[]){
 }
 
 
+void StringmolPrintTrialTypes(){
 
+	printf("\n           === USAGE for stringmol ===\nThe first argument after \"stringmol\" ");
+	printf("should be the trial type,\n followed by the arguments ");
+	printf("needed to run it\n\n");
+	printf("TRIAL TYPES LIST\n");
+	printf("NAME             TTYPE        ARGUMENTS\n\n");
+	printf("1 on 1            0           1: .conf;  (2: .mtx)\n");
+	printf("ALife XII         1           1: .conf;  (2: .mtx)\n");
+	printf("Spatial Stringmol 33          1: .conf;  (2: .mtx)\n");
+	printf("SMSp ancestry     34          1: spp.no; 2: time; 3 outfile name\n");
+	printf("SMSp pix from log 35          1: start;  2: end;  3: step\n");
+	printf("SMSp community    36          1: .conf;  \n");
+	printf("\n");
+	printf("            = UNTESTED TRIAL TYPES =   \n");
+	printf("Con Pop           2           1: .conf;  (2: .mtx)\n");
+	printf("Origlife          3\n");
+	printf("Comass GA         4           1: .conf;\n");
+	printf("Joinsplists       5\n");
+	printf("Energetic ALXII   6\n");
+	printf("swdist            7\n");
+	printf("Comass ALXII      8\n");
+	printf("speigmonst        9\n");
+	printf("Check setup       10          1: .conf;  (2: .mtx)\n");
+	printf("Comass GA boost   44          1: .conf;   2: boost.dat\n");
+	printf("Test All          99          1: .conf;  (2: .mtx)\n");
+	printf("Test RNG          901)       (1: .conf;) (2: .mtx)\n");
+
+
+}
 
 
 
 int main(int argc, char *argv[]) {
 
-    if (argc>1) {
-        printf("Hello There! Let's run stringmol!\n");
+	int helponly = 0;
+	int c;
 
-        printf("Argc = %d\n", argc);
+	while ((c = getopt (argc, argv, "h")) != -1){
+	switch (c)
+	  {
+	  case 'h':
+		helponly = 1;
+		break;
+	  default:
+		abort ();
+	  }
+	}
 
-        int trial = atoi(argv[1]);
-        switch (trial) {
-        /*************************************************/
-        case 0:  // Checks a molecule's interaction
-            SmPm_1on1(argc, argv);
-            break;
-
-        /*************************************************/
-        case 1:
-            SmPm_AlifeXII(argc, argv);
-            break;
-
-        /*************************************************/
-        case 2:
-            SmPm_conpop(argc, argv);
-            break;
-
-        /*************************************************/
-        case 3:
-            origlife(argc, argv);
-            break;
-
-        /*************************************************/
-        case 4:
-            comass_GA(argc, argv);
-            break;
-
-        /*************************************************/
-        case 5:
-            joinsplists(argc, argv);
-            break;
-
-        /*************************************************/
-        case 6:
-            energetic_AlifeXII(argc, argv);
-            break;
-
-        /*************************************************/
-        case 7:
-            swdist(argc, argv);
-            break;
-
-        /*************************************************/
-        case 8:
-            comass_AlifeXII(argc, argv);
-            break;
-
-        /*************************************************/
-        case 9:  // UNFINISHED: stringmol emulation of Speigelmen's Monster
-            speigmonst(argc, argv);
-            break;
-
-        /*************************************************/
-        case 10:  // TODO(sjh): obsolete now we have test_all() (case 99)?
-            check_setup(argc, argv);
-            break;
-
-        /*************************************************/
-        case 33:  // Spatial stringmol experiments, summer 2016
-            StringmolSpatial(argc, argv);
-            break;
-
-        /*************************************************/
-        case 34:  // Analyse spatial stringmol experiments
-                  // - generate ancestry
-            StringmolSpatialAncestry(argc, argv);
-            break;
-
-        /*************************************************/
-        case 35:  // Analyse spatial stringmol experiments
-                  // - generate length images
-            smspatial_lengthpicsfromlogs(argc, argv);
-            break;
-
-        /*************************************************/
-        case 36:  // Analyse spatial stringmol experiments
-                  // - generate community from config file
-            smspatial_community(argc, argv);
-            break;
+	if(helponly){
+		StringmolPrintTrialTypes();
+		exit(0);
+	}
+	else{
 
 
-        /*************************************************/
-        case 44:  // For final experiment in the comass experiment, spring 2015
-            comass_GA_boostwinners(argc, argv);
-            break;
+		if (argc>1) {
+			printf("Hello There! Let's run stringmol!\n");
 
-        /*************************************************/
-        case 99:
-            test_all(argc, argv);
-            break;
+			printf("Argc = %d\n", argc);
+
+			int trial = atoi(argv[1]);
+			switch (trial) {
+			/*************************************************/
+			case 0:  // Checks a molecule's interaction
+				SmPm_1on1(argc, argv);
+				break;
+
+			/*************************************************/
+			case 1:
+				SmPm_AlifeXII(argc, argv);
+				break;
+
+			/*************************************************/
+			case 2:
+				SmPm_conpop(argc, argv);
+				break;
+
+			/*************************************************/
+			case 3:
+				origlife(argc, argv);
+				break;
+
+			/*************************************************/
+			case 4:
+				comass_GA(argc, argv);
+				break;
+
+			/*************************************************/
+			case 5:
+				joinsplists(argc, argv);
+				break;
+
+			/*************************************************/
+			case 6:
+				energetic_AlifeXII(argc, argv);
+				break;
+
+			/*************************************************/
+			case 7:
+				swdist(argc, argv);
+				break;
+
+			/*************************************************/
+			case 8:
+				comass_AlifeXII(argc, argv);
+				break;
+
+			/*************************************************/
+			case 9:  // UNFINISHED: stringmol emulation of Speigelmen's Monster
+				speigmonst(argc, argv);
+				break;
+
+			/*************************************************/
+			case 10:  // TODO(sjh): obsolete now we have test_all() (case 99)?
+				check_setup(argc, argv);
+				break;
+
+			/*************************************************/
+			case 33:  // Spatial stringmol experiments, summer 2016
+				StringmolSpatial(argc, argv);
+				break;
+
+			/*************************************************/
+			case 34:  // Analyse spatial stringmol experiments
+					  // - generate ancestry
+				StringmolSpatialAncestry(argc, argv);
+				break;
+
+			/*************************************************/
+			case 35:  // Analyse spatial stringmol experiments
+					  // - generate length images
+				StringmolSpatialPicsFromLogs(argc, argv);
+				break;
+
+			/*************************************************/
+			case 36:  // Analyse spatial stringmol experiments
+					  // - generate community from config file
+				StringmolSpatialCommunity(argc, argv);
+				break;
 
 
-        /*************************************************/
-        case 901:
+			/*************************************************/
+			case 44:  // For final experiment in the comass experiment, spring 2015
+				comass_GA_boostwinners(argc, argv);
+				break;
 
-            test_rand_config(argc, argv);
-            break;
-        }
-        printf("Finished!\n");
-        fflush(stdout);
-    } else {
-        printf("\nUSAGE for TestSM\n\nThe first argument after TestSM ");
-        printf("should be the trial type, followed by the arguments ");
-        printf("needed to run it\n\n");
-        printf("TRIAL TYPES LIST (NUMBERS IN BRACKETS ARE EXPERIMENTAL!)\n");
-        printf("NAME             TTYPE        ARGUMENTS\n\n");
-        printf("1 on 1            0           1: .conf;  (2: .mtx)\n");
-        printf("ALife XII         1           1: .conf;  (2: .mtx)\n");
-        printf("Con Pop           2           1: .conf;  (2: .mtx)\n");
-        printf("Origlife         (3)\n");
-        printf("Comass GA         4           1: .conf;\n");
-        printf("Joinsplists      (5)\n");
-        printf("Energetic ALXII  (6)\n");
-        printf("swdist           (7)\n");
-        printf("Comass ALXII     (8)\n");
-        printf("speigmonst       (9)\n");
-        printf("Check setup       10          1: .conf;  (2: .mtx)\n");
-        printf("Spatial Stringmol 33          1: .conf;  (2: .mtx)\n");
-        printf("SMSp ancestry    (34)         1: .conf;  (2: .mtx)\n");
-        printf("SMSp pix from log(35)         1: .conf;  (2: .mtx)\n");
-        printf("SMSp community   (36)         1: .conf;  (2: .mtx)\n");
-        printf("Comass GA boost   44          1: .conf;   2: boost.dat\n\n\n");
-        printf("Test All          99          1: .conf;  (2: .mtx)\n\n\n");
-        printf("Test RNG         (901)       (1: .conf;) (2: .mtx)\n\n\n");
-    }
+			/*************************************************/
+			case 99:
+				test_all(argc, argv);
+				break;
 
-    return 0;
+
+			/*************************************************/
+			case 901:
+
+				test_rand_config(argc, argv);
+				break;
+			}
+			printf("Finished!\n");
+			fflush(stdout);
+		} else {
+			StringmolPrintTrialTypes();
+		}
+	}
+	return 0;
 }

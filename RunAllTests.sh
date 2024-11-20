@@ -47,15 +47,32 @@ rm tmp_stdout.txt
 sh ../util/rm_runfiles.sh
 echo "---------------------------------"
 echo "Checking TTYPE 1 (ALIFE XII) runs ok"
-echo "exit status is $?"
 ../release/stringmol 1 ../config/quick_test1.conf > tmp_stdout.txt
+echo "exit status is $?"
 rm tmp_stdout.txt
 sh ../util/rm_runfiles.sh
 echo "---------------------------------"
 echo "Checking TTYPE 33 (Spatial Stringmol) runs ok"
-echo "exit status is $?"
 ../release/stringmol 33 ../config/quick_test33.conf > tmp_stdout.txt
+echo "exit status is $?"
 rm tmp_stdout.txt
+echo "---------------------------------"
+echo "Checking TTYPE 34 (Spatial Stringmol Ancestry) runs ok"
+../release/stringmol 34 6 900 > tmp_stdout.txt
+echo "exit status is $?"
+rm tmp_stdout.txt
+echo "---------------------------------"
+echo "Checking TTYPE 35 (Spatial Stringmol Log Pics) runs ok"
+../release/stringmol 35 800 900 50 > tmp_stdout.txt
+echo "exit status is $?"
+rm tmp_stdout.txt
+echo "---------------------------------"
+echo "Checking TTYPE 36 (Spatial Stringmol Community) runs ok"
+../release/stringmol 36 ./out1_00950.conf > tmp_stdout.txt
+echo "exit status is $?"
+rm tmp_stdout.txt
+echo "---------------------------------"
+echo "Cleaning up TTYPE 33,34,35 & 36 output files"
 sh ../util/rm_runfiles.sh
 cd ../
 

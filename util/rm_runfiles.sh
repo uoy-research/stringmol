@@ -2,6 +2,8 @@
 
 
 rm -f  lenframe*.png
+rm -f  sppframe*.png
+rm -f  *key.png
 rm -f  *.spatial.summary.dat
 rm -f  RNGstate*.txt
 rm -f  epochs.dat
@@ -13,5 +15,7 @@ rm -f  randseed.txt
 rm -f  reload_*.conf
 rm -f  splist*.dat
 rm -f  splist.dat
-rm -f  sppframe*.png
 rm -f  test_output.cfg
+
+rm -f  1mcommunity.dat
+rm -f  outfile.txt
