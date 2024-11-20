@@ -35,13 +35,6 @@ struct s_ix{
 
 class agents_base{
 
-	private:
-
-		//s_ix *ifxhead;
-
-		//virtual s_ag * make_ag(int alab, int randpos)=0;
-
-
 	public:
 
 		//for testing propensity
@@ -54,8 +47,6 @@ class agents_base{
 		int 	PropensityEquation(const int n);
 
 		s_ix *ifxhead;
-		//s_ag *nowhead;
-		//s_ag *nexthead;
 
 		float cellrad;  //The radius of the "cell"
 		float agrad;    //The active radius of the agent
@@ -65,20 +56,15 @@ class agents_base{
 		float nsteps;	//The number of steps (SHOULD BE AN INT!)
 
 		//diagnostics
-		//int ict;		//count of influx rules
-		//int *irt;		//influx rule tested
-		//int *irf;   	//influx rule fired
-		//int *irl;   	//influx rule label
 		int *tr; 		//count of the number times a rule has been tried
 		int *fr;		//count of the number times a rule has fired.
 
 		//creators and destructors
 		agents_base();
-		//TODO: the destructor is virtual because I got a warning otherwise...need to check this out..?
+		//TODO(sjh): the destructor is virtual because I got a warning otherwise...need to check this out..?
 		virtual ~agents_base();
 		void ParametersSetDefaults();
 		void clearout(int verbose);
-
 
 		//fromfile stuff
 		void ConfigLoad(const char *fn, char *fninput, int test, int verbose);
@@ -87,10 +73,6 @@ class agents_base{
 		int ParametersLoad(const char *fn, int test, int verbose);
 		int load_division(char *fn);
 		int load_replenish(char *fn);
-		//declaring this as virtual and calling it from load caused problems...
-		//the `=0' is key!
-		//virtual int load_agents(char *fn, int test, int verbose) = 0;
-		virtual int AgentsLoad(const char *fn, char *fninput, int test=0, int verbose=0) = 0;// VJH - added this function
 
 		//Diagnoistics
 		void print_agents_header(FILE *fp);
