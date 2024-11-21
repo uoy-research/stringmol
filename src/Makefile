@@ -113,7 +113,6 @@ $(OUTPUT_DIR)/mt19937-2.o: 	mt19937-2.c mt19937-2.h
 CPPOBJECTS = $(OUTPUT_DIR)/lodepng.o \
 		$(OUTPUT_DIR)/agents_base.o \
 		$(OUTPUT_DIR)/alignment.o \
-		$(OUTPUT_DIR)/instructions.o \
 		$(OUTPUT_DIR)/opcodes.o \
 		$(OUTPUT_DIR)/rules.o \
 		$(OUTPUT_DIR)/setupSM.o \
@@ -144,9 +143,9 @@ $(OUTPUT_DIR)/agents_base.o: agents_base.cpp agents_base.h \
 $(OUTPUT_DIR)/alignment.o: 	alignment.cpp alignment.h randutil.h
 	$(CC) -c alignment.cpp -o $(OUTPUT_DIR)/alignment.o
 
-$(OUTPUT_DIR)/instructions.o: instructions.cpp instructions.h \
-			memoryutil.h randutil.h alignment.h stringmanip.h
-	$(CC) -c instructions.cpp -o $(OUTPUT_DIR)/instructions.o
+#$(OUTPUT_DIR)/instructions.o: instructions.cpp instructions.h \
+#			memoryutil.h randutil.h alignment.h stringmanip.h
+#	$(CC) -c instructions.cpp -o $(OUTPUT_DIR)/instructions.o
 
 $(OUTPUT_DIR)/opcodes.o:	opcodes.cpp opcodes.h SMspp.h
 	$(CC) -c opcodes.cpp -o $(OUTPUT_DIR)/opcodes.o
@@ -167,7 +166,7 @@ $(OUTPUT_DIR)/stringmanip.o: 	stringmanip.cpp stringmanip.h
 
 $(OUTPUT_DIR)/stringPM.o:	stringPM.cpp stringPM.h \
 		memoryutil.h	randutil.h	\
-        alignment.h		stringmanip.h	instructions.h	\
+        alignment.h		stringmanip.h	\
 		rules.h	agents_base.h	SMspp.h error_codes.h
 	$(CC) -c stringPM.cpp -o $(OUTPUT_DIR)/stringPM.o
 
@@ -209,18 +208,18 @@ $(OUTPUT_DIR)/stringmol: 	$(OUTPUT_DIR)/stringmol.o \
 			
 bind: 	webapi_bind.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o setupSM.o \
 			$(COBJECTS) \
-			stringmanip.o	alignment.o	instructions.o tests.o lodepng.o
+			stringmanip.o	alignment.o tests.o lodepng.o
 	$(CC) -o webapi_bind.cgi -lm webapi_bind.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o setupSM.o \
 			$(COBJECTS) \
-			stringmanip.o	alignment.o	instructions.o tests.o lodepng.o
+			stringmanip.o	alignment.o tests.o lodepng.o
 			
 			
 step: 	webapi_step.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o setupSM.o \
 			$(COBJECTS) \
-			stringmanip.o	alignment.o	instructions.o tests.o  lodepng.o
+			stringmanip.o	alignment.o tests.o lodepng.o
 	$(CC) -o webapi_step.cgi -lm webapi_step.o webapi_util.o stringPM.o agents_base.o rules.o SMspp.o setupSM.o \
 			$(COBJECTS) \
-			stringmanip.o	alignment.o	instructions.o tests.o	 lodepng.o		
+			stringmanip.o	alignment.o tests.o lodepng.o		
 		
 
 

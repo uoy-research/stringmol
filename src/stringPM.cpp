@@ -32,12 +32,11 @@
 //string stuff
 #include "stringmanip.h"
 #include "alignment.h"
-#include "instructions.h"
+#include "SMspp.h"
 
 //metabolism stuff
 #include "rules.h"
 #include "agents_base.h"
-#include "SMspp.h"
 #include "opcodes.h"
 #include "stringPM.h"
 

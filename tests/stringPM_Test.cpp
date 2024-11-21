@@ -9,7 +9,6 @@
 #include "../src/stringmanip.h"
 #include "../src/params.h"
 #include "../src/alignment.h"
-#include "../src/instructions.h"
 
 //metabolism stuff
 #include "../src/rules.h"

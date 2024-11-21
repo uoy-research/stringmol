@@ -13,6 +13,8 @@ TESTFILES = stringPM_test.cpp \
 	    rngTest.cpp \
 	    
 
+#TODO: this Makefile doesn't work at the moment - see ../RunAllTests.sh, which does! 
+
 #TODO: can't use wildcards e.g. ../release/*.o because of multiple 'main's... fix!
 tests: 
 	g++ -std=gnu++11 -Wall  -DDEBUG -g -o test  *.cpp ${RP}/mt19937-2.o ${RP}/randutil.o \
