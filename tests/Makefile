@@ -18,7 +18,7 @@ tests:
 	g++ -std=gnu++11 -Wall  -DDEBUG -g -o test  *.cpp ${RP}/mt19937-2.o ${RP}/randutil.o \
   	${RP}/SMspp.o ${RP}/stringPM.o ${RP}/agents_base.o ${RP}/rules.o ${RP}/alignment.o \
   	${RP}/params.o ${RP}/memoryutil.o ${RP}/instructions.o ${RP}/stringmanip.o \
-  	${RP}/hsort.o \
+  	${RP}/hsort.o ${RP}/opcodes.o\
   	catch.o
 
 

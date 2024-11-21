@@ -72,6 +72,9 @@ public:
 
 	long biomass; 	//used as a measure of fitness
 	long bstart;    //time of biomass reset
+	//Conservation of Mass structures:
+	int *mass; //This can be built and populated after "blosum" has been set...
+	//todo(sjh): what is the difference between mass and biomass?
 
 	int domut;
 	int dodecay;
@@ -81,8 +84,6 @@ public:
 	int thisepoch;
 	int nepochs;
 
-	//Conservation of Mass structures:
-	int *mass; //This can be built and populated after "blosum" has been set...
 
 	int run_number; //The run number
 	char swt_fn[256];
@@ -174,7 +175,6 @@ public:
 	void UpdateNowNext();
 
 	//INSTRUCTION SET:
-	int OpcodeCopy(s_ag *act); 	//	=	HCOPY
 	int OpcodeCleave(s_ag *act);  //	=	CLEAVE
 
     //Influx
@@ -242,7 +242,6 @@ public:
 	void 	comass_TimestepIncrement();
 	int 	comass_free_ag(s_ag *pag);
 	int 	update_mass(char *S, int len, int val, const int doconcat);
-	int 	comass_hcopy(s_ag *act);
 
 	//Speigelman's monster
 	//int 	speig_hcopy(s_ag *act);

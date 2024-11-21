@@ -41,7 +41,9 @@
 #include "rules.h"
 #include "agents_base.h"
 #include "SMspp.h"
+#include "opcodes.h"
 #include "stringPM.h"
+
 
 // Writing PNGs
 #include "lodepng.h"
@@ -1057,7 +1059,9 @@ int ReactionExecuteOpcodeSpatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pas
 	 *   HCOPY  *
 	 ************/
 	case '='://h-copy
-		if(A->OpcodeCopy(act)<0){
+		//if(A->OpcodeCopy(act)<0){
+		if(OpcodeCopy(act,A->domut,A->indelrate,A->subrate,A->maxl,
+				A->blosum,A->granular_1,A->biomass)<0){
 			A->AgentUnbind(act,'A',1,act->spp,pass->spp);
 			A->AgentUnbind(pass,'P',1,act->spp,pass->spp);
 		}

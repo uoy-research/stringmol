@@ -114,6 +114,7 @@ CPPOBJECTS = $(OUTPUT_DIR)/lodepng.o \
 		$(OUTPUT_DIR)/agents_base.o \
 		$(OUTPUT_DIR)/alignment.o \
 		$(OUTPUT_DIR)/instructions.o \
+		$(OUTPUT_DIR)/opcodes.o \
 		$(OUTPUT_DIR)/rules.o \
 		$(OUTPUT_DIR)/setupSM.o \
 		$(OUTPUT_DIR)/SMspp.o \
@@ -146,6 +147,9 @@ $(OUTPUT_DIR)/alignment.o: 	alignment.cpp alignment.h randutil.h
 $(OUTPUT_DIR)/instructions.o: instructions.cpp instructions.h \
 			memoryutil.h randutil.h alignment.h stringmanip.h
 	$(CC) -c instructions.cpp -o $(OUTPUT_DIR)/instructions.o
+
+$(OUTPUT_DIR)/opcodes.o:	opcodes.cpp opcodes.h SMspp.h
+	$(CC) -c opcodes.cpp -o $(OUTPUT_DIR)/opcodes.o
 
 $(OUTPUT_DIR)/rules.o:	rules.cpp rules.h memoryutil.h
 	$(CC) -c rules.cpp -o $(OUTPUT_DIR)/rules.o
