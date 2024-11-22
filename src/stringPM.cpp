@@ -2496,6 +2496,8 @@ int stringPM::OpcodeCleave(s_ag *act){
 
 
 
+
+
 /******************************************************************************
  * @brief execute the current opcode in a reaction
  *
@@ -2508,155 +2510,74 @@ int stringPM::OpcodeCleave(s_ag *act){
  *****************************************************************************/
 int stringPM::ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 
-	char *tmp;
 	int safe_append=1;
 
 	switch(*(act->i[act->it])){//*iptr[it]){
 
-	case '$'://h-search
-		//act->ft = act->it;
-		char *cs;
-		if(act->ft)
-			cs = act->S;
-		else
-			cs = act->pass->S;
-		tmp = OpcodeSearch(act->i[act->it],cs,blosum,&(act->it),&(act->ft),maxl);
-		act->f[act->ft] = tmp;
-		act->i[act->it]++;
-		break;
+		/*************
+		 *   SEARCH  *
+		 *************/
+		case '$'://Search
+			OpcodeSearch(act,blosum,maxl);
+			break;
 
-		/*
-		//put the active flow head on the string where the active ip is:
-		act->ft = act->it;
-		char *cs;
-		if(act->it)
-			cs = act->S;
-		else
-			cs = act->pass->S;
-		act->f[act->ft] = HSearch(act->i[act->it],cs,blosum);
-		act->i[act->it]++;
-		break;
-		*/
+		/*************
+		 *   MOVE    *
+		 *************/
+		case '>':
+			OpcodeMove(act);
+			break;
 
-	/*************
-	 *   P_MOVE  *
-	 *************/
-	case '>':
-			tmp=act->i[act->it];
-			tmp++;
-			switch(*tmp){
-			case 'A':
-				act->it = act->ft;
-				act->i[act->it] = act->f[act->ft];
-				act->i[act->it]++;
-				break;
-			case 'B':
-				act->rt = act->ft;
-				act->r[act->rt] = act->f[act->ft];
-				act->i[act->it]++;
-				break;
-			case 'C':
-				act->wt = act->ft;
-				act->w[act->wt] = act->f[act->ft];
-				act->i[act->it]++;
-				break;
-			default:
-				act->it = act->ft;
-				act->i[act->it] = act->f[act->ft];
-				act->i[act->it]++;
-				break;
+		/************
+		 *   COPY   *
+		 ************/
+		case '='://h-copy
+			//if(OpcodeCopy(act)<0){
+			//todo(sjh): write test to check what happens if unbind happens...
+			if(OpcodeCopy(act,domut,indelrate,subrate,maxl,
+					blosum,granular_1,biomass)<0){
+				AgentUnbind(act,'A',1,act->spp,pass->spp);
+				AgentUnbind(pass,'P',1,act->spp,pass->spp);
 			}
 			break;
 
-
-	/************
-	 *   HCOPY  *
-	 ************/
-	case '='://h-copy
-		//if(OpcodeCopy(act)<0){
-		if(OpcodeCopy(act,domut,indelrate,subrate,maxl,
-				blosum,granular_1,biomass)<0){
-			AgentUnbind(act,'A',1,act->spp,pass->spp);
-			AgentUnbind(pass,'P',1,act->spp,pass->spp);
-		}
-		break;
-
-
-	/************
-	 *   INC_R  *
-	 ************/
-	case '+'://h-copy
-		if(granular_1==1){
-			//printf("Incrementing read \n");
-			/* Select the modifier */
-			tmp=act->i[act->it];
-			tmp++;
-			switch(*tmp){
-			case 'A':
-				act->i[act->it]++;
-				break;
-			case 'B':
-				act->r[act->rt]++;
-				break;
-			case 'C':
-				act->w[act->wt]++;
-				break;
-			default:
-				act->f[act->ft]++;
-				break;
-			}
-		}
-		act->i[act->it]++;
-		break;
-
-
-
-	/************
-	 *  TOGGLE  *
-	 ************/
-	case '^'://p-toggle: toggle active pointer
-			tmp=act->i[act->it];
-			tmp++;
-			switch(*tmp){
-			case 'A':
-				act->it = 1-act->it;
-				break;
-			case 'B':
-				act->rt = 1-act->rt;
-				break;
-			case 'C':
-				act->wt = 1-act->wt;
-				break;
-			default:
-				act->ft = 1-act->ft;
-				break;
-			}
-			act->i[act->it]++;
+		/************
+		 *   INC_R  *
+		 ************/
+		//todo(sjh): write test for granular stringmol!
+		case '+'://increment_read
+			OpcodeIncrementRead(act,granular_1);
 			break;
 
-	/************
-	 *  IFLABEL *
-	 ************/
-	case '?'://If-label
+		/************
+		 *  TOGGLE  *
+		 ************/
+		case '^'://p-toggle: toggle active pointer
+			OpcodeToggle(act);
+			break;
+
+		/************
+		 *  IFLABEL *
+		 ************/
+		case '?'://If-label
 			act->i[act->it]=OpcodeIf(act->i[act->it],act->r[act->rt],act->S,blosum,maxl);
 			break;
 
 
-	/************
-	 *  CLEAVE  *
-	 ************/
-	case '%':
-			if((/*dac =*/ OpcodeCleave(act) )){
-
-				safe_append=0;	//extract_ag(&nowhead,p);
+		/************
+		 *  CLEAVE  *
+		 ************/
+		case '%'://TODO(sjh): think about improving the safe_append mechanism...
+			if((OpcodeCleave(act) )){
+				safe_append=0;
 			}
 			break;
 
-	/**************
-	 *  TERMINATE *
-	 **************/
-	case 0:
-	case '}'://ex-end - finish execution
+		/**************
+		 *  TERMINATE *
+		 **************/
+		case 0:
+		case '}'://ex-end - finish execution
 
 #ifdef V_VERBOSE
 			printf("Unbinding...\n");
@@ -2666,15 +2587,16 @@ int stringPM::ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 
 			break;
 
-	default://Just increment the i-pointer
-		act->i[act->it]++;
-		break;
+		default://Just increment the i-pointer
+			act->i[act->it]++;
+			break;
 	}
+
+
 #ifdef V_VERBOSE
 	printf("Exec step - looks like:\n");
 	ReactionPrintState(stdout,act,pass);
 #endif
-
 
 	if(safe_append){
 		act->ect++;
@@ -2682,7 +2604,6 @@ int stringPM::ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 		AgentAppend(&nexthead,pass);
 	}
 	energy--;
-
 
 	return 1;
 
@@ -2975,7 +2896,7 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 			cs = act->S;
 		else
 			cs = act->pass->S;
-		tmp = OpcodeSearch(act->i[act->it],cs,blosum,&(act->it),&(act->ft),maxl);
+		tmp = OpcodeSearchInner(act->i[act->it],cs,blosum,&(act->it),&(act->ft),maxl);
 		act->f[act->ft] = tmp;
 		act->i[act->it]++;
 		break;
@@ -3353,7 +3274,7 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 						cs = act->S;
 					else
 						cs = act->pass->S;
-					tmp = OpcodeSearch(act->i[act->it],cs,blosum,&(act->it),&(act->ft),maxl);
+					tmp = OpcodeSearchInner(act->i[act->it],cs,blosum,&(act->it),&(act->ft),maxl);
 					act->f[act->ft] = tmp;
 					act->i[act->it]++;
 					break;

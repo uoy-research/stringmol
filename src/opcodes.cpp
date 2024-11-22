@@ -73,8 +73,8 @@ int OpcodeTemplateLength(char *ip, const int maxl){
 
 
 
-/******************************************************************************
-* @brief execute the "search" opcode ("$")
+/*******************************************************************************
+* @brief execute the "search" part of the search opcode ("$")
 *
 * @details see technical report
 *
@@ -92,8 +92,9 @@ int OpcodeTemplateLength(char *ip, const int maxl){
 *
 * @return 1 always - to indicate the reaction has changed
 *         todo: maybe some error handling here would be good!
-*****************************************************************************/
-char * OpcodeSearch(char *iptr, char *sp, swt *T, const int *itog, int *ftog,const int maxl){
+*******************************************************************************/
+char * OpcodeSearchInner(char *iptr, char *sp, swt *T, const int *itog,
+		int *ftog,const int maxl){
 
 	char *ip,*tp,tmp[maxl];
 	ip = iptr;
@@ -175,6 +176,67 @@ char * OpcodeSearch(char *iptr, char *sp, swt *T, const int *itog, int *ftog,con
 
 
 
+/*******************************************************************************
+* @brief execute the "search" opcode ("$") in a reaction
+*
+* @details see technical report
+*
+* @param[in] act the agent
+*
+* @param[in] blosum the Smith Waterman blosum matrix
+*
+* @param[in] maxl the max line length
+*******************************************************************************/
+void OpcodeSearch(s_ag *act, swt *blosum, const unsigned short int maxl){
+	char *cs;
+	char *tmp;
+
+	if(act->ft)
+		cs = act->S;
+	else
+		cs = act->pass->S;
+	tmp = OpcodeSearchInner(act->i[act->it],cs,blosum,&(act->it),&(act->ft),maxl);
+	act->f[act->ft] = tmp;
+	act->i[act->it]++;
+}
+
+
+
+
+
+
+void OpcodeMove(s_ag *act){
+	char *tmp;
+
+	tmp=act->i[act->it];
+	tmp++;
+	switch(*tmp){
+	case 'A':
+		act->it = act->ft;
+		act->i[act->it] = act->f[act->ft];
+		act->i[act->it]++;
+		break;
+	case 'B':
+		act->rt = act->ft;
+		act->r[act->rt] = act->f[act->ft];
+		act->i[act->it]++;
+		break;
+	case 'C':
+		act->wt = act->ft;
+		act->w[act->wt] = act->f[act->ft];
+		act->i[act->it]++;
+		break;
+	default:
+		act->it = act->ft;
+		act->i[act->it] = act->f[act->ft];
+		act->i[act->it]++;
+		break;
+	}
+}
+
+
+
+
 /******************************************************************************
 * @brief execute the "if" opcode ("?")
 *
@@ -236,7 +298,7 @@ char * OpcodeIf(char *ip, char *rp, char *sp, swt *T, const int maxl){
 	}
 
 	//TODO: We should never reach this point, but check:
-	return 0;
+	//return 0;
 }
 
 
@@ -303,7 +365,7 @@ int PointerPosition(s_ag *pag, char headtype){
 
 
 
-/******************************************************************************
+/*******************************************************************************
  * @brief Copy operator "\="
  *
  * @details writes the symbol at the read pointer to the position of the
@@ -315,7 +377,7 @@ int PointerPosition(s_ag *pag, char headtype){
  * @return 0 if successful;
  *         -1 if attempt to write beyond maxl;
  *         -2 if attempt to read beyond maxl;
- *****************************************************************************/
+ ******************************************************************************/
 int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
 		float subrate, const unsigned int maxl,
 		swt	*blosum, const int granular_1, long &biomass){
@@ -445,6 +507,75 @@ int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
 
 
 
+
+
+/*******************************************************************************
+ * @brief Increment Read operator "+"
+ *
+ * @param[in] act pointer to the active string (from which the partner string
+ *            can be accessed)
+ *
+ * @param[in] granular_1 whether we are doing granular stringmol
+ *
+ * @return 0 if successful;
+ *         -1 if attempt to write beyond maxl;
+ *         -2 if attempt to read beyond maxl;
+ ******************************************************************************/
+void OpcodeIncrementRead(s_ag *act, bool granular_1){
+	if(granular_1==1){
+		char *tmp;
+
+		tmp=act->i[act->it];
+		tmp++;
+		switch(*tmp){
+		case 'A':
+			act->i[act->it]++;
+			break;
+		case 'B':
+			act->r[act->rt]++;
+			break;
+		case 'C':
+			act->w[act->wt]++;
+			break;
+		default:
+			act->f[act->ft]++;
+			break;
+		}
+	}
+	act->i[act->it]++;
+}
+
+
+
+
+
+/*******************************************************************************
+ * @brief Toggle pointers
+ *
+ * @param[in] act pointer to the active string (from which the partner string
+ *            can be accessed)
+ ******************************************************************************/
+void OpcodeToggle(s_ag *act){
+	char *tmp;
+	tmp=act->i[act->it];
+	tmp++;
+
+	switch(*tmp){
+	case 'A':
+		act->it = 1-act->it;
+		break;
+	case 'B':
+		act->rt = 1-act->rt;
+		break;
+	case 'C':
+		act->wt = 1-act->wt;
+		break;
+	default:
+		act->ft = 1-act->ft;
+		break;
+	}
+	act->i[act->it]++;
+}
 
 
 /******************************************************************************

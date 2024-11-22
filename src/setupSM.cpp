@@ -1018,7 +1018,7 @@ int ReactionExecuteOpcodeSpatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pas
 			cs = act->S;
 		else
 			cs = act->pass->S;
-		tmp = OpcodeSearch(act->i[act->it],cs,A->blosum,&(act->it),&(act->ft),A->maxl);
+		tmp = OpcodeSearchInner(act->i[act->it],cs,A->blosum,&(act->it),&(act->ft),A->maxl);
 		act->f[act->ft] = tmp;
 		act->i[act->it]++;
 		break;

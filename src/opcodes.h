@@ -22,18 +22,23 @@
 #define OPCODES_H_
 
 
-char * OpcodeSearch(char *iptr, char *sp, swt *T, const int *itog,
+char * OpcodeSearchInner(char *iptr, char *sp, swt *T, const int *itog,
 		int *ftog, int maxl);
 
+void OpcodeSearch(s_ag *act, swt *blosum, const unsigned short int maxl);
+
+void OpcodeMove(s_ag *act);
+
+void OpcodeIncrementRead(s_ag *act, bool granular_1);
+
+void OpcodeToggle(s_ag *act);
 
 char * OpcodeIf(char *ip, char *rp, char *sp, swt *T, const int maxl);
-
 
 int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
 		float subrate, const unsigned int maxl,
 		swt	*blosum, const int granular_1, long &biomass
 		);
-
 
 int OpcodeComassCopy(s_ag *act, const bool domut,float indelrate,
 		float subrate, const unsigned int maxl,
