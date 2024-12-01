@@ -790,7 +790,7 @@ int comass_AlifeXII(int argc, char *argv[]){
     //FILE *fpo,*fpdiv;
     FILE *fsumm,*ftmp;
 
-    char    fn[128],pfn[128];
+    char    fn[128];
 
     sprintf(fn,"%s.spatial.summary.dat",argv[1]);
     if((fsumm=fopen(fn,"w"))==NULL){
@@ -873,9 +873,11 @@ int comass_AlifeXII(int argc, char *argv[]){
         A.AgentsPrint(stdout,"NOW",0);
 
         A.run_number=rr;
-        sprintf(pfn,"popdy%03d.dat",A.run_number);
-        ftmp = fopen(pfn,"w");
-        fclose(ftmp);
+    	PopdyInitFile(&A);
+
+        //sprintf(pfn,"popdy%03d.dat",A.run_number);
+        //ftmp = fopen(pfn,"w");
+        //fclose(ftmp);
 
         if(!rr)
             maxcode = (int *) malloc(A.blosum->N * sizeof(int));
@@ -890,7 +892,6 @@ int comass_AlifeXII(int argc, char *argv[]){
             A.timestep = i;
 
             A.comass_TimestepIncrement();
-
 
             if(!(i%1000)){
                 A.SpeciesPrintCount(stdout,0,-1);

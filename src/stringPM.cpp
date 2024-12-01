@@ -2883,22 +2883,18 @@ int stringPM::speig_hcopy(s_ag *act){
 
 int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 
-	int finished=0;
+	//int finished=0;
 	char *tmp;
 	int safe_append=1;
 
 	switch(*(act->i[act->it])){
 
-	case '$'://h-search
+	/*************
+	 *   SEARCH  *
+	 *************/
 
-		char *cs;
-		if(act->ft)
-			cs = act->S;
-		else
-			cs = act->pass->S;
-		tmp = OpcodeSearchInner(act->i[act->it],cs,blosum,&(act->it),&(act->ft),maxl);
-		act->f[act->ft] = tmp;
-		act->i[act->it]++;
+	case '$'://Search
+		OpcodeSearch(act,blosum,maxl);
 		break;
 
 	/*************
@@ -2942,7 +2938,7 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 				blosum,granular_1,biomass,mass)<0){
 			AgentUnbind(act,'A',1,act->spp,pass->spp);
 			AgentUnbind(pass,'P',1,act->spp,pass->spp);
-			finished = 1;
+			//finished = 1;
 		}
 		break;
 
@@ -2982,9 +2978,7 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 	 ************/
 	case '%':
 			if((/*dac =*/ OpcodeCleave(act) )){
-				//AgentUnbind(act);
-				//AgentUnbind(pass);
-				finished = 1;
+				//finished = 1;
 				safe_append=0;	//extract_ag(&nowhead,p);
 			}
 			break;
@@ -3001,7 +2995,7 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 			AgentUnbind(act,'A',1,act->spp,pass->spp);
 			AgentUnbind(pass,'P',1,act->spp,pass->spp);
 
-			finished = 1;
+			//finished = 1;
 			break;
 
 	default://Just increment the i-pointer
@@ -3022,7 +3016,7 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 	energy--;
 
 	//TODO: propagate this up if needed, or get rid...
-	return finished;
+	return 1; //finished;
 }
 
 

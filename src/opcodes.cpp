@@ -365,6 +365,7 @@ int PointerPosition(s_ag *pag, char headtype){
 
 
 
+//todo(sjh): tidy up the mix of setting "safe" and returning odd values!
 /*******************************************************************************
  * @brief Copy operator "\="
  *

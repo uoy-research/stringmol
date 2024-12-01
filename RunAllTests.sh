@@ -52,6 +52,12 @@ echo "exit status is $?"
 rm tmp_stdout.txt
 sh ../util/rm_runfiles.sh
 echo "---------------------------------"
+echo "Checking TTYPE 8 (COMASS ALXII) runs ok"
+../release/stringmol 8 ../config/quick_test8.conf > tmp_stdout.txt
+echo "exit status is $?"
+rm tmp_stdout.txt
+sh ../util/rm_runfiles.sh
+echo "---------------------------------"
 echo "Checking TTYPE 33 (Spatial Stringmol) runs ok"
 ../release/stringmol 33 ../config/quick_test33.conf > tmp_stdout.txt
 echo "exit status is $?"
