@@ -40,21 +40,25 @@
 //Use this to control whether h-search is stochastic or not
 #define SOFT_SEARCH
 
+/* "PRIVATE" FUNCTIONS */
+void MassTableUpdate(int * mass, const int randomOpcodeIndex,
+		const int writePtrOpcodeIndex);
+void OpcodeInsertRandomInstruction(const s_ag * act, int *mass, swt * blosum,
+		const int writePtrOpcodeIndex);
 
 
 
-
-/******************************************************************************
-* @brief calculates the length of an opcode template
-*
-* @details see technical report section 9.1
-*
-* @param[in] ip the instruction pointer
-*
-* @param[in] maxl maximum string length
-*
-* @return the length of the template
-*****************************************************************************/
+/*******************************************************************************
+ * @brief calculates the length of an opcode template
+ *
+ * @details see technical report section 9.1
+ *
+ * @param[in] ip the instruction pointer
+ *
+ * @param[in] maxl maximum string length
+ *
+ * @return the length of the template
+ ******************************************************************************/
 int OpcodeTemplateLength(char *ip, const int maxl){
 
 	int len=0;
@@ -237,6 +241,7 @@ void OpcodeMove(s_ag *act){
 
 
 
+
 /******************************************************************************
 * @brief execute the "if" opcode ("?")
 *
@@ -296,9 +301,6 @@ char * OpcodeIf(char *ip, char *rp, char *sp, swt *T, const int maxl){
 		return ip+len;
 		break;
 	}
-
-	//TODO: We should never reach this point, but check:
-	//return 0;
 }
 
 
@@ -307,7 +309,7 @@ char * OpcodeIf(char *ip, char *rp, char *sp, swt *T, const int maxl){
 
 
 
-/******************************************************************************
+/*******************************************************************************
  * @brief pointer position relative to start of string
  *
  * @param[in] pag the chemical agent
@@ -315,7 +317,7 @@ char * OpcodeIf(char *ip, char *rp, char *sp, swt *T, const int maxl){
  * @param[in] headtype the pointer type
  *
  * @return the pointer position
- *****************************************************************************/
+ ******************************************************************************/
 int PointerPosition(s_ag *pag, char headtype){
 
 	char *ph;
@@ -363,9 +365,56 @@ int PointerPosition(s_ag *pag, char headtype){
 
 
 
+//todo(sjh): Lot's of scope for refactor here...
+int OpcodeCopyCheckSafe(s_ag *act, const unsigned int maxl, int & safe){
+
+	int ppos;
+
+	act->len = strlen(act->S);
+	act->pass->len = strlen(act->pass->S);
+
+	if( (ppos = PointerPosition(act,'w'))>=(int) maxl){
+
+		printf("Write head out of bounds: %d\n",ppos);
+		if(act->wt)
+			act->S[maxl]='\0';
+		else
+			act->pass->S[maxl]='\0';
+		act->i[act->it]++;
+		return -1;
+	}
+
+	if( (ppos=PointerPosition(act,'r'))>=(int) maxl){
+
+		printf("Read head out of bounds: %d\n",ppos);
+		act->i[act->it]++;
+		return -2;
+	}
+
+	// TODO(sjh): Are we handling the above errors ok?
+	// Check that we aren't off the end of the string,
+	// but within the allocated memory:
+	if(*(act->r[act->rt]) == 0){
+		safe = 0;
+	}
+
+	return 0;
+}
 
 
-//todo(sjh): tidy up the mix of setting "safe" and returning odd values!
+
+
+// todo(sjh): These values should be recorded elsewhere!
+// MUTATION RATES:
+// THESE ARE HARD-CODED FOR NOW - THEY SHOULD BE DERIVED FROM THE BLOSUM SOMEHOW...
+// const float indelrate = 0.0005,		subrate=0.375;//0.0749/2
+// const float indelrate = 0.0000306125,	subrate=0.01;//0.02
+// const float indelrate = 0.00006125,	subrate=0.05;//0.02
+// const float indelrate = 0.000125,		subrate=0.1;//0.02
+// const float indelrate = 0.000005,		subrate=0.0375;//0.0749/2
+// const float indelrate = 0., 			subrate = 0.;
+//
+// todo(sjh): tidy up the mix of setting "safe" and returning odd values!
 /*******************************************************************************
  * @brief Copy operator "\="
  *
@@ -383,102 +432,63 @@ int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
 		float subrate, const unsigned int maxl,
 		swt	*blosum, const int granular_1, long &biomass){
 
-	int cidx;
+	int randomOpcodeIndex;
 	float rno;
 	int safe = 1;// this gets set to zero if any of the tests fail..
 
-
-	//MUTATION RATES:
-	//THESE ARE HARD-CODED FOR NOW - THEY SHOULD BE DERIVED FROM THE BLOSUM SOMEHOW...
-	//const float indelrate = 0.0005,		subrate=0.375;//0.0749/2
-	//const float indelrate = 0.0000306125,	subrate=0.01;//0.02
-	//const float indelrate = 0.00006125,	subrate=0.05;//0.02
-	//const float indelrate = 0.000125,		subrate=0.1;//0.02
-	//const float indelrate = 0.000005,		subrate=0.0375;//0.0749/2
-	//const float indelrate = 0., 			subrate = 0.;
-
-	//todo(sjh): write test so we can turn off mutation better and make
-	//indelrate and subrate const
 	if(!domut){
 		indelrate = subrate =0;
 	}
 
-	act->len = strlen(act->S);
-	act->pass->len = strlen(act->pass->S);
-
-
-	if( (PointerPosition(act,'w'))>=(int) maxl){
-
-//#ifdef DODEBUG
-//		printf("Write head out of bounds: %d\n",p);
-//#endif
-
-		//just to make sure no damage is done:
-		if(act->wt)
-			act->S[maxl]='\0';
-		else
-			act->pass->S[maxl]='\0';
-
-		act->i[act->it]++;
-
+	switch(OpcodeCopyCheckSafe(act,maxl,safe)){
+	case -1:
 		return -1;
-	}
-	if(PointerPosition(act,'r')>=(int) maxl){
-		printf("Read head out of bounds\n");
-
-		act->i[act->it]++;
-
+	case -2:
 		return -2;
 	}
 
-	//TODO: see note on error check in other versions of OpcodeCopy / hcopy..
-	if(*(act->r[act->rt]) == 0){
-		//possibly return a negative value and initiate a b
-		safe = 0;
-		//return -3;
-	}
-	//if(h_pos(act,'w')>=maxl){
-	//	//We are at the end of a copy...
-	//	//...so just increment *R
-	//	act->r[act->rt]++;
-	//	safe = 0;
-	//}
-
 	if(safe){
-		rno=RandomBetween0And1();
+
+
+
+
+
+
+		rno=RandomBetween0And1(); //see if we are overwriting or not:
 		if(rno<indelrate){//INDEL
 
 			//should follow the blosum table for this....
 			rno=RandomBetween0And1();
 			if(rno<0.5){//insert
+
 				//first do a straight copy..
 				*(act->w[act->wt])=*(act->r[act->rt]);
 
-				//no need to test for granular here since we are inserting...
+				//increment w pointer for the insertion
 				act->w[act->wt]++;
 
-				//Then pick a random instruction:
-				cidx = (float) RandomBetween0And1() * blosum->N;
+				//Do the insertion
+				OpcodeInsertRandomInstruction(act, NULL, blosum,
+						-1);
 
-				//insert the random instruction
-				*(act->w[act->wt])=blosum->key[cidx];
+				//increment w again (unless we are doing granular!)
 				if(granular_1==0){
 					act->w[act->wt]++;
 				}
 			}
-			else{//delete
+			else{//delete by moving the iptr and not writing anything..
 				act->i[act->it]++;
 			}
 
 			if(granular_1==0){
 				act->r[act->rt]++;
 			}
-
 		}
 		else{
 			if(rno<subrate+indelrate){//INCREMENTAL MUTATION
-				cidx = OpcodeAdjacent(*(act->r[act->rt]),blosum);
-				*(act->w[act->wt])=cidx;
+				
+				randomOpcodeIndex = OpcodeAdjacent(*(act->r[act->rt]),blosum);
+				*(act->w[act->wt])=randomOpcodeIndex;
 			}
 			else{//NO MUTATION
 				*(act->w[act->wt])=*(act->r[act->rt]);
@@ -505,6 +515,203 @@ int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
 	biomass++;
 	return 0;
 }
+
+
+
+
+
+void MassTableUpdate(int * mass, const int randomOpcodeIndex,
+		const int writePtrOpcodeIndex){
+
+	//if the write pointer was on the string
+	if(!(writePtrOpcodeIndex<0)){
+		//add to the free mass of that opcode
+		mass[writePtrOpcodeIndex]++;
+	}
+	//decrement the free mass of the random opcode
+	mass[randomOpcodeIndex]--;
+
+}
+
+
+
+
+
+/*******************************************************************************
+ * @brief Insert a random opcode - incorporates comass option
+ *
+ * @details
+ *
+ * @param[in] act pointer to the active string (from which the partner string
+ *            can be accessed)
+ *
+ * @param[in] mass the 'free' masses of each opcode (or NULL if not using
+ *            comass)
+ *
+ * @param[in] randomOpcodeIndex the index of a random opcode
+ *            in the blosum table
+ *
+ * @param[in] writePtrOpcodeIndex the index of the opcode at the write pointer
+ *            in the blosum table
+ *
+ ******************************************************************************/
+void OpcodeInsertRandomInstruction(const s_ag * act, int *mass, swt * blosum,
+		const int writePtrOpcodeIndex = -1){
+
+
+	int randomOpcodeIndex = (float) RandomBetween0And1() * blosum->N;
+	bool update = false;
+
+	if(mass != NULL){
+		//if there's mass for this symbol:
+		if(mass[randomOpcodeIndex]){
+			//we'll write it to the string later
+			update = true;
+			MassTableUpdate(mass,randomOpcodeIndex,writePtrOpcodeIndex);
+		}
+	}else{
+		update = true;
+	}
+
+	if(update){
+		//insert the random instruction
+		*(act->w[act->wt])=blosum->key[randomOpcodeIndex];
+	}
+
+}
+
+
+
+
+
+/*******************************************************************************
+ * @brief Copy operator "\=" under conservation of mass
+ *
+ * @details writes the symbol at the read pointer to the position of the
+ *          write pointer, with mutation
+ *
+ * @param[in] act pointer to the active string (from which the partner string
+ *            can be accessed)
+ *
+ * @return 0 if successful;
+ *         -1 if attempt to write beyond maxl;
+ *         -2 if attempt to read beyond maxl;
+ ******************************************************************************/
+int OpcodeComassCopy(s_ag *act, const bool domut,float indelrate,
+		float subrate, const unsigned int maxl,
+		swt	*blosum, const int granular_1, long &biomass, int *mass){
+
+	int cidx;
+	float rno;
+	int safe = 1;// this gets set to zero if any of the tests fail..
+
+	if(!domut){
+		indelrate = subrate =0;
+	}
+
+	switch(OpcodeCopyCheckSafe(act,maxl,safe)){
+	case -1:
+		return -1;
+	case -2:
+		return -2;
+	}
+
+	if(safe){
+
+		int randomOpcodeIndex,writePtrOpcodeIndex=-1;
+		if(*(act->w[act->wt])){
+			writePtrOpcodeIndex=OpcodeIndex(*(act->w[act->wt]),blosum);
+		}
+
+		rno=RandomBetween0And1(); //see if we are overwriting or not:
+		if(rno<indelrate){//INDEL
+
+			//should follow the blosum table for this....
+			rno=RandomBetween0And1();
+			if(rno<0.5){//insert
+
+				//first do a straight copy..
+				*(act->w[act->wt])=*(act->r[act->rt]);
+
+				//increment w pointer for the insertion
+				act->w[act->wt]++;
+
+				//Do the insertion
+				OpcodeInsertRandomInstruction(act, mass, blosum,
+						writePtrOpcodeIndex);
+
+				//increment w again (unless we are doing granular!)
+				if(granular_1==0){
+					act->w[act->wt]++;
+				}
+			}
+			else{//delete by moving the iptr and not writing anything..
+				act->i[act->it]++;
+			}
+
+			if(granular_1==0){
+				act->r[act->rt]++;
+			}
+		}
+		else{
+			if(rno<subrate+indelrate){//INCREMENTAL MUTATION
+
+				cidx = OpcodeAdjacent(*(act->r[act->rt]),blosum);
+				randomOpcodeIndex = OpcodeIndex(cidx,blosum);
+				if(mass[randomOpcodeIndex]){
+					*(act->w[act->wt])=cidx;
+					act->w[act->wt]++;
+					if(!(writePtrOpcodeIndex<0)){
+						mass[writePtrOpcodeIndex]++;
+					}
+					mass[randomOpcodeIndex]--;
+				}
+				else{//
+					//simply increment the read head without doing anything else
+				}
+				act->r[act->rt]++;//possible deletion here...
+			}
+			else{//NO MUTATION (but possible sub via comass effects)
+
+				randomOpcodeIndex = OpcodeIndex(*(act->r[act->rt]),blosum);
+				if(mass[randomOpcodeIndex]){
+					*(act->w[act->wt])=*(act->r[act->rt]);
+					act->w[act->wt]++;
+					if(!(writePtrOpcodeIndex<0)){
+						mass[writePtrOpcodeIndex]++;
+					}
+					mass[randomOpcodeIndex]--;
+				}
+				else{
+					cidx = OpcodeAdjacent(*(act->r[act->rt]),blosum);
+					randomOpcodeIndex = OpcodeIndex(cidx,blosum);
+					if(mass[randomOpcodeIndex]){
+						*(act->w[act->wt])=cidx;
+						act->w[act->wt]++;
+						if(!(writePtrOpcodeIndex<0)){
+							mass[writePtrOpcodeIndex]++;
+						}
+						mass[randomOpcodeIndex]--;
+					}
+				}
+				act->r[act->rt]++;
+			}
+		}
+	}
+	//update lengths
+	act->len = strlen(act->S);
+	act->pass->len = strlen(act->pass->S);
+	act->i[act->it]++;
+
+#ifdef VERBOSE
+	if(mut)
+	printf("Mutant event %d. new string is:\n%s\n\n",mut,act->wt?act->S:act->pass->S);
+#endif
+	act->biomass++;
+	biomass++;
+	return 0;
+}
+
 
 
 
@@ -576,176 +783,4 @@ void OpcodeToggle(s_ag *act){
 		break;
 	}
 	act->i[act->it]++;
-}
-
-
-/******************************************************************************
- * @brief Copy operator "\=" under conservation of mass
- *
- * @details writes the symbol at the read pointer to the position of the
- *          write pointer, with mutation
- *
- * @param[in] act pointer to the active string (from which the partner string
- *            can be accessed)
- *
- * @return 0 if successful;
- *         -1 if attempt to write beyond maxl;
- *         -2 if attempt to read beyond maxl;
- *****************************************************************************/
-int OpcodeComassCopy(s_ag *act, const bool domut,float indelrate,
-		float subrate, const unsigned int maxl,
-		swt	*blosum, const int granular_1, long &biomass, int *mass){
-
-	//s_ag *pass;
-	//pass = act->pass;
-	int cidx;
-	float rno;
-	int safe = 1;// this gets set to zero if any of the tests fail..
-
-
-	//MUTATION RATES:
-	//THESE ARE HARD-CODED FOR NOW - THEY SHOULD BE DERIVED FROM THE BLOSUM SOMEHOW...
-	//const float indelrate = 0.0005,subrate=0.375;//0.0749/2
-	//const float indelrate = 0.0000306125,subrate=0.01;//0.02
-	//const float indelrate = 0.00006125,subrate=0.05;//0.02
-	//const float indelrate = 0.000125,subrate=0.1;//0.02
-	//const float indelrate = 0.000005,subrate=0.0375;//0.0749/2
-
-	//const float indelrate = 0., 		subrate = 0.;
-
-	if(!domut){
-		indelrate = subrate =0;
-	}
-	//Make sure the recorded lengths are current
-	act->len = strlen(act->S);
-	act->pass->len = strlen(act->pass->S);
-
-	int p;
-
-	//Check positions of the pointers
-	//TODO: shouldn't be casting maxl to int - but can h_pos ever return negative?
-	if( (p = PointerPosition(act,'w'))>=(int) maxl){
-		printf("Write head out of bounds: %d\n",p);
-		//just to make sure no damage is done:
-		if(act->wt)
-			act->S[maxl]='\0';
-		else
-			act->pass->S[maxl]='\0';
-
-		act->i[act->it]++;
-		return -1;
-	}
-	if(PointerPosition(act,'r')>=(int) maxl){
-		printf("Read head out of bounds\n");
-		act->i[act->it]++;
-		return -2;
-	}
-	//TODO: Are we handling the above errors ok?
-	//Check that we aren't off the end of the string, but within the allocated memory:
-	if(*(act->r[act->rt]) == 0){
-		//possibly return a negative value and initiate a b
-		safe = 0;
-		//return -3;
-	}
-
-
-	if(safe){
-
-		//see if we are overwriting or not:
-		int rm,wm=-1;
-		if(*(act->w[act->wt])){
-			wm=OpcodeIndex(*(act->w[act->wt]),blosum);
-		}
-
-
-		rno=RandomBetween0And1();
-		if(rno<indelrate){//INDEL - we should never be doing this in comass!
-
-			//should follow the blosum table for this....
-			rno=RandomBetween0And1();
-			if(rno<0.5){//insert
-
-				//first do a straight copy..
-				*(act->w[act->wt])=*(act->r[act->rt]);
-				act->w[act->wt]++;
-
-				//Then pick a random instruction:
-				rm = (float) RandomBetween0And1() * blosum->N;
-
-				//Check there's mass for this symbol:
-				if(mass[rm]){
-					//insert the random instruction
-					*(act->w[act->wt])=blosum->key[rm];
-					if(!(wm<0)){
-						mass[wm]++;
-					}
-					mass[rm]--;
-				}
-				act->w[act->wt]++;
-			}
-			else{//delete
-				act->i[act->it]++;
-
-				//simply increment the read head without doing anything else
-			}
-			act->r[act->rt]++;
-			//act->i[act->it]++;
-		}
-		else{
-			if(rno<subrate+indelrate){//INCREMENTAL MUTATION - we should never be doing this either
-
-				cidx = OpcodeAdjacent(*(act->r[act->rt]),blosum);
-				rm = OpcodeIndex(cidx,blosum);
-				if(mass[rm]){
-					*(act->w[act->wt])=cidx;
-					act->w[act->wt]++;
-					if(!(wm<0)){
-						mass[wm]++;
-					}
-					mass[rm]--;
-				}
-				else{//
-					//simply increment the read head without doing anything else
-				}
-				act->r[act->rt]++;//possible deletion here...
-			}
-			else{//NO MUTATION (but possible sub via comass effects)
-
-				rm = OpcodeIndex(*(act->r[act->rt]),blosum);
-				if(mass[rm]){
-					*(act->w[act->wt])=*(act->r[act->rt]);
-					act->w[act->wt]++;
-					if(!(wm<0)){
-						mass[wm]++;
-					}
-					mass[rm]--;
-				}
-				else{
-					cidx = OpcodeAdjacent(*(act->r[act->rt]),blosum);
-					rm = OpcodeIndex(cidx,blosum);
-					if(mass[rm]){
-						*(act->w[act->wt])=cidx;
-						act->w[act->wt]++;
-						if(!(wm<0)){
-							mass[wm]++;
-						}
-						mass[rm]--;
-					}
-				}
-				act->r[act->rt]++;
-			}
-		}
-	}
-	//update lengths
-	act->len = strlen(act->S);
-	act->pass->len = strlen(act->pass->S);
-	act->i[act->it]++;
-
-#ifdef VERBOSE
-	if(mut)
-	printf("Mutant event %d. new string is:\n%s\n\n",mut,act->wt?act->S:act->pass->S);
-#endif
-	act->biomass++;
-	biomass++;
-	return 0;
 }

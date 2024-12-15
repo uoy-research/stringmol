@@ -1943,7 +1943,8 @@ float stringPM::ReactionCalculateBindProbability(align *sw){
 
 
 
-
+//todo(sjh): this doesn't need to be in the stringPM class -
+//           suggest either an Agents class or a Reaction class (prefer latter)
 /******************************************************************************
  * @brief align two molecular sequences using Smith-Waterman
  *
@@ -2877,14 +2878,20 @@ int stringPM::speig_hcopy(s_ag *act){
 }*/
 
 
+
+
+
 /////////////////////////////////////////////////////////start of comass stuff
 
 
 
+
+
+// todo(sjh): the only difference between this and the 'standard' version
+// is OpcodeComassCopy - instead of OpcodeCopy.. we could maybe pass this
+// function in??
 int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 
-	//int finished=0;
-	char *tmp;
 	int safe_append=1;
 
 	switch(*(act->i[act->it])){
@@ -2901,44 +2908,18 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 	 *   P_MOVE  *
 	 *************/
 	case '>':
-			tmp=act->i[act->it];
-			tmp++;
-			switch(*tmp){
-			case 'A':
-				act->it = act->ft;
-				act->i[act->it] = act->f[act->ft];
-				act->i[act->it]++;
-				break;
-			case 'B':
-				act->rt = act->ft;
-				act->r[act->rt] = act->f[act->ft];
-				act->i[act->it]++;
-				break;
-			case 'C':
-				act->wt = act->ft;
-				act->w[act->wt] = act->f[act->ft];
-				act->i[act->it]++;
-				break;
-			default:
-				act->it = act->ft;
-				act->i[act->it] = act->f[act->ft];
-				act->i[act->it]++;
-				break;
-			}
-			break;
+		OpcodeMove(act);
+		break;
 
 
 	/************
 	 *   HCOPY  *
 	 ************/
 	case '='://h-copy
-		//if(comass_hcopy(act)<0){
-		//if(OpcodeCopy(act)<0){
 		if(OpcodeComassCopy(act,domut,indelrate,subrate,maxl,
 				blosum,granular_1,biomass,mass)<0){
 			AgentUnbind(act,'A',1,act->spp,pass->spp);
 			AgentUnbind(pass,'P',1,act->spp,pass->spp);
-			//finished = 1;
 		}
 		break;
 
@@ -2946,42 +2927,25 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 	 *  TOGGLE  *
 	 ************/
 	case '^'://p-toggle: toggle active pointer
-			tmp=act->i[act->it];
-			tmp++;
-			switch(*tmp){
-			case 'A':
-				act->it = 1-act->it;
-				break;
-			case 'B':
-				act->rt = 1-act->rt;
-				break;
-			case 'C':
-				act->wt = 1-act->wt;
-				break;
-			default:
-				act->ft = 1-act->ft;
-				break;
-			}
-			act->i[act->it]++;
-			break;
+		OpcodeToggle(act);
+		break;
 
 	/************
 	 *  IFLABEL *
 	 ************/
 	case '?'://If-label
-			act->i[act->it]=OpcodeIf(act->i[act->it],act->r[act->rt],act->S,blosum,maxl);
-			break;
+		act->i[act->it]=OpcodeIf(act->i[act->it],act->r[act->rt],act->S,blosum,maxl);
+		break;
 
 
 	/************
 	 *  CLEAVE  *
 	 ************/
 	case '%':
-			if((/*dac =*/ OpcodeCleave(act) )){
-				//finished = 1;
-				safe_append=0;	//extract_ag(&nowhead,p);
-			}
-			break;
+		if(( OpcodeCleave(act) )){
+			safe_append=0;
+		}
+		break;
 
 	/**************
 	 *  TERMINATE *
@@ -2990,23 +2954,21 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 	case '}'://ex-end - finish execution
 
 #ifdef V_VERBOSE
-			printf("Unbinding...\n");
+		printf("Unbinding...\n");
 #endif
-			AgentUnbind(act,'A',1,act->spp,pass->spp);
-			AgentUnbind(pass,'P',1,act->spp,pass->spp);
-
-			//finished = 1;
-			break;
+		AgentUnbind(act,'A',1,act->spp,pass->spp);
+		AgentUnbind(pass,'P',1,act->spp,pass->spp);
+		break;
 
 	default://Just increment the i-pointer
 		act->i[act->it]++;
 		break;
 	}
+
 #ifdef V_VERBOSE
 	printf("Exec step - looks like:\n");
 	ReactionPrintState(stdout,act,pass);
 #endif
-
 
 	if(safe_append){
 		act->ect++;
