@@ -116,6 +116,7 @@ CPPOBJECTS = $(OUTPUT_DIR)/lodepng.o \
 		$(OUTPUT_DIR)/opcodes.o \
 		$(OUTPUT_DIR)/rules.o \
 		$(OUTPUT_DIR)/setupSM.o \
+		$(OUTPUT_DIR)/agent.o \
 		$(OUTPUT_DIR)/SMspp.o \
 		$(OUTPUT_DIR)/stringmanip.o \
 		$(OUTPUT_DIR)/stringPM.o \
@@ -157,6 +158,9 @@ $(OUTPUT_DIR)/setupSM.o:	setupSM.cpp setupSM.h \
 			randutil.h	alignment.h \
 			rules.h agents_base.h SMspp.h stringPM.h lodepng.h
 	$(CC) -c setupSM.cpp -o $(OUTPUT_DIR)/setupSM.o
+
+$(OUTPUT_DIR)/agent.o:	agent.cpp agent.h
+	$(CC) -c agent.cpp -o $(OUTPUT_DIR)/agent.o
 
 $(OUTPUT_DIR)/SMspp.o:	SMspp.cpp SMspp.h
 	$(CC) -c SMspp.cpp -o $(OUTPUT_DIR)/SMspp.o

@@ -26,6 +26,99 @@
 
 
 
+#include "memoryutil.h"
+
+#include "agent.h"
+#include "SMspp.h"
+
+
+
+
+/******************************************************************************
+ * @brief reposition pointers if they are beyond the end of string post cleave
+ *
+ * @param[in] act the agent
+ *
+ * @return 0 always
+ *****************************************************************************/
+int AgentRewindDanglingPtrs(s_ag* act){
+
+	int plen,alen,pdist;
+	char *ps;
+
+	//PUT DANGLING POINTERS AT THE *END* OF THE STRINGS:
+	//DO THE PASSIVE POINTERS FIRST:
+	plen = strlen(act->pass->S);
+	if(plen){
+		ps = act->pass->S;
+
+		pdist = act->i[0]-ps;
+		if(pdist>plen || pdist<0)
+			act->i[0]=ps+plen;
+
+		pdist = act->r[0]-ps;
+		if(pdist>plen || pdist<0)
+			act->r[0]=ps+plen;
+
+		pdist = act->w[0]-ps;
+		if(pdist>plen || pdist<0)
+			act->w[0]=ps+plen;
+
+		pdist = act->f[0]-ps;
+		if(pdist>plen || pdist<0)
+			act->f[0]=ps+plen;
+	}
+	else{//Toggle everything off this string...
+		act->i[0]=act->pass->S;
+		act->r[0]=act->pass->S;
+		act->w[0]=act->pass->S;
+		act->f[0]=act->pass->S;
+
+		act->it=1;
+		act->rt=1;
+		act->wt=1;
+		act->ft=1;
+	}
+
+
+	//DO THE ACTIVE POINTERS NOW
+	alen = strlen(act->S);
+	ps = act->S;
+
+	if(alen){
+		pdist = act->i[1]-ps;
+		if(pdist>alen || pdist<0)
+			act->i[1]=ps+alen;
+
+		pdist = act->r[1]-ps;
+		if(pdist>alen || pdist<0)
+			act->r[1]=ps+alen;
+
+		pdist = act->w[1]-ps;
+		if(pdist>alen || pdist<0)
+			act->w[1]=ps+alen;
+
+		pdist = act->f[1]-ps;
+		if(pdist>alen || pdist<0)
+			act->f[1]=ps+alen;
+	}
+	else{//Toggle everything off this string...
+		act->i[1]=act->S;
+		act->r[1]=act->S;
+		act->w[1]=act->S;
+		act->f[1]=act->S;
+
+		if(plen){
+			act->it=0;
+			act->rt=0;
+			act->wt=0;
+			act->ft=0;
+		}
+	}
+
+	//TODO: error checking on this!
+	return 0;
+}
 
 
 
@@ -99,7 +192,7 @@ int AgentCheckZeroLengthString(s_ag* act){
  *
  * @return the agent
 * *****************************************************************************/
-s_ag * AgentMake(int alab, const unsigned int maxl0){
+s_ag * AgentMake(int alab, const unsigned int agct, const unsigned int maxl0){
 
 	s_ag *ag;
 
@@ -117,7 +210,8 @@ s_ag * AgentMake(int alab, const unsigned int maxl0){
 		ag->S = NULL;
 		ag->spp = NULL;
 		ag->status = B_UNBOUND;
-		ag->idx = agct++;ag->nbind=0;ag->ect=0;
+		ag->idx = agct;// used to be (agct)++ - do this *outside*; //TODO(sjh): check this!
+		ag->nbind=0;ag->ect=0;
 		ag->biomass=0;
 		ag->x=-1;
 		ag->y=-1;
@@ -137,16 +231,17 @@ s_ag * AgentMake(int alab, const unsigned int maxl0){
 
 
 //pag = AgentMakeWithSequence("BLUBO=STRINGA",'A');
-s_ag * AgentMakeWithSequence(char * seq, int label, const int maxl0){
+s_ag * AgentMakeWithSequence(char * seq, int label, const unsigned int agct,
+		const unsigned int maxl0){
 
 	s_ag * ag;
 
 	ag = AgentMake(label,maxl0);
 
-	pag->S =(char *) malloc(maxl0*sizeof(char));
-	memset(pag->S,0,maxl0*sizeof(char));
-	strncpy(pag->S,seq,maxl);//active_string));
-	pag->len = strlen(pag->S);
+	ag->S =(char *) malloc(maxl0*sizeof(char));
+	memset(ag->S,0,maxl0*sizeof(char));
+	strncpy(ag->S,seq,maxl0-1);//active_string));
+	ag->len = strlen(ag->S);
 
 	return ag;
 

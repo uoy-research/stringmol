@@ -576,11 +576,13 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 					return 1;
 				}
 
-				pag = AgentMake('X');//TODO: fix this need for ascii codes... we have species numbers now!
-				pag->S =(char *) malloc(maxl0*sizeof(char));
-				memset(pag->S,0,maxl0*sizeof(char));
-				strncpy(pag->S,active_string,maxl);//active_string));
-				pag->len = strlen(pag->S);
+				//pag = AgentMake('X');//TODO: fix this need for ascii codes... we have species numbers now!
+				//pag->S =(char *) malloc(maxl0*sizeof(char));
+				//memset(pag->S,0,maxl0*sizeof(char));
+				//strncpy(pag->S,active_string,maxl);//active_string));
+				//pag->len = strlen(pag->S);
+				//TODO: fix this need for ascii codes... we have species numbers now!
+				pag = AgentMakeWithSequence(active_string,'X',agct++,maxl0);
 
 				if(grid){
 					pag->x = gx;

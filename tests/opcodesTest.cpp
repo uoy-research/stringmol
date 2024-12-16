@@ -43,7 +43,8 @@ TEST_CASE("insertion operation works during copy"){
 	
 	s_ag *pag,*bag;
 	
-	pag = AgentMakeWithSequence("BLUBO=STRINGA");
+	pag = AgentMakeWithSequence("BLUBO=STRINGA",'A',mymaxl);
+	bag = AgentMakeWithSequence("XOYHOBSTRINGB",'B',mymaxl);
 	
 	align sw;
 	

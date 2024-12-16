@@ -65,10 +65,12 @@ struct s_ag{//THIS DEFINES AN INDIVIDUAL AGENT IN A STRINGMOL SYSTEM
 };
 
 
-/*
+
 int AgentCheckZeroLengthString(s_ag* act);
 
 s_ag * AgentMake(int alab, const unsigned int maxl0);
+
+s_ag * AgentMakeWithSequence(char * seq, int label, const int maxl0);
 
 int AgentUnbind(s_ag * pag, char sptype, int update, l_spp *pa, l_spp *pp);
 
@@ -78,6 +80,6 @@ int AgentFree(s_ag *pag);
 
 int SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp,
 		l_spp * ppspp, int mass);
-*/
+
 
 #endif /* AGENT_H_ */
