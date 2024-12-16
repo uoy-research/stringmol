@@ -32,6 +32,7 @@
 //string stuff
 #include "stringmanip.h"
 #include "alignment.h"
+#include "agent.h"
 #include "SMspp.h"
 
 //metabolism stuff

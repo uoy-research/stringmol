@@ -134,6 +134,26 @@ s_ag * AgentMake(int alab, const unsigned int maxl0){
 
 
 
+
+
+//pag = AgentMakeWithSequence("BLUBO=STRINGA",'A');
+s_ag * AgentMakeWithSequence(char * seq, int label, const int maxl0){
+
+	s_ag * ag;
+
+	ag = AgentMake(label,maxl0);
+
+	pag->S =(char *) malloc(maxl0*sizeof(char));
+	memset(pag->S,0,maxl0*sizeof(char));
+	strncpy(pag->S,seq,maxl);//active_string));
+	pag->len = strlen(pag->S);
+
+	return ag;
+
+}
+
+
+
 /******************************************************************************
  * @brief Attempt to bind two molecules and initiate a reaction
  *

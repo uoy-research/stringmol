@@ -35,12 +35,13 @@
 
 //stringmol
 #include "alignment.h"
+#include "agent.h"
 #include "SMspp.h"
 
 //metabolism
 #include "rules.h"
-#include "agents_base.h"
 #include "opcodes.h"
+#include "agents_base.h"
 #include "stringPM.h"
 
 

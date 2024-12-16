@@ -37,6 +37,7 @@
 //stringmol
 #include "params.h"
 #include "alignment.h"
+#include "agent.h"
 #include "SMspp.h"
 #include "stringPM.h"
 

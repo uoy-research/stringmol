@@ -22,7 +22,9 @@
 #define SMSPP_H_
 
 
+/*//MOVING THESE TO "agent.h"
 enum s_bind{B_UNBOUND=1,B_PASSIVE=2,B_ACTIVE=3};
+
 
 //Forward declare the parent structure
 struct s_parent;
@@ -63,6 +65,7 @@ struct s_ag{//THIS DEFINES AN INDIVIDUAL AGENT IN A STRINGMOL SYSTEM
 	int 		x;
 	int			y;
 };
+*/  //END of Moved code
 
 /*
 struct s_spp{//THIS DEFINES WHAT A MOLECULAR SPECIES IS - can be pointed to by an agent OR just be in a list

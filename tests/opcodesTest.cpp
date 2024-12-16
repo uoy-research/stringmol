@@ -8,20 +8,21 @@
 //#include "../src/memoryutil.h"
 //#include "../src/stringmanip.h"
 //#include "../src/params.h"
-//#include "../src/alignment.h"
+#include "../src/alignment.h"
 
 //metabolism stuff
-//#include "../src/rules.h"
-//#include "../src/agents_base.h"
-//#include "../src/SMspp.h"
-//#include "../src/stringPM.h"
+#include "../src/rules.h"
+#include "../src/agents_base.h"
+#include "../src/agent.h"
+#include "../src/SMspp.h"
+#include "../src/stringPM.h"
 
 
 
 s_ag * SetupReaction(char * string1, char * string2){
 	
 	
-	
+	return NULL;	
 }
 
 
@@ -29,7 +30,7 @@ TEST_CASE("insertion operation works during copy"){
 
 	//SMspp		SP;
 	SMspp SP;
-	StringPM A(SP);
+	stringPM A(&SP);
 	const int mymaxl = 40;
 	char s1[mymaxl];
 	
@@ -42,9 +43,13 @@ TEST_CASE("insertion operation works during copy"){
 	
 	s_ag *pag,*bag;
 	
+	pag = AgentMakeWithSequence("BLUBO=STRINGA");
+	
+	align sw;
+	
 	
 	//Bind the two strings
-	A.AgentsAlign();
+	A.AgentsAlign(pag,bag,&sw);
 	
 	//Check the pointers are in the right place
 	

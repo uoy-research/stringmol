@@ -19,8 +19,8 @@
 
 
 
-#ifndef AGENT_H_
-#define AGENT_H_
+#ifndef AGENTS_BASE_H_
+#define AGENTS_BASE_H_
 
 
 struct s_ix{
@@ -97,4 +97,4 @@ class agents_base{
 
 };
 
-#endif /*AGENT_H_*/
+#endif /*AGENTS_BASE_H_*/

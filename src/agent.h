@@ -21,9 +21,9 @@
 #ifndef AGENT_H_
 #define AGENT_H_
 
+//TODO(sjh): this is a tangled mess.. can we tidy?
 enum s_bind{B_UNBOUND=1,B_PASSIVE=2,B_ACTIVE=3};
 
-//TODO(sjh): this is a tangled mess.. can we tidy?
 //Forward declare the parent structure
 struct s_parent;
 struct l_spp;
@@ -65,7 +65,7 @@ struct s_ag{//THIS DEFINES AN INDIVIDUAL AGENT IN A STRINGMOL SYSTEM
 };
 
 
-
+/*
 int AgentCheckZeroLengthString(s_ag* act);
 
 s_ag * AgentMake(int alab, const unsigned int maxl0);
@@ -78,6 +78,6 @@ int AgentFree(s_ag *pag);
 
 int SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp,
 		l_spp * ppspp, int mass);
-
+*/
 
 #endif /* AGENT_H_ */
