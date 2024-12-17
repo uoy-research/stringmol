@@ -934,7 +934,7 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 			//int x,y;
 			switch(dac){
 			case 1://Destroy active - only append passive
-				A->AgentUnbind(pass,'P',1,act->spp,pass->spp);
+				A->SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
 				A->AgentAppend(&(A->nexthead),pass);
 				//find_ag_gridpos(pass,run,&x,&y);
 				//run->status[x][y]=G_NEXT;
@@ -949,7 +949,7 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 				break;
 			case 2://Destroy passive - only append active
-				A->AgentUnbind(act,'A',1,act->spp,pass->spp);
+				A->SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
 				A->AgentAppend(&(A->nexthead),act);
 				//find_ag_gridpos(act,run,&x,&y);
 				run->status[act->x][act->y]=G_NEXT;
@@ -965,8 +965,8 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				break;
 			case 3://Destroy both
 				printf("Destroying both parents after cleave!\nThis should never happen!\n");
-				A->AgentUnbind(act,'A',1,act->spp,pass->spp);
-				A->AgentUnbind(pass,'P',1,act->spp,pass->spp);
+				A->SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
+				A->SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
 				A->AgentFree(act);
 				act = NULL;
 				A->AgentFree(pass);
@@ -1062,8 +1062,8 @@ int ReactionExecuteOpcodeSpatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pas
 		//if(A->OpcodeCopy(act)<0){
 		if(OpcodeCopy(act,A->domut,A->indelrate,A->subrate,A->maxl,
 				A->blosum,A->granular_1,A->biomass)<0){
-			A->AgentUnbind(act,'A',1,act->spp,pass->spp);
-			A->AgentUnbind(pass,'P',1,act->spp,pass->spp);
+			A->SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
+			A->SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
 		}
 		break;
 
@@ -1149,10 +1149,10 @@ int ReactionExecuteOpcodeSpatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pas
 			printf("Unbinding...\n");
 #endif
 
-			A->AgentUnbind(act,'A',1,act->spp,pass->spp);
+			A->SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
 			run->status[act->x][act->y] = G_NEXT;
 
-			A->AgentUnbind(pass,'P',1,act->spp,pass->spp);
+			A->SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
 			//int xx,yy;
 			//find_ag_gridpos(pass,run,&xx,&yy);
 			run->status[pass->x][pass->y] = G_NEXT;

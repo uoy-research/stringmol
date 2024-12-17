@@ -70,9 +70,12 @@ int AgentCheckZeroLengthString(s_ag* act);
 
 s_ag * AgentMake(int alab, const unsigned int maxl0);
 
-s_ag * AgentMakeWithSequence(char * seq, int label, const int maxl0);
 
-int AgentUnbind(s_ag * pag, char sptype, int update, l_spp *pa, l_spp *pp);
+s_ag * AgentMakeWithSequence(char * seq, const unsigned int label,
+		const unsigned int agct, const unsigned int maxl0);
+
+
+int AgentUnbind(s_ag * pag);
 
 int AgentAppend(s_ag **list, s_ag *ag);
 

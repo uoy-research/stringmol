@@ -2152,25 +2152,11 @@ void stringPM::ReactionSetupExecution(s_ag *A, s_ag *B, align *sw){
  *
  * @return 1 if bind happens, 0 if not
  *****************************************************************************/
-int stringPM::AgentUnbind(s_ag * pag, char sptype, int update, l_spp *pa, l_spp *pp){
+int stringPM::SMAgentUnbindAndSpeciesListUpdate(s_ag * pag, char sptype, int update, l_spp *pa, l_spp *pp){
 
 	int found;
-	int mass=0;
 
-	if(pag->status==B_ACTIVE){
-		mass = pag->biomass;
-		pag->biomass = 0;
-	}
-
-	pag->status = B_UNBOUND;
-	pag->pass = NULL;
-	pag->exec = NULL;
-
-	pag->ect=0;
-
-	pag->f[0] = pag->i[0] = pag->r[0] = pag->w[0] = 0;
-	pag->f[1] = pag->i[1] = pag->r[1] = pag->w[1] = 0;
-	pag->ft   = pag->it   = pag->rt   = pag->wt = 0;
+	int mass = AgentUnbind(pag);
 
 	found = SpeciesListUpdate(pag,sptype,update,pa,pp,mass);
 	return found;
@@ -2462,21 +2448,21 @@ int stringPM::OpcodeCleave(s_ag *act){
 		if((dac = AgentCheckZeroLengthString(act))){
 			switch(dac){
 			case 1://Destroy active - only append passive
-				AgentUnbind(pass,'P',1,act->spp,pass->spp);
+				SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
 				AgentAppend(&nexthead,pass);
 				AgentFree(act);
 				act = NULL;
 				break;
 			case 2://Destroy passive - only append active
-				AgentUnbind(act,'A',1,act->spp,pass->spp);
+				SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
 				AgentAppend(&nexthead,act);
 				AgentFree(pass);
 				pass = NULL;
 				break;
 			case 3://Destroy both
 				printf("This should never happen\n");
-				AgentUnbind(act,'A',1,act->spp,pass->spp);
-				AgentUnbind(pass,'P',1,act->spp,pass->spp);
+				SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
+				SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
 				AgentFree(act);
 				act = NULL;
 				AgentFree(pass);
@@ -2540,8 +2526,8 @@ int stringPM::ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 			//todo(sjh): write test to check what happens if unbind happens...
 			if(OpcodeCopy(act,domut,indelrate,subrate,maxl,
 					blosum,granular_1,biomass)<0){
-				AgentUnbind(act,'A',1,act->spp,pass->spp);
-				AgentUnbind(pass,'P',1,act->spp,pass->spp);
+				SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
+				SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
 			}
 			break;
 
@@ -2586,8 +2572,8 @@ int stringPM::ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 #ifdef V_VERBOSE
 			printf("Unbinding...\n");
 #endif
-			AgentUnbind(act,'A',1,act->spp,pass->spp);
-			AgentUnbind(pass,'P',1,act->spp,pass->spp);
+			SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
+			SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
 
 			break;
 
@@ -2921,8 +2907,8 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 	case '='://h-copy
 		if(OpcodeComassCopy(act,domut,indelrate,subrate,maxl,
 				blosum,granular_1,biomass,mass)<0){
-			AgentUnbind(act,'A',1,act->spp,pass->spp);
-			AgentUnbind(pass,'P',1,act->spp,pass->spp);
+			SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
+			SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
 		}
 		break;
 
@@ -2959,8 +2945,8 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 #ifdef V_VERBOSE
 		printf("Unbinding...\n");
 #endif
-		AgentUnbind(act,'A',1,act->spp,pass->spp);
-		AgentUnbind(pass,'P',1,act->spp,pass->spp);
+		SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
+		SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
 		break;
 
 	default://Just increment the i-pointer
@@ -3276,8 +3262,8 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 					//if(OpcodeCopy(act)<0){
 					if(OpcodeCopy(act,domut,indelrate,subrate,maxl,
 							blosum,granular_1,biomass)<0){
-						AgentUnbind(act,'A',1,act->spp,pass->spp);
-						AgentUnbind(pass,'P',1,act->spp,pass->spp);
+						SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
+						SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
 						finished = 1;
 					}
 					break;
@@ -3332,8 +3318,8 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 			#ifdef V_VERBOSE
 						printf("Unbinding...\n");
 			#endif
-						AgentUnbind(act,'A',1,act->spp,pass->spp);
-						AgentUnbind(pass,'P',1,act->spp,pass->spp);
+						SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
+						SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
 
 						finished = 1;
 						break;

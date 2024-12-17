@@ -17,34 +17,21 @@
 #include "../src/SMspp.h"
 #include "../src/stringPM.h"
 
-
-
-s_ag * SetupReaction(char * string1, char * string2){
-	
-	
-	return NULL;	
-}
-
-
 TEST_CASE("insertion operation works during copy"){
 
 	//SMspp		SP;
 	SMspp SP;
 	stringPM A(&SP);
 	const int mymaxl = 40;
-	char s1[mymaxl];
 	
+	char a[] = "BLUBO=STRINGA";
+	char b[] = "XOYHOBSTRINGB";
 	
-	strcpy(s1,"BLUBO=STRINGA");
-	SP.species_list = SP.SpeciesMakeFromString(s1,1,mymaxl,-1);
-	
-	strcpy(s1,"XOYHOBSTRINGB");
-	SP.species_list->next = SP.SpeciesMakeFromString(s1,1,mymaxl,-1);
 	
 	s_ag *pag,*bag;
 	
-	pag = AgentMakeWithSequence("BLUBO=STRINGA",'A',mymaxl);
-	bag = AgentMakeWithSequence("XOYHOBSTRINGB",'B',mymaxl);
+	pag = AgentMakeWithSequence(a,'A',1,mymaxl);
+	bag = AgentMakeWithSequence(b,'B',1,mymaxl);
 	
 	align sw;
 	

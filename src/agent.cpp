@@ -211,7 +211,8 @@ s_ag * AgentMake(int alab, const unsigned int agct, const unsigned int maxl0){
 		ag->spp = NULL;
 		ag->status = B_UNBOUND;
 		ag->idx = agct;// used to be (agct)++ - do this *outside*; //TODO(sjh): check this!
-		ag->nbind=0;ag->ect=0;
+		ag->nbind=0;
+		ag->ect=0;
 		ag->biomass=0;
 		ag->x=-1;
 		ag->y=-1;
@@ -231,12 +232,13 @@ s_ag * AgentMake(int alab, const unsigned int agct, const unsigned int maxl0){
 
 
 //pag = AgentMakeWithSequence("BLUBO=STRINGA",'A');
-s_ag * AgentMakeWithSequence(char * seq, int label, const unsigned int agct,
+s_ag * AgentMakeWithSequence(char * seq, const unsigned int label,
+		const unsigned int agct,
 		const unsigned int maxl0){
 
 	s_ag * ag;
 
-	ag = AgentMake(label,maxl0);
+	ag = AgentMake(label,agct,maxl0);
 
 	ag->S =(char *) malloc(maxl0*sizeof(char));
 	memset(ag->S,0,maxl0*sizeof(char));
@@ -261,13 +263,12 @@ s_ag * AgentMakeWithSequence(char * seq, int label, const unsigned int agct,
  *
  * @return 1 if bind happens, 0 if not
  *****************************************************************************/
-int AgentUnbind(s_ag * pag, char sptype, int update, l_spp *pa, l_spp *pp){
+int AgentUnbind(s_ag * pag){
 
-	int found;
-	int mass=0;
+	int mass = 0;
 
 	if(pag->status==B_ACTIVE){
-		mass = pag->biomass;
+		mass = pag->biomass; //todo(sjh): resolve usage of biomass
 		pag->biomass = 0;
 	}
 
@@ -281,8 +282,7 @@ int AgentUnbind(s_ag * pag, char sptype, int update, l_spp *pa, l_spp *pp){
 	pag->f[1] = pag->i[1] = pag->r[1] = pag->w[1] = 0;
 	pag->ft   = pag->it   = pag->rt   = pag->wt = 0;
 
-	found = SpeciesListUpdate(pag,sptype,update,pa,pp,mass);
-	return found;
+	return mass;
 }
 
 
@@ -345,73 +345,3 @@ int AgentFree(s_ag *pag){
 
 
 
-
-
-/*******************************************************************************
-* @brief update the list of species with an agent
-*
-* @details This is called from CLEAVE, otherwise we can't tell if its in
-*          the middle of being constructed....
-*
-* @param[in] p the agent
-*
-* @param[in] sptype the 'type' of species
-*
-* @param[in] add flag to say whether to add to the list
-*
-* @param[in] paspp pointer to active species list (???)
-*
-* @param[in] ppspp pointer to passive species list (???)
-*
-* @param[in] mass the number of characters in the string (???)
-*
-* @return 0 regardless of succes (todo: fix this)
-*******************************************************************************/
-int SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp, int mass){
-
-	l_spp *sp;
-	sp = spl->species_list;
-	int found=0;
-	int novel=0;
-
-	while(sp!=NULL&&!found){
-		if(!strcmp(sp->S,p->S)){//we've found a match on the string
-			found=sp->spp;
-			if(add){
-				//Need to check whether this is a dissociating partner in a reaction that has changed:
-				if(p->spp!=NULL){//We haven't decided what the spp is yet
-					if(p->spp->spp != sp->spp){
-						sp->count++;
-						novel=1;
-					}
-					//novel=0 IF dissociating and no new spp are produced.
-				}
-				else{
-					sp->count++;
-					novel=1;
-				}
-			}
-			break;
-		}
-		sp = sp->next;
-	}
-
-	if(add){//Only do this if we are adding to the list (not just checking reaction-space
-		if(!found){
-			sp = spl->SpeciesMakeFromAgent(p,timestep,maxl0);
-
-			sp->sptype = sptype;
-			sp->biomass += mass;
-			spl->SpeciesPrependToList(sp); //append_lspp(sp);
-			novel=1;
-		}
-
-		//Now sort out the parentage:
-		p->spp = sp;//->spp;
-		if(novel)
-			p->pp = spl->ParentsFindOrMake(p->spp, paspp, ppspp);
-
-	}
-
-	return found;
-}

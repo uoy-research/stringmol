@@ -170,7 +170,7 @@ public:
 
 	//First version works fine, but no species analysis...
 	//void 	unbind_ag(s_ag * pag,char sptype);
-	int 	AgentUnbind(s_ag * pag, char sptype, int update, l_spp *pa, l_spp *pp);
+	int 	SMAgentUnbindAndSpeciesListUpdate(s_ag * pag, char sptype, int update, l_spp *pa, l_spp *pp);
 
 	void UpdateNowNext();
 
