@@ -44,8 +44,6 @@
 /* "PRIVATE" FUNCTIONS */
 void MassTableUpdate(int * mass, const int randomOpcodeIndex,
 		const int writePtrOpcodeIndex);
-void OpcodeInsertRandomInstruction(const s_ag * act, int *mass, swt * blosum,
-		const int writePtrOpcodeIndex);
 
 
 
@@ -450,11 +448,6 @@ int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
 
 	if(safe){
 
-
-
-
-
-
 		rno=RandomBetween0And1(); //see if we are overwriting or not:
 		if(rno<indelrate){//INDEL
 
@@ -469,7 +462,7 @@ int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
 				act->w[act->wt]++;
 
 				//Do the insertion
-				OpcodeInsertRandomInstruction(act, NULL, blosum,
+				OpcodeInsertInstruction(act, (int)((float) RandomBetween0And1() * blosum->N), NULL, blosum,
 						-1);
 
 				//increment w again (unless we are doing granular!)
@@ -537,11 +530,13 @@ void MassTableUpdate(int * mass, const int randomOpcodeIndex,
 
 
 
-
+//todo(sjh): I think we need a class for OpcodeCopy, which we can then derive
+//           a class for OpcodeCopyComass from
 /*******************************************************************************
- * @brief Insert a random opcode - incorporates comass option
+ * @brief Insert an opcode - incorporates comass option
  *
- * @details
+ * @details Often this will be a random opcode, but for testing purposes, the
+ * 	        *random* part is done before calling the function
  *
  * @param[in] act pointer to the active string (from which the partner string
  *            can be accessed)
@@ -556,11 +551,11 @@ void MassTableUpdate(int * mass, const int randomOpcodeIndex,
  *            in the blosum table
  *
  ******************************************************************************/
-void OpcodeInsertRandomInstruction(const s_ag * act, int *mass, swt * blosum,
-		const int writePtrOpcodeIndex = -1){
+void OpcodeInsertInstruction(const s_ag * act, int inst_idx, int *mass, swt * blosum,
+		const int writePtrOpcodeIndex){
 
 
-	int randomOpcodeIndex = (float) RandomBetween0And1() * blosum->N;
+	int randomOpcodeIndex = inst_idx;//(float) RandomBetween0And1() * blosum->N;
 	bool update = false;
 
 	if(mass != NULL){
@@ -638,7 +633,7 @@ int OpcodeComassCopy(s_ag *act, const bool domut,float indelrate,
 				act->w[act->wt]++;
 
 				//Do the insertion
-				OpcodeInsertRandomInstruction(act, mass, blosum,
+				OpcodeInsertInstruction(act, (int)((float) RandomBetween0And1() * blosum->N), mass, blosum,
 						writePtrOpcodeIndex);
 
 				//increment w again (unless we are doing granular!)
@@ -712,6 +707,11 @@ int OpcodeComassCopy(s_ag *act, const bool domut,float indelrate,
 	biomass++;
 	return 0;
 }
+
+
+
+
+
 
 
 

@@ -4,32 +4,28 @@ Let's be honest, stringmol needs refactoring. There's too much redundant code in
 
 Although there are many 'standard' ways to refactor, I've not found any of them to be easy to understand and to get started. So this document is going to record what I've tried, what works and what doesn't. 
 
+# Current workflow
 
-The first thing I did was ask twitter! 
+Based on several years of coming back to this and stopping, the retirement of Susan Stepney forced me to develop a working process. This involves:
 
-# Current activity
+- checking the file organisation with cppcheck
+- checking for unused functions and varianble, and other bad programming features, again with cppcheck
+- compiling and running smoke tests, checking for non-zero exit values
+- running unit tests with the catch.hpp framework
 
-- 200811: see github.com/franticspider/TryingTravis for how I'm developing a continuous integration environment. 
-- Decision: Clean up the Stringmol "reaction" module first. This is used stand-alone in Rstringmol, the web app and as the basis for Centurion
+Whenever I make a significant change or commit, I run the above with a script called `RunAllTests.sh`. This makes it relatively straightforward to re-run continuously. 
 
-# Roadmap
+In addition, I'm trying to develop some programming principles for stochastic simulations - maybe there's a paper in this...
 
-Plan is to have iterations through the following:
+# 
 
-- Identify a module
-- Document dependencies
-- Write tests
-
-## File by file
-
-### `stringmol.cpp`
-
-There's a *huge* amount of redundancy in this - many functions are minor tweaks of other functions and it isn't clear which ones were ever used. As an example, look for repetition of the variable `divct` in various functions... so a big refactor of the major code blocks within these functions is in order. 
 
 
 # Background
 
 ## Raw Twitter comments
+
+The first thing I did was ask twitter! 
 
 Thanks here to David White (DW), Jerry Swan(JS), John Tuffen(JT) and Emily Dolson (ED) for these suggestions
 

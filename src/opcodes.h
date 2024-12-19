@@ -35,7 +35,11 @@ void OpcodeToggle(s_ag *act);
 
 char * OpcodeIf(char *ip, char *rp, char *sp, swt *T, const int maxl);
 
-int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
+void OpcodeInsertInstruction(const s_ag * act, int inst_idx,
+		int *mass, swt * blosum,
+		const int writePtrOpcodeIndex = -1);
+
+int OpcodeCopy(      s_ag *act, const bool domut,float indelrate,
 		float subrate, const unsigned int maxl,
 		swt	*blosum, const int granular_1, long &biomass
 		);
@@ -44,5 +48,7 @@ int OpcodeComassCopy(s_ag *act, const bool domut,float indelrate,
 		float subrate, const unsigned int maxl,
 		swt	*blosum, const int granular_1, long &biomass,
 		int *mass);
+
+
 
 #endif /* OPCODES_H_ */
