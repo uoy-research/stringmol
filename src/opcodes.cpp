@@ -785,3 +785,123 @@ void OpcodeToggle(s_ag *act){
 	}
 	act->i[act->it]++;
 }
+
+
+
+
+
+/******************************************************************************
+ * @brief cleave
+ *
+ * @param[in] act
+ *
+ * @return which agents have been destroyed (if any) 0: none; 1: active only
+ *         2: passive only; 3: both
+ *****************************************************************************/
+int OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
+		unsigned long int *agct,
+		const unsigned int timestep, const unsigned int maxl0){
+
+	int destroyAction = 0,cpy;
+	s_ag *c,*pass,*csite;
+
+	pass = act->pass;
+
+	//pick the mol containing the cleave site:
+	csite = act->ft?act:pass;
+
+	if(act->f[act->ft]-csite->S < csite->len){
+
+		//1: MAKE THE NEW MOLECULE FROM THE CLEAVE POINT
+
+		//Can't really say what the label is easily - for ECAL, it's always pass
+		c = AgentMake(pass->label, *agct++,  maxl0);//,1);
+
+		//Copy the cleaved string to the agent
+		char *cs;
+
+		c->S =(char *) malloc(maxl0*sizeof(char));
+		memset(c->S,0,maxl0*sizeof(char));
+
+		cs = csite->S;
+		cpy = strlen(cs);
+		//Check that we aren't creating a zero-length molecule:
+		if(!cpy){
+			printf("WARNING: Zero length molecule being created!\n");
+		}
+
+		//Make the parent structure: ALL DONE NOW IN SpeciesListUpdate
+		//c->pp = splist->ParentsMake(act->spp,pass->spp);
+
+		cpy -= act->f[act->ft]-cs;
+
+		strncpy(c->S,act->f[act->ft],cpy);
+		c->len = strlen(c->S);
+#ifdef VERBOSE
+		printf("String %d created:\n%s\n",c->idx,c->S);
+#endif
+		//Check the lineage
+		spl->SpeciesListUpdate(c,'C',1,act->spp,pass->spp,act->biomass,timestep,maxl0);
+		act->biomass=0; //reset this; we might continue to make stuff!
+
+		//append the agent to nexthead
+		AgentAppend(&nexthead,c);
+
+		//2: HEAL THE PARENT
+
+		memset(act->f[act->ft],0,cpy*sizeof(char));
+
+		csite->len = strlen(csite->S);
+
+		if((destroyAction = AgentCheckZeroLengthString(act))){
+
+			switch(destroyAction){
+			case 1://Destroy active - only append passive
+				//AgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp,spl);
+
+				//found = SpeciesListUpdate(pag,sptype,update,pa,pp,mass);
+				//return found;
+
+				spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+						AgentUnbind(pass),timestep,maxl0);
+
+				AgentAppend(&nexthead,pass);
+				AgentFree(act);
+				act = NULL;
+				break;
+			case 2://Destroy passive - only append active
+				//SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
+				spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
+						AgentUnbind(act),timestep,maxl0);
+				AgentAppend(&nexthead,act);
+				AgentFree(pass);
+				pass = NULL;
+				break;
+			case 3://Destroy both
+				printf("This should never happen\n");
+				//SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
+				spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp
+						,AgentUnbind(act),timestep,maxl0);
+				//SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
+				spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+						AgentUnbind(pass),timestep,maxl0);
+				AgentFree(act);
+				act = NULL;
+				AgentFree(pass);
+				pass = NULL;
+				break;
+			default://This can't be right can it? - NB destroyAction = 0 covered here - make explicit!
+				if(act->ft == act->it){
+					act->i[act->it]--;
+				}
+				break;
+			}
+		}
+	}
+
+	if(!destroyAction){//todo(sjh): this would only be called if S>maxl0..
+		act->i[act->it]++;
+	}
+
+	return destroyAction;
+}

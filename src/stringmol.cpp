@@ -92,7 +92,7 @@ int joinsplists(int argc, char *argv[]){
     A = &oA;
 
 
-    pag = A->AgentMake('A');//,1);
+    pag = AgentMake('A',A->agct++,A->maxl0);//,1);
     pag->S =(char *) malloc(A->maxl0*sizeof(char));
 //First lets do the loading:
     for(i=0;i<nlists;i++){
@@ -176,7 +176,7 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
         l_spp *species;
         species = NULL;
 
-        pag = A->AgentMake(symbol);//,1);
+        pag = AgentMake(symbol,A->agct++,A->maxl0);//,1);
 
         pag->S =(char *) malloc(A->maxl0*sizeof(char));
         memset(pag->S,0,A->maxl0*sizeof(char));
@@ -197,7 +197,7 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
             A->nowhead = pag;
         }
         else{
-            A->AgentAppend(&(A->nowhead),pag);
+            AgentAppend(&(A->nowhead),pag);
         }
     }
 }
@@ -319,7 +319,7 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
             l_spp *s;
             s = NULL;
 
-            pag = A->AgentMake('A'+j);//,1);
+            pag = AgentMake('A'+j,A->agct++,A->maxl0);//,1);
 
             pag->S =(char *) malloc(A->maxl0*sizeof(char));
             memset(pag->S,0,A->maxl0*sizeof(char));
@@ -341,7 +341,7 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
                 A->nowhead = pag;
             }
             else{
-                A->AgentAppend(&(A->nowhead),pag);
+                AgentAppend(&(A->nowhead),pag);
             }
         }
     }
@@ -2271,7 +2271,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
         l_spp *s;
         s = NULL;
 
-        pag = A->AgentMake('R');//,1);
+        pag = AgentMake('R',A->agct++,A->maxl0);//,1);
 
         pag->S =(char *) malloc(A->maxl0*sizeof(char));
         pag->label = 'R';
@@ -2291,7 +2291,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 
         //Record that the replicase copies itself
         pag->spp=s;
-        A->AgentAppend(&(A->nexthead),pag);
+        AgentAppend(&(A->nexthead),pag);
     }
 
 
@@ -2303,19 +2303,19 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 
         //safest & quickest to destroy the replicases and replenish.
         if(!(strncmp(pag->spp->S,repstring,replen))){
-            A->AgentFree(pag);
+            AgentFree(pag);
             pag = NULL;
             continue;
         }
         else{
             if(pag->status!=B_UNBOUND){
-                A->AgentFree(pag);
+                AgentFree(pag);
                 pag = NULL;
                 continue;
             }
         }
         A->SpeciesListUpdate(pag,'M',1,NULL,NULL,0);
-        A->AgentAppend(&(A->nexthead),pag);
+        AgentAppend(&(A->nexthead),pag);
         count++;
     }
 

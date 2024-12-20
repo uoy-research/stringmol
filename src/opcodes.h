@@ -33,6 +33,10 @@ void OpcodeIncrementRead(s_ag *act, bool granular_1);
 
 void OpcodeToggle(s_ag *act);
 
+int OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
+		unsigned long int *agct,
+		const unsigned int timestep, const unsigned int maxl0);
+
 char * OpcodeIf(char *ip, char *rp, char *sp, swt *T, const int maxl);
 
 void OpcodeInsertInstruction(const s_ag * act, int inst_idx,

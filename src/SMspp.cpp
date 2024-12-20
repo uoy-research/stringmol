@@ -416,3 +416,78 @@ int SMspp::SpeciesListPrint(FILE *fp){
 	}
 	return count;
 }
+
+
+
+
+//todo(sjh): I think every call to this has add==1 - remove?
+/*******************************************************************************
+* @brief update the list of species with an agent
+*
+* @details This is called from CLEAVE, otherwise we can't tell if its in
+*          the middle of being constructed....
+*
+* @param[in] p the agent
+*
+* @param[in] sptype the 'type' of species
+*
+* @param[in] add flag to say whether to add to the list
+*
+* @param[in] paspp pointer to active species list (???)
+*
+* @param[in] ppspp pointer to passive species list (???)
+*
+* @param[in] mass the number of characters in the string (???)
+*
+* @return 0 regardless of succes (todo: fix this)
+*******************************************************************************/
+ int SMspp::SpeciesListUpdate(s_ag *p, char sptype, int add,
+		 l_spp *paspp, l_spp * ppspp, int mass,
+		 const unsigned int timestep, const unsigned int maxl0){
+
+ 	l_spp *sp;
+ 	sp = species_list;
+ 	int found=0;
+ 	int novel=0;
+
+ 	while(sp!=NULL&&!found){
+ 		if(!strcmp(sp->S,p->S)){//we've found a match on the string
+ 			found=sp->spp;
+ 			if(add){
+ 				//Need to check whether this is a dissociating partner in a reaction that has changed:
+ 				if(p->spp!=NULL){//We haven't decided what the spp is yet
+ 					if(p->spp->spp != sp->spp){
+ 						sp->count++;
+ 						novel=1;
+ 					}
+ 					//novel=0 IF dissociating and no new spp are produced.
+ 				}
+ 				else{
+ 					sp->count++;
+ 					novel=1;
+ 				}
+ 			}
+ 			break;
+ 		}
+ 		sp = sp->next;
+ 	}
+
+ 	if(add){//Only do this if we are adding to the list (not just checking reaction-space
+ 		if(!found){
+ 			sp = SpeciesMakeFromAgent(p,timestep,maxl0);
+
+ 			sp->sptype = sptype;
+ 			sp->biomass += mass;
+ 			SpeciesPrependToList(sp); //append_lspp(sp);
+ 			novel=1;
+ 		}
+
+ 		//Now sort out the parentage:
+ 		p->spp = sp;//->spp;
+ 		if(novel)
+ 			p->pp = ParentsFindOrMake(p->spp, paspp, ppspp);
+
+ 	}
+
+ 	return found;
+ }

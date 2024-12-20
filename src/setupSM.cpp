@@ -869,7 +869,7 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 	if(act->f[act->ft]-csite->S < csite->len){
 
 		//1: MAKE THE NEW MOLECULE FROM THE CLEAVE POINT
-		c = A->AgentMake(pass->label);//,1);
+		c = AgentMake(pass->label,(A->agct)++,A->maxl0);//,1);
 
 		//Copy the cleaved string to the agent
 		char *cs;
@@ -887,7 +887,7 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 		if(!cpy){
 			printf("ERROR: Zero length molecule definitely being created!\nbail..\n");
-			A->AgentFree(c);
+			AgentFree(c);
 			c=NULL;
 		}
 		else{
@@ -906,10 +906,10 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 			//TODO: place the new agent on the grid
 			if((AgentPlaceInMooreNeighbourhood(A,run,c,act->x,act->y))!=NULL){//,x,y))!=NULL){
 				//append the agent to nexthead
-				A->AgentAppend(&(A->nexthead),c);
+				AgentAppend(&(A->nexthead),c);
 			}
 			else{
-				A->AgentFree(c);
+				AgentFree(c);
 				c=NULL;
 			}
 		}
@@ -930,12 +930,12 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 		//Get rid of zero-length strings...
 		//NB - grid status will be updated at the end of the timestep - simpler.
-		if((dac = A->AgentCheckZeroLengthString(act))){
+		if((dac = AgentCheckZeroLengthString(act))){
 			//int x,y;
 			switch(dac){
 			case 1://Destroy active - only append passive
 				A->SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
-				A->AgentAppend(&(A->nexthead),pass);
+				AgentAppend(&(A->nexthead),pass);
 				//find_ag_gridpos(pass,run,&x,&y);
 				//run->status[x][y]=G_NEXT;
 				run->status[pass->x][pass->y]=G_NEXT;
@@ -944,13 +944,13 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				run->grid[act->x][act->y]=NULL;
 				run->status[act->x][act->y]=G_EMPTY;
 
-				A->AgentFree(act);
+				AgentFree(act);
 				act = NULL;
 
 				break;
 			case 2://Destroy passive - only append active
 				A->SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
-				A->AgentAppend(&(A->nexthead),act);
+				AgentAppend(&(A->nexthead),act);
 				//find_ag_gridpos(act,run,&x,&y);
 				run->status[act->x][act->y]=G_NEXT;
 
@@ -959,7 +959,7 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				run->grid[pass->x][pass->y]=NULL;
 				run->status[pass->x][pass->y]=G_EMPTY;
 
-				A->AgentFree(pass);
+				AgentFree(pass);
 				pass = NULL;
 
 				break;
@@ -967,9 +967,9 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				printf("Destroying both parents after cleave!\nThis should never happen!\n");
 				A->SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
 				A->SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
-				A->AgentFree(act);
+				AgentFree(act);
 				act = NULL;
-				A->AgentFree(pass);
+				AgentFree(pass);
 				pass = NULL;
 				break;
 			default://This can't be right can it?
@@ -1172,8 +1172,8 @@ int ReactionExecuteOpcodeSpatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pas
 	//TODO: This action should be elsewhere - much harder to follow here
 	if(safe_append){
 		act->ect++;
-		A->AgentAppend(&(A->nexthead),act);
-		A->AgentAppend(&(A->nexthead),pass);
+		AgentAppend(&(A->nexthead),act);
+		AgentAppend(&(A->nexthead),pass);
 	}
 	A->energy--;
 
@@ -1227,7 +1227,7 @@ int AgentAttemptDecaySpatial(stringPM *A, smsprun *run, s_ag *pag){
 		run->grid[pag->x][pag->y]=NULL;
 		run->status[pag->x][pag->y]=G_EMPTY;
 
-		A->AgentFree(pag);
+		AgentFree(pag);
 		//TODO: sort this null-ing of free'd agents out!
 		//pag = NULL;
 
@@ -1237,7 +1237,7 @@ int AgentAttemptDecaySpatial(stringPM *A, smsprun *run, s_ag *pag){
 			run->grid[bag->x][bag->y]=NULL;
 			run->status[bag->x][bag->y]=G_EMPTY;
 
-			A->AgentFree(bag);
+			AgentFree(bag);
 			bag = NULL;
 		}
 
@@ -1540,8 +1540,8 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 
 							A->energy--;
 
-							A->AgentAppend(&(A->nexthead),pag);
-							A->AgentAppend(&(A->nexthead),bag);
+							AgentAppend(&(A->nexthead),pag);
+							AgentAppend(&(A->nexthead),bag);
 							changed=1;
 						}
 					}
@@ -1565,9 +1565,9 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 				}
 			}
 			if(!changed){
-				A->AgentAppend(&(A->nexthead),pag);
+				AgentAppend(&(A->nexthead),pag);
 				if(bag!=NULL)
-					A->AgentAppend(&(A->nexthead),bag);
+					AgentAppend(&(A->nexthead),bag);
 
 			}
 		}
@@ -1642,7 +1642,7 @@ int StringmolSpatialConfigureFromFile(const char *fn, stringPM *A, smsprun **run
 			if( pag->x > -1 ){
 				if( pag->y > -1){
 					AgentPlaceOnGrid(pag,*run,pag->x,pag->y);
-					A->AgentAppend(&(A->nexthead),pag);
+					AgentAppend(&(A->nexthead),pag);
 					found = 1;
 				}
 				else{
@@ -1678,14 +1678,14 @@ int StringmolSpatialConfigureFromFile(const char *fn, stringPM *A, smsprun **run
 							AgentPlaceOnGrid(pag,*run,x,y);
 
 							//Move to the 'used' bucket
-							A->AgentAppend(&(A->nexthead),pag);
+							AgentAppend(&(A->nexthead),pag);
 
 							s_ag *bag;
 							bag = A->AgentSelectRandomly(A->nowhead,-1);
 							if(bag != NULL){
 								A->AgentExtract(&(A->nowhead),bag);
 								AgentPlaceOnGrid(bag,*run,xx,yy);
-								A->AgentAppend(&(A->nexthead),bag);
+								AgentAppend(&(A->nexthead),bag);
 							}
 						}
 					}

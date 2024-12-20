@@ -61,6 +61,8 @@
 
 
 
+
+
 stringPM::stringPM(SMspp * pSP){
 
 	if(pSP!=NULL)
@@ -109,6 +111,9 @@ stringPM::stringPM(SMspp * pSP){
 }
 
 
+
+
+
 stringPM& stringPM::operator=(const stringPM &spm){
 
 	spl      = spm.spl;
@@ -155,6 +160,9 @@ stringPM& stringPM::operator=(const stringPM &spm){
 }
 
 
+
+
+
 //Copy constructor uses operator=
 stringPM::stringPM(const stringPM& spm){
 	*this = spm;
@@ -167,6 +175,7 @@ stringPM::stringPM(const stringPM& spm){
 stringPM::~stringPM() {
 	BucketReset(0);
 }
+
 
 
 
@@ -188,7 +197,8 @@ void stringPM::SetHeadsAndDefaults(){
 
 
 
-/* Make sure the masseage memory is freed - so you can't do printf("%s",parse_error(1)); - the memory will not be freed.
+/* todo(sjh): Make sure the message memory is freed
+ * - so you can't do printf("%s",parse_error(1)); - the memory will not be freed.
  *
  */
 char * stringPM::parse_error(int errno){
@@ -285,7 +295,8 @@ float stringPM::load_decay(const char *fn, int verbose){
 
 
 
-//TODO: This should be in alignment.cpp
+
+//TODO(sjh): This should be in alignment.cpp
 int stringPM::load_table_matrix(const char *fn){
 	FILE *fp;
 	printf("File name is %s",fn);
@@ -345,6 +356,9 @@ int stringPM::load_table_matrix(const char *fn){
 	else
 		return 60;
 }
+
+
+
 
 
 int stringPM::load_table(const char *fn){
@@ -449,6 +463,9 @@ int stringPM::load_table(const char *fn){
 }
 
 
+
+
+
 int stringPM::load_splist(const char *fn,int verbose){
 
 	const int llen = maxl0 + 256;
@@ -494,6 +511,9 @@ int stringPM::load_splist(const char *fn,int verbose){
 }
 
 
+
+
+//todo(sjh):move sto SMspp class
 int stringPM::id_spp(l_spp *sp, s_ag *pag, int  aspno, char *spp_string){
 	if(sp->spp == aspno){
 		if(!strncmp(sp->S,spp_string,strlen(spp_string))){
@@ -506,6 +526,8 @@ int stringPM::id_spp(l_spp *sp, s_ag *pag, int  aspno, char *spp_string){
 	}
 	return 0;
 }
+
+
 
 
 
@@ -599,7 +621,7 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 					printf("ERROR READING REACTION (passive state) at line %d\n",linecount+1);
 					return 1;
 				}
-				bag = AgentMake('X');//TODO: fix this need for ascii codes... we have species numbers now!
+				bag = AgentMake('X',agct++,maxl0);//TODO: fix this need for ascii codes... we have species numbers now!
 				bag->S =(char *) malloc(maxl0*sizeof(char));
 				memset(bag->S,0,maxl0*sizeof(char));
 				strncpy(bag->S,passive_string,maxl);//passive_string));
@@ -686,7 +708,7 @@ s_ag * stringPM::read_unbound_agent(FILE **fp, char line[], const int llen){
 	l_spp *s;
 
 
-	pag = AgentMake(code);//,1);
+	pag = AgentMake(code,agct++,maxl0);//,1);
 
 	pag->S =(char *) malloc(maxl0*sizeof(char));
 
@@ -780,7 +802,7 @@ s_ag * stringPM::read_active_agent(FILE **fp, char line[], const int llen, int &
 		return NULL;
 	}
 
-	pag = AgentMake('X');//TODO: fix this need for ascii codes... we have species numbers now!
+	pag = AgentMake('X',agct++,maxl0);//TODO: fix this need for ascii codes... we have species numbers now!
 	pag->S =(char *) malloc(maxl0*sizeof(char));
 	memset(pag->S,0,maxl0*sizeof(char));
 	strncpy(pag->S,active_string,maxl);//active_string));
@@ -825,6 +847,7 @@ s_ag * stringPM::read_active_agent(FILE **fp, char line[], const int llen, int &
 
 
 
+
 s_ag * stringPM::read_passive_agent(FILE **fp, char line[], const int llen){
 
 	int gx,gy;
@@ -857,7 +880,7 @@ s_ag * stringPM::read_passive_agent(FILE **fp, char line[], const int llen){
 	s_ag *bag;
 
 	/* Now create the molecule */
-	bag = AgentMake('X');//TODO: fix this need for ascii codes... we have species numbers now!
+	bag = AgentMake('X',agct++,maxl0);//TODO: fix this need for ascii codes... we have species numbers now!
 	bag->S =(char *) malloc(maxl0*sizeof(char));
 	memset(bag->S,0,maxl0*sizeof(char));
 	strncpy(bag->S,passive_string,maxl);//passive_string));
@@ -906,6 +929,7 @@ smsprun * stringPM::init_smprun(const int gridx, const int gridy){
 
 	return grid;
 }
+
 
 
 
@@ -1055,7 +1079,7 @@ int stringPM::load_replicable(const char *fn){
 
 
 
-
+//todo(sjh): Move to agent.cpp ??
 /******************************************************************************
 * @brief Load the molecule set from a config file
 *
@@ -1248,7 +1272,7 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 					for(int i=0;i<nag;i++){
 
 
-						pag = AgentMake(code);//,1);
+						pag = AgentMake(code,agct++,maxl0);//,1);
 
 						pag->S =(char *) malloc(maxl0*sizeof(char));
 
@@ -1512,39 +1536,8 @@ void stringPM::get_spp_count(int state){
 
 
 
-/******************************************************************************
- * @brief append an agent to a list
- *
- * @param[in] list the list of agents
- *
- * @param[in] ag the agent
- *
- * @return 0 always
- *****************************************************************************/
-int stringPM::AgentAppend(s_ag **list, s_ag *ag){
-	s_ag *pag;
 
-	//printf("appending: list = %p, ag = %p\n",*list,ag);
-	if(*list==NULL){
-		*list=ag;
-		//printf("appended: list = %p, ag = %p\n",*list,ag);
-	}
-	else{
-		pag = *list;
-		while(pag->next != NULL){
-			pag = pag->next;
-		}
-		pag->next = ag;
-		ag->prev = pag;
-	}
-
-	return 0;
-}
-
-
-
-
-
+//todo(sjh):delete/move to agent.cpp
 /*******************************************************************************
 * @brief determine whether an agent is present in a list (by address)
 *
@@ -1569,6 +1562,7 @@ bool stringPM::AgentAddressInList(s_ag *list,const s_ag *tag){
 
 
 
+//todo(sjh):delete/move to agent.cpp
 /******************************************************************************
  * @brief extract an agent from a list
  *
@@ -1604,31 +1598,7 @@ int stringPM::AgentExtract(s_ag **list, s_ag *ag){
 
 
 
-/******************************************************************************
- * @brief free memory used by an agent
- *
- * @param[in] pag the agent to free
- *
- * @return 0 always
- *****************************************************************************/
-int stringPM::AgentFree(s_ag *pag){
-
-	if(pag->S != NULL){
-		//printf("destroying agent %d, code = %s\n",pag->idx,pag->S);
-		free(pag->S);
-	}
-
-	free(pag);
-	//TODO: we should set this to null at the moment we have to do it after each call to this function...!
-	//pag = NULL;
-
-	return 0;
-}
-
-
-
-
-
+//todo(sjh):delete/move to agent.cpp
 /******************************************************************************
  * @brief count agents
  *
@@ -1716,54 +1686,6 @@ s_ag * stringPM::AgentSelectRandomly(s_ag *head, int state){
 	return pag;
 }
 
-
-
-/**
- * Create an 'agent', which is a string 'molecule'
- * NB: The string is not allocated here - done outside the function
- *
- * parameters:
- *
- * alab: a single-character label for the string (e.g. 'C')
- *
- */
-/*******************************************************************************
- * @brief allocate memory and set up structure of a new agent
- *
- * @param[in] alab an integer identifier
- *
- * @return the agent
-* *****************************************************************************/
-s_ag * stringPM::AgentMake(int alab){
-
-	s_ag *ag;
-
-	//printf("Spatial make_ag called\n");fflush(stdout);
-
-	//ATTENTION! this is how you convert from C-style to C++-style casts
-	//https://embeddedartistry.com/blog/2017/03/15/c-casting-or-oh-no-they-broke-malloc/
-	//if((ag = (s_ag *) mymalloc(1,sizeof(s_ag)))!=NULL){
-	if(( ag = static_cast<s_ag *> (MallocOrExit(1, sizeof(s_ag))))!=NULL){
-		ag->label=alab;
-		ag->next = NULL;
-		ag->prev = NULL;
-		ag->exec = NULL;
-		ag->pass = NULL;
-		ag->S = NULL;
-		ag->spp = NULL;
-		ag->status = B_UNBOUND;
-		ag->idx = agct++;ag->nbind=0;ag->ect=0;
-		ag->biomass=0;
-		ag->x=-1;
-		ag->y=-1;
-		return ag;
-	}
-	else{
-		printf("mymalloc error\n");fflush(stdout);
-		getchar();
-		return NULL;
-	}
-}
 
 
 
@@ -2234,148 +2156,6 @@ int stringPM::ReactionAttemptBind(s_ag *pag){
 
 
 
-/******************************************************************************
- * @brief reposition pointers if they are beyond the end of string post cleave
- *
- * @param[in] act the agent
- *
- * @return 0 always
- *****************************************************************************/
-int stringPM::AgentRewindDanglingPtrs(s_ag* act){
-
-	int plen,alen,pdist;
-	char *ps;
-
-	//PUT DANGLING POINTERS AT THE *END* OF THE STRINGS:
-	//DO THE PASSIVE POINTERS FIRST:
-	plen = strlen(act->pass->S);
-	if(plen){
-		ps = act->pass->S;
-
-		pdist = act->i[0]-ps;
-		if(pdist>plen || pdist<0)
-			act->i[0]=ps+plen;
-
-		pdist = act->r[0]-ps;
-		if(pdist>plen || pdist<0)
-			act->r[0]=ps+plen;
-
-		pdist = act->w[0]-ps;
-		if(pdist>plen || pdist<0)
-			act->w[0]=ps+plen;
-
-		pdist = act->f[0]-ps;
-		if(pdist>plen || pdist<0)
-			act->f[0]=ps+plen;
-	}
-	else{//Toggle everything off this string...
-		act->i[0]=act->pass->S;
-		act->r[0]=act->pass->S;
-		act->w[0]=act->pass->S;
-		act->f[0]=act->pass->S;
-
-		act->it=1;
-		act->rt=1;
-		act->wt=1;
-		act->ft=1;
-	}
-
-
-	//DO THE ACTIVE POINTERS NOW
-	alen = strlen(act->S);
-	ps = act->S;
-
-	if(alen){
-		pdist = act->i[1]-ps;
-		if(pdist>alen || pdist<0)
-			act->i[1]=ps+alen;
-
-		pdist = act->r[1]-ps;
-		if(pdist>alen || pdist<0)
-			act->r[1]=ps+alen;
-
-		pdist = act->w[1]-ps;
-		if(pdist>alen || pdist<0)
-			act->w[1]=ps+alen;
-
-		pdist = act->f[1]-ps;
-		if(pdist>alen || pdist<0)
-			act->f[1]=ps+alen;
-	}
-	else{//Toggle everything off this string...
-		act->i[1]=act->S;
-		act->r[1]=act->S;
-		act->w[1]=act->S;
-		act->f[1]=act->S;
-
-		if(plen){
-			act->it=0;
-			act->rt=0;
-			act->wt=0;
-			act->ft=0;
-		}
-	}
-
-	//TODO: error checking on this!
-	return 0;
-}
-
-
-
-
-
-/******************************************************************************
- * @brief handle zero-length strings (after a Cleave for example)
- *
- * @param[in] act the agent
- *
- * @return 0 if no problem; 1 if zero-length active string;
- *         2 zero-length passive string
- *****************************************************************************/
-int stringPM::AgentCheckZeroLengthString(s_ag* act){
-
-#ifdef VERBOSE
-	ReactionPrintState(stdout,act,act->pass);
-#endif
-	//int len,pdist;
-	//char *ps;
-
-	//Sort pointers out first - even if there's going to be an error!
-	AgentRewindDanglingPtrs(act);
-
-	//Step 1: make sure act and pass *have* strings...
-	if(!strlen(act->S)){
-#ifdef VERBOSE
-		printf("Zero length active string - dissoc\n");
-#endif
-		return 1;
-		//if(!strlen(act->pass->S)){
-		//	printf("Zero length active and passive strings - destroy\n");
-		//	return 3;
-		//}
-	}
-	if(!strlen(act->pass->S)){
-#ifdef VERBOSE
-		printf("Zero length passive string - dissoc\n");
-#endif
-		return 2;
-	}
-
-
-
-#ifdef VERBOSE
-	ReactionPrintState(stdout,act,act->pass);
-#endif
-
-	return 0;
-
-}
-
-
-
-
-
-
 
 /******************************************************************************
  * @brief cleave
@@ -2384,7 +2164,7 @@ int stringPM::AgentCheckZeroLengthString(s_ag* act){
  *
  * @return which agents have been destroyed (if any) 0: none; 1: active only
  *         2: passive only; 3: both
- *****************************************************************************/
+ ****************************************************************************
 int stringPM::OpcodeCleave(s_ag *act){
 
 	int dac = 0,cpy;
@@ -2482,7 +2262,7 @@ int stringPM::OpcodeCleave(s_ag *act){
 	}
 
 	return dac;
-}
+}*/
 
 
 
@@ -2558,7 +2338,7 @@ int stringPM::ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 		 *  CLEAVE  *
 		 ************/
 		case '%'://TODO(sjh): think about improving the safe_append mechanism...
-			if((OpcodeCleave(act) )){
+			if((OpcodeCleave(act,nexthead,spl,&agct,timestep,maxl0) )){
 				safe_append=0;
 			}
 			break;
@@ -2894,7 +2674,7 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 		break;
 
 	/*************
-	 *   P_MOVE  *
+	 *   MOVE  *
 	 *************/
 	case '>':
 		OpcodeMove(act);
@@ -2902,7 +2682,7 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 
 
 	/************
-	 *   HCOPY  *
+	 *   COPY  *
 	 ************/
 	case '='://h-copy
 		if(OpcodeComassCopy(act,domut,indelrate,subrate,maxl,
@@ -2931,7 +2711,7 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 	 *  CLEAVE  *
 	 ************/
 	case '%':
-		if(( OpcodeCleave(act) )){
+		if((OpcodeCleave(act,nexthead,spl,&agct,timestep,maxl0) )){
 			safe_append=0;
 		}
 		break;
@@ -3303,7 +3083,7 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 				 *  CLEAVE  *
 				 ************/
 				case '%':
-						if((/*dac =*/ OpcodeCleave(act) )){
+						if((OpcodeCleave(act,nexthead,spl,&agct,timestep,maxl0) )){
 							finished = 1;
 							safe_append=0;	//extract_ag(&nowhead,p);
 						}

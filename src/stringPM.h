@@ -64,7 +64,7 @@ public:
 	swt	*blosum;
 	s_sw *swlist;
 
-	long agct;
+	unsigned long agct;
 	unsigned int timestep; 	//record of the cell iteration count
 
 	unsigned long randseed;
@@ -134,7 +134,6 @@ public:
 	~stringPM();
 	/*********************************************************************/
 
-	s_ag * AgentMake(int alab);//, int randpos);
 
 	void SetHeadsAndDefaults();
 	void BucketReset(int verbose = 0);
@@ -144,7 +143,6 @@ public:
 
 	//Loading
 	int load_splist(const char *fn,int verbose);
-	int AgentsLoad(const char *fn, char *fninput, int test=0, int verbose=0);
 	float load_mut(const char *fn, int verbose); //load the mutation rate
 	float load_decay(const char *fn, int verbose); //load the decay rate
 	int load_reactions(const char *fn, char *fntab, int test, int verbose);
@@ -160,11 +158,11 @@ public:
 	void divide();
 
 	//list stuff
-	int 	AgentAppend(s_ag **list, s_ag *ag);
+	int 	AgentsLoad(const char *fn, char *fninput,
+						int test=0, int verbose=0);
 	int 	AgentExtract(s_ag **list, s_ag *ag);
 	int 	AgentsCount(s_ag *head, int state);
 	s_ag * 	AgentSelectRandomly(s_ag *head, int state);
-	int 	AgentFree(s_ag *pag);
 	bool 	AgentAddressInList(s_ag *list,const s_ag *tag);
 
 
@@ -175,7 +173,7 @@ public:
 	void UpdateNowNext();
 
 	//INSTRUCTION SET:
-	int OpcodeCleave(s_ag *act);  //	=	CLEAVE
+	//int OpcodeCleave(s_ag *act);  //	=	CLEAVE
 
     //Influx
 	void influx_special(int t);
@@ -223,8 +221,8 @@ public:
 	void 	PointerPrintOffset(FILE *fp,const char *S,const char *p,int F, char c);
 	void 	ReactionPrintState(FILE *fp, s_ag *act, s_ag *pas);
 	void 	SmithWatermanFree(swt *pSWT, int verbose);
-	int 	AgentCheckZeroLengthString(s_ag* act);
-	int 	AgentRewindDanglingPtrs(s_ag* pag);
+	//int 	AgentCheckZeroLengthString(s_ag* act);
+	//int 	AgentRewindDanglingPtrs(s_ag* pag);
 
 
 	//Checking the energy model: (THIS RESULTS IN AN UNSTABLE SYSTEM)

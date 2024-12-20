@@ -65,10 +65,10 @@ struct s_ag{//THIS DEFINES AN INDIVIDUAL AGENT IN A STRINGMOL SYSTEM
 };
 
 
-
+int AgentRewindDanglingPtrs(s_ag* act);
 int AgentCheckZeroLengthString(s_ag* act);
 
-s_ag * AgentMake(int alab, const unsigned int maxl0);
+s_ag * AgentMake(int label, const unsigned long int agct, const unsigned int maxl0);
 
 
 s_ag * AgentMakeWithSequence(char * seq, const unsigned int label,

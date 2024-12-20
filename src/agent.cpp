@@ -192,7 +192,7 @@ int AgentCheckZeroLengthString(s_ag* act){
  *
  * @return the agent
 * *****************************************************************************/
-s_ag * AgentMake(int alab, const unsigned int agct, const unsigned int maxl0){
+s_ag * AgentMake(int alab, const unsigned long int agct, const unsigned int maxl0){
 
 	s_ag *ag;
 

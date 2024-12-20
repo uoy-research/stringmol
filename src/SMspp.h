@@ -142,6 +142,11 @@ public:
 
 	int SpeciesListClear();
 
+	//todo(sjh): adapted from fn in stringPM class.. write tests!
+	int SpeciesListUpdate(s_ag *p, char sptype, int add,
+			 l_spp *paspp, l_spp * ppspp, int mass,
+			 const unsigned int timestep, const unsigned int maxl0);
+
 	//TODO: write these - save memory!
 	//int		print_list();
 	//int		list_to_file(const char *fn, const char *mode);
