@@ -119,7 +119,7 @@ int joinsplists(int argc, char *argv[]){
                     pag->pp = A->spl->ParentsMake(NULL,NULL);
 
                     //int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
-                    A->SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
+                    A->spl->SpeciesListUpdate(pag,'I',1,NULL,NULL,0,A->timestep,A->maxl0);
                     //s = A->spl->getspp(pag,0);
                     //    s->tspp = 0;
                     //}
@@ -188,7 +188,7 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
 
         if(i==0){
             //int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
-            A->SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
+            A->spl->SpeciesListUpdate(pag,'I',1,NULL,NULL,0,A->timestep,A->maxl0);
             species = A->spl->getspp(pag,0,A->maxl0);
             species->tspp = 0;
         }
@@ -332,7 +332,7 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
 
             if(!i){
                 //int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
-                A->SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
+                A->spl->SpeciesListUpdate(pag,'I',1,NULL,NULL,0,A->timestep,A->maxl0);
                 s = A->spl->getspp(pag,0,A->maxl0);
                 s->tspp = 0;
             }
@@ -1980,7 +1980,7 @@ int SmPm_conpop(int argc, char *argv[]){
                 l_spp *s;
                 for(pag = A[c]->nowhead;pag!=NULL;pag=pag->next){
                     pag->pp = A[c]->spl->ParentsMake(NULL,NULL);
-                    A[c]->SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
+                    A[c]->spl->SpeciesListUpdate(pag,'I',1,NULL,NULL,0,A[c]->timestep,A[c]->maxl0);
                     s = A[c]->spl->getspp(pag,A[c]->timestep,A[c]->maxl0);
                     s->tspp = 0;
                     pag->spp=s;
@@ -2283,7 +2283,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
         pag->pp = A->spl->ParentsMake(NULL,NULL);
 
         if(!i){
-            A->SpeciesListUpdate(pag,'R',1,NULL,NULL,0);
+            A->spl->SpeciesListUpdate(pag,'R',1,NULL,NULL,0,A->timestep,A->maxl0);
             s = A->spl->getspp(pag,0,A->maxl0);
             //TODO: tidy up handling of seed species, but for now:
             s->tspp = 0;
@@ -2299,7 +2299,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
     while(A->nowhead!=NULL && count < nmols){
         pag = A->AgentSelectRandomly(A->nowhead,-1);
         A->AgentExtract(&(A->nowhead),pag);
-        A->SpeciesListUpdate(pag,'R',1,NULL,NULL,0);
+        A->spl->SpeciesListUpdate(pag,'R',1,NULL,NULL,0,A->timestep,A->maxl0);
 
         //safest & quickest to destroy the replicases and replenish.
         if(!(strncmp(pag->spp->S,repstring,replen))){
@@ -2314,7 +2314,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
                 continue;
             }
         }
-        A->SpeciesListUpdate(pag,'M',1,NULL,NULL,0);
+        A->spl->SpeciesListUpdate(pag,'M',1,NULL,NULL,0,A->timestep,A->maxl0);
         AgentAppend(&(A->nexthead),pag);
         count++;
     }

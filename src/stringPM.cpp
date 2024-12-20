@@ -744,7 +744,7 @@ s_ag * stringPM::read_unbound_agent(FILE **fp, char line[], const int llen){
 	//if(!i){
 
 	//int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
-	SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
+	spl->SpeciesListUpdate(pag,'I',1,NULL,NULL,0,timestep,maxl0);
 	s = spl->getspp(pag,timestep,maxl0);
 	//TODO: tidy up handling of seed species, but for now:
 	s->tspp = 0;
@@ -1308,7 +1308,7 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 						if(!i){
 
 							//int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
-							SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
+							spl->SpeciesListUpdate(pag,'I',1,NULL,NULL,0,timestep,maxl0);
 							s = spl->getspp(pag,timestep,maxl0);
 							//TODO: tidy up handling of seed species, but for now:
 							s->tspp = 0;
@@ -2080,7 +2080,7 @@ int stringPM::SMAgentUnbindAndSpeciesListUpdate(s_ag * pag, char sptype, int upd
 
 	int mass = AgentUnbind(pag);
 
-	found = SpeciesListUpdate(pag,sptype,update,pa,pp,mass);
+	found = spl->SpeciesListUpdate(pag,sptype,update,pa,pp,mass,timestep,maxl0);
 	return found;
 }
 
@@ -2795,7 +2795,7 @@ int stringPM::set_mass(const int *param){
 	for(pag=nowhead;pag!=NULL;pag=pag->next){
 		if(update_mass(pag->S,strlen(pag->S),-1, 1)){
 			//SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp, int mass){
-			SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
+			spl->SpeciesListUpdate(pag,'I',1,NULL,NULL,0,timestep,maxl0);
 		}
 	}
 
@@ -3467,7 +3467,7 @@ void stringPM::sanity_check(){
 * @param[in] mass the number of characters in the string (???)
 *
 * @return 0 regardless of succes (todo: fix this)
-*******************************************************************************/
+******************************************************************************
 int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp, int mass){
 
 	l_spp *sp;
@@ -3516,7 +3516,7 @@ int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_s
 
 	return found;
 }
-
+*/
 
 
 

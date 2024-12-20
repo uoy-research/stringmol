@@ -900,7 +900,7 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 #endif
 
 			//Check the lineage
-			A->SpeciesListUpdate(c,'C',1,act->spp,pass->spp,act->biomass);
+			A->spl->SpeciesListUpdate(c,'C',1,act->spp,pass->spp,act->biomass,A->timestep,A->maxl0);
 			act->biomass=0; //reset this; we might continue to make stuff!
 
 			//TODO: place the new agent on the grid

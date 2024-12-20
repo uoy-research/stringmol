@@ -30,8 +30,8 @@ s_ag * SetupReactionFromStrings(char s1[], char s2[], stringPM * A){
 
 	align sw;
 
-	A->SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
-	A->SpeciesListUpdate(bag,'I',1,NULL,NULL,0);
+	A->spl->SpeciesListUpdate(pag,'I',1,NULL,NULL,0,A->timestep,A->maxl0);
+	A->spl->SpeciesListUpdate(bag,'I',1,NULL,NULL,0,A->timestep,A->maxl0);
 
 	//TODO: load blosum info
 	A->blosum = default_table();

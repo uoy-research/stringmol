@@ -248,7 +248,7 @@ public:
 	//Molecular species analysis:
 	//void 		update_lineage(s_ag *p,char sptype);
 	int 		get_ecosystem(); //TODO: sjh - is tis the same as Spatial Community stuff
-	int 		SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp, int mass);
+	//int 		SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp, int mass);
 	void 		print_lineage_dot(FILE *fp, int time,int step); //traces everything descending from the initial set.
 	void 		SpeciesPrintAncestryDot(FILE *fp, int time); //takes all current agents and traces them back
 	void 		SpeciesPrintStrings(FILE *fp);
