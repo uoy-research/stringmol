@@ -75,7 +75,7 @@ typedef struct s_swt{
 
 
 //Linked list stuff
-
+float   ReactionCalculateBindProbability(align *sw);
 s_sw * 	ReactionReadAlignmentFromSWList(s_sw *swlist, int sp1, int sp2);
 int 	ReactionStoreAlignmentToSWList(s_sw **swlist, align * sw,int sp1, int sp2);
 int	SmithWatermanDataFromAlignmentObject(s_sw *b, align *sw);

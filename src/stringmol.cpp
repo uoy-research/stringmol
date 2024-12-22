@@ -518,7 +518,7 @@ int origlife(int argc, char *argv[]){
                 }
 
 
-                if(!A.AgentsCount(A.nowhead,-1) || (!rr && nsteps >1500000) || nsteps >15000000){
+                if(!AgentsCount(A.nowhead,-1) || (!rr && nsteps >1500000) || nsteps >15000000){
                     printf("DEATH\n");
                     printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
                     //A.AgentsPrint_count(stdout);
@@ -637,7 +637,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 
 
-        BucketA.AgentsPrint(stdout,"NOW",0);
+        AgentsPrint(stdout,BucketA.nowhead,0,BucketA.maxl);
 
         BucketA.run_number=rr;
         PopdyInitFile(&BucketA);
@@ -710,7 +710,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 #endif
 
-            if(!BucketA.AgentsCount(BucketA.nowhead,-1) || (!rr && nsteps >15000000) || nsteps >15000000){
+            if(!AgentsCount(BucketA.nowhead,-1) || (!rr && nsteps >15000000) || nsteps >15000000){
                 printf("DEATH\n");
                 //fprintf(fpdiv,"%d\t%d\t%d",div,i,(int)A.energy);
                 //BucketA.AgentsPrint_count(fpdiv);
@@ -871,7 +871,7 @@ int comass_AlifeXII(int argc, char *argv[]){
         A.AgentsLoad(argv[2],NULL,0,1);
 
         A.load_comass(argv[2],1);
-        A.AgentsPrint(stdout,"NOW",0);
+        AgentsPrint(stdout,A.nowhead,false,A.maxl);
 
         A.run_number=rr;
     	PopdyInitFile(&A);
@@ -945,7 +945,7 @@ int comass_AlifeXII(int argc, char *argv[]){
             }
 
 
-            if(!A.AgentsCount(A.nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
+            if(!AgentsCount(A.nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
                 printf("DEATH\n");
                 printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
                 A.SpeciesPrintCount(stdout,0,-1);
@@ -1610,7 +1610,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
         //test_adj(A.blosum);
 
-        A.AgentsPrint(stdout,"NOW",0);
+        AgentsPrint(stdout,A.nowhead,false,A.maxl);
 
         A.run_number=rr;
         sprintf(pfn,"popdy%03d.dat",A.run_number);
@@ -1681,7 +1681,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
             }
 
 
-            if(!A.AgentsCount(A.nowhead,-1) || (!rr && nsteps >1500000) || nsteps >15000000){
+            if(!AgentsCount(A.nowhead,-1) || (!rr && nsteps >1500000) || nsteps >15000000){
                 printf("DEATH\n");
                 printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
                 //A.AgentsPrint_count(stdout);
@@ -1849,8 +1849,8 @@ int SmPm_conpop(int argc, char *argv[]){
             }
             printf("\nCount:");
             for(c=0;c<NCON;c++){
-                printf("\t%d",A[c]->AgentsCount(A[c]->nowhead,-1));
-                fprintf(fpdiv,"\t%d",A[c]->AgentsCount(A[c]->nowhead,-1));
+                printf("\t%d",AgentsCount(A[c]->nowhead,-1));
+                fprintf(fpdiv,"\t%d",AgentsCount(A[c]->nowhead,-1));
                 SpeciesPrintCounts(A[c],gclock);
                 score[c] = ctspp(A[c],3);
             }
@@ -1924,7 +1924,7 @@ int SmPm_conpop(int argc, char *argv[]){
         //}
 
         for(c=0;c<NCON;c++){
-            if(!(A[c]->AgentsCount(A[c]->nowhead,-1))){
+            if(!(AgentsCount(A[c]->nowhead,-1))){
 
                 //Pick the cell with the highest score:
                 printf("At time %d, Cell %d has died. Selecting fittest container for division...\n",gclock,c);
@@ -2010,7 +2010,7 @@ int SmPm_conpop(int argc, char *argv[]){
 
     //Print out the end of the ancestries
     for(c=0;c<NCON;c++){
-        if(!(A[c]->AgentsCount(A[c]->nowhead,-1))){
+        if(!(AgentsCount(A[c]->nowhead,-1))){
 
             //Print the ancestry of this cell:
             FILE *afp;
@@ -2096,12 +2096,9 @@ void SmPm_1on1(int argc,char *argv[]){
             case B_ACTIVE:
                 a = p;
                 b = p->pass;
-                A.ReactionPrintState(stdout,a,b);
+                ReactionPrintState(stdout,a,b,A.maxl);
                 break;
             case B_PASSIVE:
-                //a = p->exec;
-                //b = p;
-                //A.ReactionPrintState(stdout,a,b);
                 break;
             }
             p = p->next;
@@ -2297,8 +2294,8 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 
 
     while(A->nowhead!=NULL && count < nmols){
-        pag = A->AgentSelectRandomly(A->nowhead,-1);
-        A->AgentExtract(&(A->nowhead),pag);
+        pag = AgentSelectRandomly(A->nowhead,-1);
+        AgentExtract(&(A->nowhead),pag);
         A->spl->SpeciesListUpdate(pag,'R',1,NULL,NULL,0,A->timestep,A->maxl0);
 
         //safest & quickest to destroy the replicases and replenish.
@@ -2440,7 +2437,7 @@ int speigmonst(int argc, char *argv[]){
         }
 
         A.energy=20;
-        A.AgentsPrint(stdout,"NOW",0);
+        AgentsPrint(stdout,A.nowhead,false,A.maxl);
 
         A.run_number=rr;
         sprintf(pfn,"popdy%03d.dat",A.run_number);
@@ -2518,7 +2515,7 @@ int speigmonst(int argc, char *argv[]){
             }
 
 
-            if(!A.AgentsCount(A.nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
+            if(!AgentsCount(A.nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
                 printf("DEATH\n");
                 printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
                 A.SpeciesPrintCount(stdout,0,B_UNBOUND);

@@ -37,7 +37,7 @@ s_ag * SetupReactionFromStrings(char s1[], char s2[], stringPM * A){
 	A->blosum = default_table();
 
 	//Bind the two strings
-	A->AgentsAlign(pag,bag,&sw);
+	AgentsAlign(pag,bag,&sw,A->blosum,A->swlist);
 
 	//Check the pointers are in the right place
 	A->ReactionSetupExecution(pag,bag,&sw);

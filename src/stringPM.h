@@ -142,27 +142,26 @@ public:
 	char * parse_error(int errno);
 
 	//Loading
-	int load_splist(const char *fn,int verbose);
-	float load_mut(const char *fn, int verbose); //load the mutation rate
-	float load_decay(const char *fn, int verbose); //load the decay rate
-	int load_reactions(const char *fn, char *fntab, int test, int verbose);
-	int load_table_matrix(const char *fn);
+	int 	load_splist(const char *fn,int verbose);
+	float 	load_mut(const char *fn, int verbose); //load the mutation rate
+	float 	load_decay(const char *fn, int verbose); //load the decay rate
+	int 	load_reactions(const char *fn, char *fntab, int test, int verbose);
+	int 	load_table_matrix(const char *fn);
 
 	//Iteration
-	void TimestepIncrement() override;
-	int ReactionAttemptBind(s_ag *pag);
-	int AgentAttemptDecay(s_ag *pag);
+	void 	TimestepIncrement() override;
+	int 	ReactionAttemptBind(s_ag *pag);
+	//int AgentAttemptDecay(s_ag *pag);
 	//int hasdied();
 
-	void replenish_operons();
-	void divide();
+	void 	replenish_operons();
+	void 	divide();
 
 	//list stuff
 	int 	AgentsLoad(const char *fn, char *fninput,
 						int test=0, int verbose=0);
-	int 	AgentExtract(s_ag **list, s_ag *ag);
-	int 	AgentsCount(s_ag *head, int state);
-	s_ag * 	AgentSelectRandomly(s_ag *head, int state);
+	//int 	AgentsCount(s_ag *head, int state);
+	//s_ag * 	AgentSelectRandomly(s_ag *head, int state);
 	bool 	AgentAddressInList(s_ag *list,const s_ag *tag);
 
 
@@ -170,22 +169,22 @@ public:
 	//void 	unbind_ag(s_ag * pag,char sptype);
 	int 	SMAgentUnbindAndSpeciesListUpdate(s_ag * pag, char sptype, int update, l_spp *pa, l_spp *pp);
 
-	void UpdateNowNext();
+	void 	UpdateNowNext();
 
 	//INSTRUCTION SET:
 	//int OpcodeCleave(s_ag *act);  //	=	CLEAVE
 
     //Influx
-	void influx_special(int t);
-	void influx(int i);
+	void 	influx_special(int t);
+	void 	influx(int i);
 
 
     //list / array interface:
-	void update_aac();
+	void 	update_aac();
 
 	//Diagnostics
-	void AgentsPrint(FILE *fp, const char *spec, int verbose);
-	int AgentPrintWithIndex(FILE *fp, int det, int idx);
+	//void AgentsPrint(FILE *fp, const char *spec, int verbose);
+	//int AgentPrintWithIndex(FILE *fp, int det, int idx);
 	void testprop();
 	//void sanity_check();
 
@@ -213,13 +212,12 @@ public:
 
 	//String & alignment stuff
 	int 	PointerPosition(s_ag *pag, char head); 	//Find the position of a particular head.
-	float 	AgentsAlign(s_ag *a1, s_ag *a2, align *sw);
-	float 	ReactionCalculateBindProbability(align *sw);
+	//float 	AgentsAlign(s_ag *a1, s_ag *a2, align *sw);
 	void 	ReactionSetupExecution(s_ag *A, s_ag *B, align *sw);
 	int 	ReactionExecuteOpcode(s_ag *act, s_ag *pass);
 			//print string stuff
-	void 	PointerPrintOffset(FILE *fp,const char *S,const char *p,int F, char c);
-	void 	ReactionPrintState(FILE *fp, s_ag *act, s_ag *pas);
+	//void 	PointerPrintOffset(FILE *fp,const char *S,const char *p,int F, char c);
+	//void 	ReactionPrintState(FILE *fp, s_ag *act, s_ag *pas);
 	void 	SmithWatermanFree(swt *pSWT, int verbose);
 	//int 	AgentCheckZeroLengthString(s_ag* act);
 	//int 	AgentRewindDanglingPtrs(s_ag* pag);

@@ -219,7 +219,7 @@ void SpeciesPrintCounts(stringPM *A, int timestep){
 	int finished = 0;
 	int nag,*done;
 
-	nag = A->AgentsCount(A->nowhead,-1);
+	nag = AgentsCount(A->nowhead,-1);
 
 	done = (int *) malloc(nag*sizeof(int));
 	memset(done,0,nag*sizeof(int));
@@ -314,7 +314,7 @@ int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runpar
 			*/
 		}
 
-		if(!A->AgentsCount(A->nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
+		if(!AgentsCount(A->nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
 			printf("DEATH\n");
 			printf("At  time %d e=%d\t",i,(int)A->energy);
 			A->SpeciesPrintCount(stdout,0,-1);
@@ -515,7 +515,8 @@ int run_one_AlifeXII_trial(stringPM *A){
 
 	int i;
 
-	A->AgentsPrint(stdout,"NOW",0);
+	//A->AgentsPrint(stdout,"NOW",0);
+	AgentsPrint(stdout,A->nowhead,false,A->maxl);
 	A->run_number=0;
 
 	int nsteps=0;
@@ -543,7 +544,7 @@ int run_one_AlifeXII_trial(stringPM *A){
 //#ifdef DO_ANCESTRY
 //#endif
 
-		if(!A->AgentsCount(A->nowhead,-1)){
+		if(!AgentsCount(A->nowhead,-1)){
 			printf("DEATH\n");
 			printf("At  time %d e=%d, mutrate = %0.9f & %0.9f\t",i,(int)A->energy,A->indelrate,A->subrate);
 			A->SpeciesPrintCount(stdout,0,-1);
@@ -1474,8 +1475,8 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 	while(A->nowhead!=NULL){
  
  		s_ag *bag;
-		pag = A->AgentSelectRandomly(A->nowhead,-1);
-		A->AgentExtract(&A->nowhead,pag);
+		pag = AgentSelectRandomly(A->nowhead,-1);
+		AgentExtract(&(A->nowhead),pag);
 
 		//For debugging RNG diffs.
 		if(A->timestep == 90001){
@@ -1498,11 +1499,11 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 			break;
 		case B_ACTIVE:
 			bag = pag->pass;
-			A->AgentExtract(&(A->nowhead),bag);
+			AgentExtract(&(A->nowhead),bag);
 			break;
 		case B_PASSIVE:
 			bag = pag->exec;
-			A->AgentExtract(&(A->nowhead),bag);
+			AgentExtract(&(A->nowhead),bag);
 			break;
 		}
 
@@ -1524,11 +1525,11 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 					if((bag = ReactionSeekRandomSpatialPartner(A,run,pag->x,pag->y))!=NULL){
 
 						//TODO: We need to make sure that bag is in nowhead first!
-						A->AgentExtract(&(A->nowhead),bag);
+						AgentExtract(&(A->nowhead),bag);
 
 						//Now we've found a potential partner, we can see if it binds:
 						float bprob;
-						bprob = A->AgentsAlign(pag,bag,&sw);
+						bprob = AgentsAlign(pag,bag,&sw,A->blosum,A->swlist);
 
 						float rno;
 						rno = RandomBetween0And1();
@@ -1634,8 +1635,8 @@ int StringmolSpatialConfigureFromFile(const char *fn, stringPM *A, smsprun **run
 	if(!A->timestep){
 		while(A->nowhead!=NULL){
 			s_ag *pag;
-			pag = A->AgentSelectRandomly(A->nowhead,-1);
-			A->AgentExtract(&(A->nowhead),pag);
+			pag = AgentSelectRandomly(A->nowhead,-1);
+			AgentExtract(&(A->nowhead),pag);
 			int found = 0;
 
 			//Check to see if a position has been set for each molecule..
@@ -1681,9 +1682,9 @@ int StringmolSpatialConfigureFromFile(const char *fn, stringPM *A, smsprun **run
 							AgentAppend(&(A->nexthead),pag);
 
 							s_ag *bag;
-							bag = A->AgentSelectRandomly(A->nowhead,-1);
+							bag = AgentSelectRandomly(A->nowhead,-1);
 							if(bag != NULL){
-								A->AgentExtract(&(A->nowhead),bag);
+								AgentExtract(&(A->nowhead),bag);
 								AgentPlaceOnGrid(bag,*run,xx,yy);
 								AgentAppend(&(A->nexthead),bag);
 							}
@@ -1755,7 +1756,7 @@ int StringmolSpatial(int argc, char *argv[]) {
 	StringmolSpatialConfigureFromFile(argv[2],&A,&run,1);
 
 	int bt,ct{0};
-	ct = A.AgentsCount(A.nowhead,-1);
+	ct = AgentsCount(A.nowhead,-1);
 	printf("Initialisation done, number of molecules is %d\n",ct);
 
 	//This used to be called here - but better to do it before smspatial_init()
@@ -1784,7 +1785,7 @@ int StringmolSpatial(int argc, char *argv[]) {
 		//if(!(A.extit%100) || A.extit==1){
 		//if(!(A.extit%100)){
 		if(!(A.timestep%A.image_every)){
-			bt = ct - A.AgentsCount(A.nowhead,B_UNBOUND);
+			bt = ct - AgentsCount(A.nowhead,B_UNBOUND);
 			printf("Step %u done, number of molecules is %d, nbound = %d\n",A.timestep,ct,bt);
 
 			GridSavePNG(&A, smpic_spp);
@@ -1833,7 +1834,7 @@ int StringmolSpatial(int argc, char *argv[]) {
 #endif
 
 		A.timestep++;
-		ct = A.AgentsCount(A.nowhead,-1);
+		ct = AgentsCount(A.nowhead,-1);
 
 	}
 

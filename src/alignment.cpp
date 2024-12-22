@@ -32,6 +32,27 @@
 
 
 
+
+
+
+float ReactionCalculateBindProbability(align *sw){
+	float bprob = 0.;
+	//This is the old bind prob, with a modifier for short strings:
+
+	int l = sw->e1-sw->s1 < sw->e2-sw->s2 ? sw->e1-sw->s1 : sw->e2-sw->s2;
+	if(l<=2)
+		bprob=0;
+	else{
+		//bprob = pow(sw->score,l)/pow(l,l);
+		//BRUTAL HACK:
+		float s = sw->score<l-1.124? sw->score : l-1.124;
+		bprob = s/(l-1.124);
+	}
+
+	return bprob;
+}
+
+
 /*******************************************************************************
 * @brief copy align member variables to s_sw member variables
 *

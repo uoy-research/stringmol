@@ -712,7 +712,133 @@ int OpcodeComassCopy(s_ag *act, const bool domut,float indelrate,
 
 
 
+/*
+//TODO: see where speig_hcopy differs from other versions of hcopy!
+int stringPM::speig_hcopy(s_ag *act){
 
+	//s_ag *pass;
+	//pass = act->pass;
+	int cidx;
+	float rno;
+	int safe = 1;// this gets set to zero if any of the tests fail..
+
+	if(!domut){
+		indelrate = subrate =0;
+	}
+
+	act->len = strlen(act->S);
+	act->pass->len = strlen(act->pass->S);
+
+	int p;
+	if( (p = h_pos(act,'w'))>=(int) maxl){
+		printf("Write head out of bounds: %d\n",p);
+		//just to make sure no damage is done:
+		if(act->wt)
+			act->S[maxl]='\0';
+		else
+			act->pass->S[maxl]='\0';
+
+		act->i[act->it]++;
+		safe = 0;
+		return -1;
+	}
+
+	if(h_pos(act,'r')>=(int) maxl){
+		printf("Read head out of bounds\n");
+		act->i[act->it]++;
+		safe = 0;
+		return -2;
+	}
+
+	if(*(act->r[act->rt]) == 0){
+		//possibly return a negative value and initiate a b
+		safe = 0;
+		//return -3;
+	}
+
+	if(safe){
+
+		//see if we are overwriting or not:
+		int rm,wm=-1;
+		if(*(act->w[act->wt])){
+			wm=tab_idx(*(act->w[act->wt]),blosum);
+		}
+
+		const float speig_idrate = 0.001;
+		float winc=rand0to1();
+		float rinc=rand0to1();
+
+		//todo: make sure no increments happen if the symbol (or mutant) is not available
+
+		rno=rand0to1();
+		if(rno<subrate){//INCREMENTAL MUTATION
+
+			cidx = sym_from_adj(*(act->r[act->rt]),blosum);
+			rm = tab_idx(cidx,blosum);
+			if(mass[rm]){
+				*(act->w[act->wt])=cidx;
+				if(winc>speig_idrate)
+					act->w[act->wt]++;
+
+				if(rinc>speig_idrate)
+					act->r[act->rt]++;//possible deletion here...
+
+				if(!(wm<0)){
+					mass[wm]++;
+				}
+				mass[rm]--;
+			}
+		}
+		else{//NO MUTATION (but possible sub via comass effects)
+			//cidx = sym_from_adj(*(act->r[act->rt]),blosum);
+			rm = tab_idx(*(act->r[act->rt]),blosum);
+			if(mass[rm]){
+				*(act->w[act->wt])=*(act->r[act->rt]);
+
+				if(winc>speig_idrate)
+					act->w[act->wt]++;
+
+				if(rinc>speig_idrate)
+					act->r[act->rt]++;
+
+				if(!(wm<0)){
+					mass[wm]++;
+				}
+				mass[rm]--;
+			}
+			else{
+				cidx = sym_from_adj(*(act->r[act->rt]),blosum);
+				rm = tab_idx(cidx,blosum);
+				if(mass[rm]){
+					if(winc>speig_idrate)
+						act->w[act->wt]++;
+
+					if(rinc>speig_idrate)
+						act->r[act->rt]++;
+
+					act->w[act->wt]++;
+					if(!(wm<0)){
+						mass[wm]++;
+					}
+					mass[rm]--;
+				}
+			}
+		}
+
+	}
+	//update lengths
+	act->len = strlen(act->S);
+	act->pass->len = strlen(act->pass->S);
+	act->i[act->it]++;
+
+#ifdef VERBOSE
+	if(mut)
+	printf("Mutant event %d. new string is:\n%s\n\n",mut,act->wt?act->S:act->pass->S);
+#endif
+	act->biomass++;
+	biomass++;
+	return 0;
+}*/
 
 
 

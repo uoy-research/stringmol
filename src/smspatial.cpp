@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
 	StringmolSpatialConfigureFromFile(argv[2],&A,&run,1);
 
 	int bt,ct=0;
-	ct = A.AgentsCount(A.nowhead,-1);
+	ct = AgentsCount(A.nowhead,-1);
 	printf("Initialisation done, number of molecules is %d\n",ct);
 
 	/* Set up SDL if we're using it */
@@ -121,8 +121,8 @@ int main(int argc, char *argv[]) {
 	while(A.timestep < 1000000){// && A.nagents(A.nowhead,-1)>0){
 
 		TimestepIncrementSpatial(&A,run);
-		ct = A.AgentsCount(A.nowhead,-1);
-		bt = ct - A.AgentsCount(A.nowhead,B_UNBOUND);
+		ct = AgentsCount(A.nowhead,-1);
+		bt = ct - AgentsCount(A.nowhead,B_UNBOUND);
 #ifdef DODEBUG
 		printf("Nowhead is %p, Nexthead is %p\n",A.nowhead,A.nexthead);
 		s_ag *p;
