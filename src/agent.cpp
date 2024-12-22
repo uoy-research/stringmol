@@ -749,3 +749,32 @@ int AgentExtract(s_ag **list, s_ag *ag){
 }
 
 
+
+
+
+
+
+
+//todo(sjh):delete/move to agent.cpp
+/*******************************************************************************
+* @brief determine whether an agent is present in a list (by address)
+*
+* @param[in] list the list
+*
+* @param[in] tag the agent
+*
+* @return true or false
+*******************************************************************************/
+bool AgentAddressInList(s_ag *list,const s_ag *tag){
+
+	s_ag *pag;
+
+	for(pag=list;pag!=NULL;pag=pag->next){
+		if(tag == pag){
+			return true;
+		}
+	}
+	return false;
+}
+
+

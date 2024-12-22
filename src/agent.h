@@ -65,43 +65,42 @@ struct s_ag{//THIS DEFINES AN INDIVIDUAL AGENT IN A STRINGMOL SYSTEM
 };
 
 
-int AgentRewindDanglingPtrs(s_ag* act);
-int AgentCheckZeroLengthString(s_ag* act);
+int		AgentRewindDanglingPtrs(s_ag* act);
+int 	AgentCheckZeroLengthString(s_ag* act);
 
-s_ag * AgentMake(int label, const unsigned long int agct, const unsigned int maxl0);
+s_ag * 	AgentMake(int label, const unsigned long int agct, const unsigned int maxl0);
 
 
-s_ag * AgentMakeWithSequence(char * seq, const unsigned int label,
+s_ag * 	AgentMakeWithSequence(char * seq, const unsigned int label,
 		const unsigned int agct, const unsigned int maxl0);
 
+int 	AgentUnbind(s_ag * pag);
 
-int AgentUnbind(s_ag * pag);
+int 	AgentAppend(s_ag **list, s_ag *ag);
 
-int AgentAppend(s_ag **list, s_ag *ag);
+int 	AgentFree(s_ag *pag);
 
-int AgentFree(s_ag *pag);
+int 	SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp,
+			l_spp * ppspp, int mass);
 
-int SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp,
-		l_spp * ppspp, int mass);
+float 	AgentsAlign(s_ag *a1, s_ag *a2, align *sw, swt *blosum, s_sw *swlist);
 
-float AgentsAlign(s_ag *a1, s_ag *a2, align *sw, swt *blosum, s_sw *swlist);
+void 	AgentsPrint(FILE *fp, s_ag *head, bool verbose, const int maxl);
 
-void AgentsPrint(FILE *fp, s_ag *head, bool verbose, const int maxl);
+void 	ReactionPrintState(FILE *fp, s_ag *act, s_ag *pas, const int maxl);
 
-void ReactionPrintState(FILE *fp, s_ag *act, s_ag *pas, const int maxl);
+int 	AgentAttemptDecay(s_ag *pag, const float decayrate, const bool dodecay);
 
-int AgentAttemptDecay(s_ag *pag, const float decayrate, const bool dodecay);
+int 	AgentPrintWithIndex(FILE *fp, int detail, int idx,
+			s_ag * nowhead, unsigned int maxl);
 
-int AgentPrintWithIndex(FILE *fp, int detail, int idx,
-		s_ag * nowhead, unsigned int maxl);
-
-s_ag * AgentSelectRandomly(s_ag *head, int state);
+s_ag * 	AgentSelectRandomly(s_ag *head, int state);
 
 int 	AgentExtract(s_ag **list, s_ag *ag);
 
-int AgentsCount(s_ag *head, int state);
+int 	AgentsCount(s_ag *head, int state);
 
-bool AgentAddressInList(s_ag *list,const s_ag *tag);
+bool 	AgentAddressInList(s_ag *list,const s_ag *tag);
 
 
 

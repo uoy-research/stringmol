@@ -1496,32 +1496,6 @@ void stringPM::SpeciesPrintCount(FILE *fp,int style, int state){
 
 
 
-//todo(sjh):delete/move to agent.cpp
-/*******************************************************************************
-* @brief determine whether an agent is present in a list (by address)
-*
-* @param[in] list the list
-*
-* @param[in] tag the agent
-*
-* @return true or false
-*******************************************************************************/
-bool stringPM::AgentAddressInList(s_ag *list,const s_ag *tag){
-
-	s_ag *pag;
-
-	for(pag=list;pag!=NULL;pag=pag->next){
-		if(tag == pag){
-			return true;
-		}
-	}
-	return false;
-}
-
-
-
-
-
 
 
 
@@ -1583,38 +1557,6 @@ void stringPM::ReactionSetupExecution(s_ag *A, s_ag *B, align *sw){
 }
 
 
-
-
-
-/******************************************************************************
- * @brief unbind an agent, and then update the species list
- *
- * @details one agent has already been selected. Another is randomly chosen
- *          and a Smith-Waterman alignment is used to determine the chance
- *          of complementary binding
- *          todo: propensity is used, but I'm not sure if it always returns 1
- *
- * @param[in] pag the agent
- *
- * @param[in] sptype
- *
- * @param[in] update (obsolete)
- *
- * @param[in] pa the active parent
- *
- * @param[in] pp the passive parent
- *
- * @return 1 if bind happens, 0 if not
- *****************************************************************************/
-int stringPM::SMAgentUnbindAndSpeciesListUpdate(s_ag * pag, char sptype, int update, l_spp *pa, l_spp *pp){
-
-	int found;
-
-	int mass = AgentUnbind(pag);
-
-	found = spl->SpeciesListUpdate(pag,sptype,update,pa,pp,mass,timestep,maxl0);
-	return found;
-}
 
 
 
@@ -1726,8 +1668,12 @@ int stringPM::ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 			//todo(sjh): write test to check what happens if unbind happens...
 			if(OpcodeCopy(act,domut,indelrate,subrate,maxl,
 					blosum,granular_1,biomass)<0){
-				SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
-				SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
+
+				spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
+						AgentUnbind(act),timestep,maxl0);
+
+				spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+						AgentUnbind(pass),timestep,maxl0);
 			}
 			break;
 
@@ -1772,8 +1718,12 @@ int stringPM::ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 #ifdef V_VERBOSE
 			printf("Unbinding...\n");
 #endif
-			SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
-			SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
+
+			spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
+					AgentUnbind(act),timestep,maxl0);
+
+			spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+					AgentUnbind(pass),timestep,maxl0);
 
 			break;
 
@@ -1945,8 +1895,10 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 	case '='://h-copy
 		if(OpcodeComassCopy(act,domut,indelrate,subrate,maxl,
 				blosum,granular_1,biomass,mass)<0){
-			SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
-			SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
+			spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
+					AgentUnbind(act),timestep,maxl0);
+			spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+					AgentUnbind(pass),timestep,maxl0);
 		}
 		break;
 
@@ -1983,8 +1935,12 @@ int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 #ifdef V_VERBOSE
 		printf("Unbinding...\n");
 #endif
-		SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
-		SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
+		spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
+				AgentUnbind(act),timestep,maxl0);
+
+		spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+				AgentUnbind(pass),timestep,maxl0);
+
 		break;
 
 	default://Just increment the i-pointer
@@ -2309,8 +2265,11 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 					//if(OpcodeCopy(act)<0){
 					if(OpcodeCopy(act,domut,indelrate,subrate,maxl,
 							blosum,granular_1,biomass)<0){
-						SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
-						SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
+						spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
+								AgentUnbind(act),timestep,maxl0);
+
+						spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+								AgentUnbind(pass),timestep,maxl0);
 						finished = 1;
 					}
 					break;
@@ -2365,8 +2324,11 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 			#ifdef V_VERBOSE
 						printf("Unbinding...\n");
 			#endif
-						SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
-						SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
+						spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
+								AgentUnbind(act),timestep,maxl0);
+
+						spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+								AgentUnbind(pass),timestep,maxl0);
 
 						finished = 1;
 						break;

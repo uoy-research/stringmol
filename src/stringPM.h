@@ -160,14 +160,6 @@ public:
 	//list stuff
 	int 	AgentsLoad(const char *fn, char *fninput,
 						int test=0, int verbose=0);
-	//int 	AgentsCount(s_ag *head, int state);
-	//s_ag * 	AgentSelectRandomly(s_ag *head, int state);
-	bool 	AgentAddressInList(s_ag *list,const s_ag *tag);
-
-
-	//First version works fine, but no species analysis...
-	//void 	unbind_ag(s_ag * pag,char sptype);
-	int 	SMAgentUnbindAndSpeciesListUpdate(s_ag * pag, char sptype, int update, l_spp *pa, l_spp *pp);
 
 	void 	UpdateNowNext();
 
@@ -183,11 +175,7 @@ public:
 	void 	update_aac();
 
 	//Diagnostics
-	//void AgentsPrint(FILE *fp, const char *spec, int verbose);
-	//int AgentPrintWithIndex(FILE *fp, int det, int idx);
 	void testprop();
-	//void sanity_check();
-
 
 	//Distance calcs
 	float close_dist(s_ag *a1, s_ag *a2);
@@ -215,12 +203,7 @@ public:
 	//float 	AgentsAlign(s_ag *a1, s_ag *a2, align *sw);
 	void 	ReactionSetupExecution(s_ag *A, s_ag *B, align *sw);
 	int 	ReactionExecuteOpcode(s_ag *act, s_ag *pass);
-			//print string stuff
-	//void 	PointerPrintOffset(FILE *fp,const char *S,const char *p,int F, char c);
-	//void 	ReactionPrintState(FILE *fp, s_ag *act, s_ag *pas);
 	void 	SmithWatermanFree(swt *pSWT, int verbose);
-	//int 	AgentCheckZeroLengthString(s_ag* act);
-	//int 	AgentRewindDanglingPtrs(s_ag* pag);
 
 
 	//Checking the energy model: (THIS RESULTS IN AN UNSTABLE SYSTEM)
@@ -244,18 +227,14 @@ public:
 
 
 	//Molecular species analysis:
-	//void 		update_lineage(s_ag *p,char sptype);
 	int 		get_ecosystem(); //TODO: sjh - is tis the same as Spatial Community stuff
-	//int 		SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp, int mass);
 	void 		print_lineage_dot(FILE *fp, int time,int step); //traces everything descending from the initial set.
 	void 		SpeciesPrintAncestryDot(FILE *fp, int time); //takes all current agents and traces them back
 	void 		SpeciesPrintStrings(FILE *fp);
 	l_spp * 	SpeciesFromListByIndex(int n);
-	//int 		append_spp(s_spp *sp);
 	int 		append_lspp(l_spp *sp);
 	int 		SpeciesCount();
 	void 		SpeciesPrintCount(FILE *fp,int style, int state);
-	//void 		get_spp_count(int state);//Count the number of individuals of each species present in the system
 	//find a species that a molecule belongs to
 	int 		id_spp(l_spp *sp, s_ag *pag, int  aspno, char *spp_string);
 

@@ -935,7 +935,10 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 			//int x,y;
 			switch(dac){
 			case 1://Destroy active - only append passive
-				A->SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
+				A->spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+						AgentUnbind(pass),A->timestep,A->maxl0);
+
+
 				AgentAppend(&(A->nexthead),pass);
 				//find_ag_gridpos(pass,run,&x,&y);
 				//run->status[x][y]=G_NEXT;
@@ -950,7 +953,9 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 				break;
 			case 2://Destroy passive - only append active
-				A->SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
+				A->spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
+						AgentUnbind(act),A->timestep,A->maxl0);
+
 				AgentAppend(&(A->nexthead),act);
 				//find_ag_gridpos(act,run,&x,&y);
 				run->status[act->x][act->y]=G_NEXT;
@@ -966,8 +971,11 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				break;
 			case 3://Destroy both
 				printf("Destroying both parents after cleave!\nThis should never happen!\n");
-				A->SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
-				A->SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
+				A->spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
+						AgentUnbind(act),A->timestep,A->maxl0);
+				A->spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+						AgentUnbind(pass),A->timestep,A->maxl0);
+
 				AgentFree(act);
 				act = NULL;
 				AgentFree(pass);
@@ -1063,8 +1071,12 @@ int ReactionExecuteOpcodeSpatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pas
 		//if(A->OpcodeCopy(act)<0){
 		if(OpcodeCopy(act,A->domut,A->indelrate,A->subrate,A->maxl,
 				A->blosum,A->granular_1,A->biomass)<0){
-			A->SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
-			A->SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
+
+			A->spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
+					AgentUnbind(act),A->timestep,A->maxl0);
+
+			A->spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+					AgentUnbind(pass),A->timestep,A->maxl0);
 		}
 		break;
 
@@ -1150,12 +1162,14 @@ int ReactionExecuteOpcodeSpatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pas
 			printf("Unbinding...\n");
 #endif
 
-			A->SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
-			run->status[act->x][act->y] = G_NEXT;
+			A->spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
+					AgentUnbind(act),A->timestep,A->maxl0);
 
-			A->SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
-			//int xx,yy;
-			//find_ag_gridpos(pass,run,&xx,&yy);
+			A->spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+					AgentUnbind(pass),A->timestep,A->maxl0);
+
+
+			run->status[act->x][act->y] = G_NEXT;
 			run->status[pass->x][pass->y] = G_NEXT;
 
 			break;
@@ -1583,7 +1597,7 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 	for(int x=0;x<run->gridx;x++){
 		for(int y=0;y<run->gridy;y++){
 			if(run->grid[x][y]!=NULL){
-				if(!(A->AgentAddressInList(A->nowhead,run->grid[x][y]))){
+				if(!(AgentAddressInList(A->nowhead,run->grid[x][y]))){
 					printf("Agent species %d not in nowhead at %d, %d\n", run->grid[x][y]->spp->spp, x, y);
 				}
 			}
@@ -1716,7 +1730,7 @@ int StringmolSpatialConfigureFromFile(const char *fn, stringPM *A, smsprun **run
 	for(int x=0;x<(*run)->gridx;x++){
 		for(int y=0;y<(*run)->gridy;y++){
 			if((*run)->grid[x][y]!=NULL){
-				if(!(A->AgentAddressInList(A->nowhead,(*run)->grid[x][y]))){
+				if(!(AgentAddressInList(A->nowhead,(*run)->grid[x][y]))){
 					printf("Agent species %d not in nowhead at %d, %d\n", (*run)->grid[x][y]->spp->spp, x, y);
 				}
 			}
