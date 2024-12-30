@@ -24,7 +24,7 @@
 #include <string.h>
 #include <math.h>
 
-
+#include "error_codes.h"
 
 #include "memoryutil.h"
 #include "randutil.h"
@@ -129,7 +129,7 @@ int AgentRewindDanglingPtrs(s_ag* act){
 
 
 /******************************************************************************
- * @brief handle zero-length strings (after a Cleave for example)
+ * @brief detect zero-length strings (after a Cleave for example)
  *
  * @param[in] act the agent
  *
@@ -179,24 +179,19 @@ int AgentCheckZeroLengthString(s_ag* act){
 
 
 
-
-/**
- * Create an 'agent', which is a string 'molecule'
- * NB: The string is not allocated here - done outside the function
- *
- * parameters:
- *
- * alab: a single-character label for the string (e.g. 'C')
- *
- */
 /*******************************************************************************
- * @brief allocate memory and set up structure of a new agent
- *
- * @param[in] alab an integer identifier
- *
- * @return the agent
+* @brief allocate memory and set up structure of a new agent
+*
+* @details Create an 'agent', which is a string 'molecule'
+* NB: The string is not allocated here - done outside the function
+*
+* @param[in] alab an integer identifier (sometimes a char)
+*
+* @param[in] agct a counter - not sure if it counts agents or species!
+*
+* @return the agent
 * *****************************************************************************/
-s_ag * AgentMake(int alab, const unsigned long int agct, const unsigned int maxl0){
+s_ag * AgentMake(int alab, const unsigned long int agct){//, const unsigned int maxl0){
 
 	s_ag *ag;
 
@@ -233,40 +228,53 @@ s_ag * AgentMake(int alab, const unsigned long int agct, const unsigned int maxl
 
 
 
-
-
-//pag = AgentMakeWithSequence("BLUBO=STRINGA",'A');
+/*******************************************************************************
+* @brief create an agent from sequence string
+*
+* @param[in] seq the sequence
+*
+* @param[in] label the code
+*
+* @param[in] agct the count
+*
+* @param[in] maxl0 the max string length
+*
+* @return the agent
+*******************************************************************************/
 s_ag * AgentMakeWithSequence(char * seq, const unsigned int label,
 		const unsigned int agct,
 		const unsigned int maxl0){
 
-	s_ag * ag;
 
-	ag = AgentMake(label,agct,maxl0);
+	if(strlen(seq) > maxl0){
+		printf("Unable to allocate enough space for this agent: \n%s\nConsider specifying MAXL in your config\n",seq);
+		exit(SEQ_LEN_ERROR);
+	}else{
+		s_ag * ag;
 
-	ag->S =(char *) malloc(maxl0*sizeof(char));
-	memset(ag->S,0,maxl0*sizeof(char));
-	strncpy(ag->S,seq,maxl0-1);//active_string));
-	ag->len = strlen(ag->S);
+		ag = AgentMake(label,agct);//,maxl0);
 
-	return ag;
+		ag->S =(char *) malloc(maxl0*sizeof(char));
+		memset(ag->S,0,maxl0*sizeof(char));
+		strncpy(ag->S,seq,maxl0-1);//active_string));
+		ag->len = strlen(ag->S);
+
+		return ag;
+	}
 
 }
 
 
 
-/******************************************************************************
- * @brief Attempt to bind two molecules and initiate a reaction
- *
- * @details one agent has already been selected. Another is randomly chosen
- *          and a Smith-Waterman alignment is used to determine the chance
- *          of complementary binding
- *          todo: propensity is used, but I'm not sure if it always returns 1
- *
- * @param[in] pag
- *
- * @return 1 if bind happens, 0 if not
- *****************************************************************************/
+
+
+/*******************************************************************************
+* @brief return one of a bound pair to its unbound state
+*
+* @param[in] pag the agent
+*
+* @return the mass
+*******************************************************************************/
 int AgentUnbind(s_ag * pag){
 
 	int mass = 0;
@@ -288,6 +296,7 @@ int AgentUnbind(s_ag * pag){
 
 	return mass;
 }
+
 
 
 
@@ -325,13 +334,13 @@ int AgentAppend(s_ag **list, s_ag *ag){
 
 
 
-/******************************************************************************
- * @brief free memory used by an agent
- *
- * @param[in] pag the agent to free
- *
- * @return 0 always
- *****************************************************************************/
+/*******************************************************************************
+* @brief free memory used by an agent
+*
+* @param[in] pag the agent to free
+*
+* @return 0 always
+*******************************************************************************/
 int AgentFree(s_ag *pag){
 
 	if(pag->S != NULL){
@@ -350,6 +359,21 @@ int AgentFree(s_ag *pag){
 
 
 
+/*******************************************************************************
+* @brief align two agents
+*
+* @param[in] a1 first agent
+*
+* @param[in] a2 second agent
+*
+* @param[in] sw the alignment data
+*
+* @param[in] blosum the alignment table
+*
+* @param[in] swlist list of previous alignments
+*
+* @return the bind probability
+*******************************************************************************/
 float AgentsAlign(s_ag *a1, s_ag *a2, align *sw, swt *blosum, s_sw *swlist){
 
 	float bprob;
@@ -419,7 +443,8 @@ void PointerPrintOffset(FILE *fp,const char *S,const char *p,int F, char c){
 
 
 
-/******************************************************************************
+
+/*******************************************************************************
  * @brief print the current reaction state
  *
  * @param[in] fp file pointer
@@ -427,7 +452,7 @@ void PointerPrintOffset(FILE *fp,const char *S,const char *p,int F, char c){
  * @param[in] act active molecule
  *
  * @param[in] pas passive molecule
- *****************************************************************************/
+ ******************************************************************************/
 void ReactionPrintState(FILE *fp, s_ag *act, s_ag *pas, const int maxl){
 
 	//Diagnostics to screen for passive:
@@ -466,6 +491,7 @@ void ReactionPrintState(FILE *fp, s_ag *act, s_ag *pas, const int maxl){
 
 
 }
+
 
 
 
@@ -526,12 +552,14 @@ void AgentsPrint(FILE *fp, s_ag *head, bool verbose, const int maxl){
 
 
 
-
-
 /******************************************************************************
  * @brief decay agent with a probability
  *
  * @param[in] pag the agent
+ *
+ * @param[in] decayrate the prob of decay
+ *
+ * @param[in] dodecay whether to decay at all
  *
  * @return 1 if decay happens, 0 if not
  *****************************************************************************/
@@ -565,20 +593,17 @@ int AgentAttemptDecay(s_ag *pag, const float decayrate, const bool dodecay){
 
 
 
-
-/******************************************************************************
- * @brief Print the state of agent with index 'idx'
- *
- * @details
- *
- * @param[in] fp file pointer, can be stdout for print to screen etc. NB no error checking for file stats
- *
- * @param[in] detail flags the level of detail
- *
- * @param[in] idx the index of the agent
- *
- * @return 0 regardless of succes (todo: fix this)
- *****************************************************************************/
+/*******************************************************************************
+* @brief Print the state of agent with index 'idx'
+*
+* @param[in] fp file pointer, can be stdout for print to screen etc. NB no error checking for file stats
+*
+* @param[in] detail flags the level of detail
+*
+* @param[in] idx the index of the agent
+*
+* @return 0 regardless of succes (todo: fix this)
+*******************************************************************************/
 int AgentPrintWithIndex(FILE *fp, int detail, int idx,
 		s_ag * nowhead, unsigned int maxl){
 	s_ag *pag;
@@ -619,18 +644,15 @@ int AgentPrintWithIndex(FILE *fp, int detail, int idx,
 
 
 
-
-
-//todo(sjh):delete/move to agent.cpp
-/******************************************************************************
- * @brief count agents
- *
- * @param[in] head: usually 'nowhead' or 'nexthead'
- *
- * @param[in] state if -1: count all; else count with a particular status
- *
- * @return the count
- *****************************************************************************/
+/*******************************************************************************
+* @brief count agents
+*
+* @param[in] head: usually 'nowhead' or 'nexthead'
+*
+* @param[in] state if -1: count all; else count with a particular status
+*
+* @return the count
+*******************************************************************************/
 int AgentsCount(s_ag *head, int state){
 	s_ag *pag;
 	int count=0;
@@ -649,7 +671,6 @@ int AgentsCount(s_ag *head, int state){
 	}
 	return count;
 }
-
 
 
 
@@ -714,18 +735,15 @@ s_ag * AgentSelectRandomly(s_ag *head, int state){
 
 
 
-
-
-//todo(sjh):delete/move to agent.cpp
-/******************************************************************************
- * @brief extract an agent from a list
- *
- * @param[in] list the list of agents
- *
- * @param[in] ag the agent
- *
- * @return 0 always
- *****************************************************************************/
+/*******************************************************************************
+* @brief extract an agent from a list
+*
+* @param[in] list the list of agents
+*
+* @param[in] ag the agent
+*
+* @return 0 always
+*******************************************************************************/
 int AgentExtract(s_ag **list, s_ag *ag){
 
 	//printf("extracting: list = %p, ag = %p\n",*list,ag);
@@ -752,10 +770,6 @@ int AgentExtract(s_ag **list, s_ag *ag){
 
 
 
-
-
-
-//todo(sjh):delete/move to agent.cpp
 /*******************************************************************************
 * @brief determine whether an agent is present in a list (by address)
 *
@@ -766,7 +780,6 @@ int AgentExtract(s_ag **list, s_ag *ag){
 * @return true or false
 *******************************************************************************/
 bool AgentAddressInList(s_ag *list,const s_ag *tag){
-
 	s_ag *pag;
 
 	for(pag=list;pag!=NULL;pag=pag->next){
@@ -776,5 +789,3 @@ bool AgentAddressInList(s_ag *list,const s_ag *tag){
 	}
 	return false;
 }
-
-

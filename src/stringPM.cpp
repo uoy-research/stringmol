@@ -598,12 +598,8 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 					return 1;
 				}
 
-				//pag = AgentMake('X');//TODO: fix this need for ascii codes... we have species numbers now!
-				//pag->S =(char *) malloc(maxl0*sizeof(char));
-				//memset(pag->S,0,maxl0*sizeof(char));
-				//strncpy(pag->S,active_string,maxl);//active_string));
-				//pag->len = strlen(pag->S);
-				//TODO: fix this need for ascii codes... we have species numbers now!
+				//todo(sjh): fix this need for ascii codes 2nd arg...
+				//we have species numbers now!
 				pag = AgentMakeWithSequence(active_string,'X',agct++,maxl0);
 
 				if(grid){
@@ -621,11 +617,9 @@ int stringPM::load_reactions(const char *fn, char *fntab, int test, int verbose)
 					printf("ERROR READING REACTION (passive state) at line %d\n",linecount+1);
 					return 1;
 				}
-				bag = AgentMake('X',agct++,maxl0);//TODO: fix this need for ascii codes... we have species numbers now!
-				bag->S =(char *) malloc(maxl0*sizeof(char));
-				memset(bag->S,0,maxl0*sizeof(char));
-				strncpy(bag->S,passive_string,maxl);//passive_string));
-				bag->len = strlen(bag->S);
+
+				bag =  AgentMakeWithSequence(passive_string, 'X',
+						agct++, maxl0);
 
 				if(grid){
 					bag->x = gx;
@@ -694,31 +688,15 @@ s_ag * stringPM::read_unbound_agent(FILE **fp, char line[], const int llen){
 	s_ag * pag;
 	char code;
 	int nag;
-	char label[llen];
+	char sequence[llen];
 
 
-	memset(label,0,llen);
-	sscanf(line,"%*s %2000s %d %c",label,&nag,&code);
+	memset(sequence,0,llen);
+	sscanf(line,"%*s %2000s %d %c",sequence,&nag,&code);
 
-	//bool getgridinfo = true;
-
-	//make the agent
-	//for(i=0;i<nag;i++){
 	l_spp *s;
 
-
-	pag = AgentMake(code,agct++,maxl0);//,1);
-
-	pag->S =(char *) malloc(maxl0*sizeof(char));
-
-	memset(pag->S,0,maxl0*sizeof(char));
-
-	if(strlen(label) > maxl0){
-		printf("Unable to allocate enough space for this agent: \n%s\nConsider specifying MAXL in your config\n",label);
-	}
-
-	strncpy(pag->S,label,strlen(label));
-	pag->len = strlen(pag->S);
+	pag = AgentMakeWithSequence(sequence,code,agct++,maxl0);
 
 	/*Load the coordinates on the grid for this agent
 	 * THESE ENTRIES MUST BE IMMEDIATELY AFTER THE AGENT
@@ -726,7 +704,7 @@ s_ag * stringPM::read_unbound_agent(FILE **fp, char line[], const int llen){
 	 *
 	 * */
 	if(grid){// && getgridinfo){
-		if((fgets(line,llen,*fp))!=NULL){//sscanf(line,"%s",label);
+		if((fgets(line,llen,*fp))!=NULL){//sscanf(line,"%s",sequence);
 			if(!strncmp(line,"GRIDPOS",7)){
 				sscanf(line,"%*s %d %d ",&(pag->x),&(pag->y));
 			}
@@ -800,11 +778,7 @@ s_ag * stringPM::read_active_agent(FILE **fp, char line[], const int llen, int &
 		return NULL;
 	}
 
-	pag = AgentMake('X',agct++,maxl0);//TODO: fix this need for ascii codes... we have species numbers now!
-	pag->S =(char *) malloc(maxl0*sizeof(char));
-	memset(pag->S,0,maxl0*sizeof(char));
-	strncpy(pag->S,active_string,maxl);//active_string));
-	pag->len = strlen(pag->S);
+	pag = AgentMakeWithSequence(active_string,'X',agct++,maxl0);
 
 	if(grid){
 		pag->x = gx;
@@ -876,12 +850,7 @@ s_ag * stringPM::read_passive_agent(FILE **fp, char line[], const int llen){
 
 	s_ag *bag;
 
-	/* Now create the molecule */
-	bag = AgentMake('X',agct++,maxl0);//TODO: fix this need for ascii codes... we have species numbers now!
-	bag->S =(char *) malloc(maxl0*sizeof(char));
-	memset(bag->S,0,maxl0*sizeof(char));
-	strncpy(bag->S,passive_string,maxl);//passive_string));
-	bag->len = strlen(bag->S);
+	bag = AgentMakeWithSequence(passive_string,'X',agct++,maxl0);
 
 	if(grid){
 		bag->x = gx;
@@ -1228,12 +1197,12 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 		
 		if((fp=fopen(fn,"r"))!=NULL){
 			char line[llen];
-			char label[llen];
+			char sequence[llen];
 			while((fgets(line,llen,fp))!=NULL){
-				memset(label,0,llen);
+				memset(sequence,0,llen);
 				//TODO: We need a better way of limiting the chars 
 				//read into label - perhaps with a #define or two...
-				sscanf(line,"%2000s",label);
+				sscanf(line,"%2000s",sequence);
 				//printf("line = %s",line);
 				if(!strncmp(line,"AGENT",5)){
 					ntt++;
@@ -1246,12 +1215,12 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 
 			while((fgets(line,llen,fp))!=NULL){
 
-				memset(label,0,llen);
-				sscanf(line,"%2000s",label);
+				memset(sequence,0,llen);
+				sscanf(line,"%2000s",sequence);
 				if(!strncmp(line,"AGENT",5)){
 
-					memset(label,0,llen);
-					sscanf(line,"%*s %2000s %d %c",label,&nag,&code);
+					memset(sequence,0,llen);
+					sscanf(line,"%*s %2000s %d %c",sequence,&nag,&code);
 
 					if(test){//todo -is this still necessary?
 						nag=1;
@@ -1267,27 +1236,13 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 					//make the agents
 					for(int i=0;i<nag;i++){
 
-
-						pag = AgentMake(code,agct++,maxl0);//,1);
-
-						pag->S =(char *) malloc(maxl0*sizeof(char));
-
-						memset(pag->S,0,maxl0*sizeof(char));
-
-						if(strlen(label) > maxl0){
-							printf("Unable to allocate enough space for this agent: \n%s\nConsider specifying MAXL in your config\n",label);
-						}
-
-						strncpy(pag->S,label,strlen(label));
-						pag->len = strlen(pag->S);
+						pag = AgentMakeWithSequence(sequence,code,agct++,maxl0);
 
 						/*Load the coordinates on the grid for this agent
 						 * THESE ENTRIES MUST BE IMMEDIATELY AFTER THE AGENT
-						 *
-						 *
 						 * */
 						if(grid && getgridinfo){
-							if((fgets(line,llen,fp))!=NULL){//sscanf(line,"%s",label);
+							if((fgets(line,llen,fp))!=NULL){//sscanf(line,"%s",sequence);
 								if(!strncmp(line,"GRIDPOS",7)){
 									sscanf(line,"%*s %d %d ",&(pag->x),&(pag->y));
 								}
@@ -1313,7 +1268,7 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 						//Record that the replicase copies itself
 						pag->spp=s; //TODO: is this true for non-replicase agents..?
 
-						//printf("agent %d, %c, %0.3f %0.3f\n",i,pag->label,pag->x,pag->y);
+						//printf("agent %d, %c, %0.3f %0.3f\n",i,pag->sequence,pag->x,pag->y);
 						if(nowhead == NULL){
 							nowhead = pag;
 						}
@@ -1638,18 +1593,18 @@ int stringPM::ReactionAttemptBind(s_ag *pag){
  * @param[in] pass the passive string
  *
  * @return 1 always - to indicate the reaction has changed
- *         todo: maybe some error handling here would be good!
+ *         todo(sjh): maybe some error handling here would be good!
  *****************************************************************************/
 int stringPM::ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 
-	int safe_append=1;
+	bool safe_append=true;
 
-	switch(*(act->i[act->it])){//*iptr[it]){
+	switch(*(act->i[act->it])){
 
 		/*************
 		 *   SEARCH  *
 		 *************/
-		case '$'://Search
+		case '$':
 			OpcodeSearch(act,blosum,maxl);
 			break;
 
@@ -1663,25 +1618,17 @@ int stringPM::ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 		/************
 		 *   COPY   *
 		 ************/
-		case '='://h-copy
-			//if(OpcodeCopy(act)<0){
-			//todo(sjh): write test to check what happens if unbind happens...
-			if(OpcodeCopy(act,domut,indelrate,subrate,maxl,
-					blosum,granular_1,biomass)<0){
-
-				spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
-						AgentUnbind(act),timestep,maxl0);
-
-				spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
-						AgentUnbind(pass),timestep,maxl0);
-			}
+		case '=':
+			OpcodeCopy(act,domut,indelrate,subrate,maxl,
+							blosum,granular_1,biomass,
+							spl,timestep);
 			break;
 
 		/************
 		 *   INC_R  *
 		 ************/
 		//todo(sjh): write test for granular stringmol!
-		case '+'://increment_read
+		case '+':
 			OpcodeIncrementRead(act,granular_1);
 			break;
 
@@ -1696,7 +1643,7 @@ int stringPM::ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 		 *  IFLABEL *
 		 ************/
 		case '?'://If-label
-			act->i[act->it]=OpcodeIf(act->i[act->it],act->r[act->rt],act->S,blosum,maxl);
+			OpcodeIf(act,blosum,maxl);
 			break;
 
 
@@ -1704,9 +1651,7 @@ int stringPM::ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 		 *  CLEAVE  *
 		 ************/
 		case '%'://TODO(sjh): think about improving the safe_append mechanism...
-			if((OpcodeCleave(act,nexthead,spl,&agct,timestep,maxl0) )){
-				safe_append=0;
-			}
+			safe_append = OpcodeCleave(act,nexthead,spl,&agct,timestep,maxl0);
 			break;
 
 		/**************
@@ -1714,24 +1659,15 @@ int stringPM::ReactionExecuteOpcode(s_ag *act, s_ag *pass){
 		 **************/
 		case 0:
 		case '}'://ex-end - finish execution
+			OpcodeTerminate(act, spl, timestep, maxl0);
 
-#ifdef V_VERBOSE
-			printf("Unbinding...\n");
-#endif
-
-			spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
-					AgentUnbind(act),timestep,maxl0);
-
-			spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
-					AgentUnbind(pass),timestep,maxl0);
-
-			break;
-
+		/**************
+		 *  N-OP *
+		 **************/
 		default://Just increment the i-pointer
 			act->i[act->it]++;
 			break;
 	}
-
 
 #ifdef V_VERBOSE
 	printf("Exec step - looks like:\n");
@@ -1867,85 +1803,70 @@ void stringPM::TimestepIncrement(){
 // todo(sjh): the only difference between this and the 'standard' version
 // is OpcodeComassCopy - instead of OpcodeCopy.. we could maybe pass this
 // function in??
-int stringPM::comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass){
+int stringPM::ReactionExecuteOpcode_Comass(s_ag *act, s_ag *pass){
 
 	int safe_append=1;
 
 	switch(*(act->i[act->it])){
 
-	/*************
-	 *   SEARCH  *
-	 *************/
+		/*************
+		 *   SEARCH  *
+		 *************/
+		case '$'://Search
+			OpcodeSearch(act,blosum,maxl);
+			break;
 
-	case '$'://Search
-		OpcodeSearch(act,blosum,maxl);
-		break;
+		/*************
+		 *   MOVE  *
+		 *************/
+		case '>':
+			OpcodeMove(act);
+			break;
 
-	/*************
-	 *   MOVE  *
-	 *************/
-	case '>':
-		OpcodeMove(act);
-		break;
+		/************
+		 *   COPY  *
+		 ************/
+		case '=':
+			OpcodeCopy_Comass(act,domut,indelrate,subrate,maxl,
+							blosum,granular_1,biomass,mass,
+							spl,timestep);
+			break;
 
+		/************
+		 *  TOGGLE  *
+		 ************/
+		case '^'://p-toggle: toggle active pointer
+			OpcodeToggle(act);
+			break;
 
-	/************
-	 *   COPY  *
-	 ************/
-	case '='://h-copy
-		if(OpcodeComassCopy(act,domut,indelrate,subrate,maxl,
-				blosum,granular_1,biomass,mass)<0){
-			spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
-					AgentUnbind(act),timestep,maxl0);
-			spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
-					AgentUnbind(pass),timestep,maxl0);
-		}
-		break;
-
-	/************
-	 *  TOGGLE  *
-	 ************/
-	case '^'://p-toggle: toggle active pointer
-		OpcodeToggle(act);
-		break;
-
-	/************
-	 *  IFLABEL *
-	 ************/
-	case '?'://If-label
-		act->i[act->it]=OpcodeIf(act->i[act->it],act->r[act->rt],act->S,blosum,maxl);
-		break;
+		/************
+		 *  IFLABEL *
+		 ************/
+		case '?'://If-label
+			OpcodeIf(act,blosum,maxl);
+			break;
 
 
-	/************
-	 *  CLEAVE  *
-	 ************/
-	case '%':
-		if((OpcodeCleave(act,nexthead,spl,&agct,timestep,maxl0) )){
-			safe_append=0;
-		}
-		break;
+		/************
+		 *  CLEAVE  *
+		 ************/
+		case '%':
+			safe_append = OpcodeCleave(act,nexthead,spl,&agct,timestep,maxl0);
+			break;
 
-	/**************
-	 *  TERMINATE *
-	 **************/
-	case 0:
-	case '}'://ex-end - finish execution
+		/**************
+		 *  TERMINATE *
+		 **************/
+		case 0:
+		case '}'://ex-end - finish execution
+			OpcodeTerminate(act, spl, timestep, maxl0);
 
-#ifdef V_VERBOSE
-		printf("Unbinding...\n");
-#endif
-		spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
-				AgentUnbind(act),timestep,maxl0);
-
-		spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
-				AgentUnbind(pass),timestep,maxl0);
-
-		break;
-
-	default://Just increment the i-pointer
-		act->i[act->it]++;
-		break;
+		/**************
+		 *  N-OP *
+		 **************/
+		default://Just increment the i-pointer
+			act->i[act->it]++;
+			break;
 	}
 
 #ifdef V_VERBOSE
@@ -2175,13 +2096,13 @@ void stringPM::comass_TimestepIncrement(){
 				case B_PASSIVE:
 
 					//extract_ag(&nowhead,pag->exec);
-					changed = comass_ReactionExecuteOpcode(pag->exec,pag);
+					changed = ReactionExecuteOpcode_Comass(pag->exec,pag);
 
 					break;
 				case B_ACTIVE:
 
 					//extract_ag(&nowhead,pag->pass);
-					changed = comass_ReactionExecuteOpcode(pag,pag->pass);
+					changed = ReactionExecuteOpcode_Comass(pag,pag->pass);
 					break;
 				default:
 					printf("ERROR: agent with unknown state encountered!\n");
@@ -2206,136 +2127,89 @@ void stringPM::comass_TimestepIncrement(){
 
 
 /////////////////////////////////////////////////////////start of energetic stuff
-int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt *T){
+/******************************************************************************
+ * @brief execute the current opcode in a reaction, ONLY if there's energy,
+ *        otherwise, just increment the instruction pointer
+ *
+ * @details afaict, the *only* difference is that if there is no available
+ * 		  energy, then nothing happens... BUT this is already captured in
+ * 		  the TimestepIncrement function, so I don't think this ever worked
+ * 		  properly.
+ * 		  //todo(sjh): delete the energetic functions!
+ *
+ * @param[in] act the active string
+ *
+ * @param[in] pass the passive string
+ *
+ * @return 1 always - to indicate the reaction has changed
+ *         todo: maybe some error handling here would be good!
+ *****************************************************************************/
+int stringPM::ReactionExecuteOpcode_Energetic(s_ag *act, s_ag *pass){
 
-	int finished=0;
-	char *tmp;
-	int safe_append=1;
+	int safe_append=1; int finished=0;
 
 	if(energy>0){
-			switch(*(act->i[act->it])){//*iptr[it]){
+		switch(*(act->i[act->it])){//*iptr[it]){
 
-				case '$'://h-search
-					//act->ft = act->it;
-					char *cs;
-					if(act->ft)
-						cs = act->S;
-					else
-						cs = act->pass->S;
-					tmp = OpcodeSearchInner(act->i[act->it],cs,blosum,&(act->it),&(act->ft),maxl);
-					act->f[act->ft] = tmp;
-					act->i[act->it]++;
+			case '$'://h-search
+				OpcodeSearch(act,blosum,maxl);
+				break;
+
+			/*************
+			 *   P_MOVE  *
+			 *************/
+			case '>':
+				OpcodeMove(act);
 					break;
 
-				/*************
-				 *   P_MOVE  *
-				 *************/
-				case '>':
-						tmp=act->i[act->it];
-						tmp++;
-						switch(*tmp){
-						case 'A':
-							act->it = act->ft;
-							act->i[act->it] = act->f[act->ft];
-							act->i[act->it]++;
-							break;
-						case 'B':
-							act->rt = act->ft;
-							act->r[act->rt] = act->f[act->ft];
-							act->i[act->it]++;
-							break;
-						case 'C':
-							act->wt = act->ft;
-							act->w[act->wt] = act->f[act->ft];
-							act->i[act->it]++;
-							break;
-						default:
-							act->it = act->ft;
-							act->i[act->it] = act->f[act->ft];
-							act->i[act->it]++;
-							break;
-						}
-						break;
+
+			/************
+			 *   HCOPY  *
+			 ************/
+			case '='://h-copy
+				OpcodeCopy(act,domut,indelrate,subrate,maxl,
+								blosum,granular_1,biomass,
+								spl,timestep);
+				break;
+
+			/************
+			 *  TOGGLE  *
+			 ************/
+			case '^'://p-toggle: toggle active pointer
+				OpcodeToggle(act);
+				break;
+
+			/************
+			 *  IFLABEL *
+			 ************/
+			case '?'://If-label
+				OpcodeIf(act,blosum,maxl);
+				break;
 
 
-				/************
-				 *   HCOPY  *
-				 ************/
-				case '='://h-copy
-					//if(OpcodeCopy(act)<0){
-					if(OpcodeCopy(act,domut,indelrate,subrate,maxl,
-							blosum,granular_1,biomass)<0){
-						spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
-								AgentUnbind(act),timestep,maxl0);
-
-						spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
-								AgentUnbind(pass),timestep,maxl0);
+			/************
+			 *  CLEAVE  *
+			 ************/
+			case '%':
+					if((!OpcodeCleave(act,nexthead,spl,&agct,timestep,maxl0) )){
 						finished = 1;
+						safe_append=0;	//extract_ag(&nowhead,p);
 					}
 					break;
 
-				/************
-				 *  TOGGLE  *
-				 ************/
-				case '^'://p-toggle: toggle active pointer
-						tmp=act->i[act->it];
-						tmp++;
-						switch(*tmp){
-						case 'A':
-							act->it = 1-act->it;
-							break;
-						case 'B':
-							act->rt = 1-act->rt;
-							break;
-						case 'C':
-							act->wt = 1-act->wt;
-							break;
-						default:
-							act->ft = 1-act->ft;
-							break;
-						}
-						act->i[act->it]++;
-						break;
+			/**************
+			 *  TERMINATE *
+			 **************/
+			case 0:
+			case '}'://ex-end - finish execution
+				OpcodeTerminate(act, spl, timestep, maxl0);
 
-				/************
-				 *  IFLABEL *
-				 ************/
-				case '?'://If-label
-						act->i[act->it]=OpcodeIf(act->i[act->it],act->r[act->rt],act->S,blosum,maxl);
-						break;
-
-
-				/************
-				 *  CLEAVE  *
-				 ************/
-				case '%':
-						if((OpcodeCleave(act,nexthead,spl,&agct,timestep,maxl0) )){
-							finished = 1;
-							safe_append=0;	//extract_ag(&nowhead,p);
-						}
-						break;
-
-				/**************
-				 *  TERMINATE *
-				 **************/
-				case 0:
-				case '}'://ex-end - finish execution
-
-			#ifdef V_VERBOSE
-						printf("Unbinding...\n");
-			#endif
-						spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
-								AgentUnbind(act),timestep,maxl0);
-
-						spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
-								AgentUnbind(pass),timestep,maxl0);
-
-						finished = 1;
-						break;
-
-				default://Just increment the i-pointer
-					act->i[act->it]++;
-					break;
+			/**************
+			 *  N-OP *
+			 **************/
+			default://Just increment the i-pointer
+				act->i[act->it]++;
+				break;
 		}
 	}
 	else{//Just increment the i-pointer
@@ -2356,7 +2230,7 @@ int stringPM::energetic_exec_step(s_ag *act, s_ag *pass){//pset *p,char *s1, swt
 	if(energy>0)
 		energy--;
 
-	//return 1;
+	//energetic version sets finished - why?? not an 'energetic' thing!
 	return finished;
 }
 
@@ -2476,13 +2350,13 @@ void stringPM::energetic_TimestepIncrement(){
 			case B_PASSIVE:
 
 				//extract_ag(&nowhead,pag->exec);
-				changed = energetic_exec_step(pag->exec,pag);
+				changed = ReactionExecuteOpcode_Energetic(pag->exec,pag);
 
 				break;
 			case B_ACTIVE:
 
 				//extract_ag(&nowhead,pag->pass);
-				changed = energetic_exec_step(pag,pag->pass);
+				changed = ReactionExecuteOpcode_Energetic(pag,pag->pass);
 				break;
 			default:
 				printf("ERROR: agent with unknown state encountered!\n");

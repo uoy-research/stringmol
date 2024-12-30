@@ -48,16 +48,16 @@ void MassTableUpdate(int * mass, const int randomOpcodeIndex,
 
 
 /*******************************************************************************
- * @brief calculates the length of an opcode template
- *
- * @details see technical report section 9.1
- *
- * @param[in] ip the instruction pointer
- *
- * @param[in] maxl maximum string length
- *
- * @return the length of the template
- ******************************************************************************/
+* @brief calculates the length of an opcode template
+*
+* @details see technical report section 9.1
+*
+* @param[in] ip the instruction pointer
+*
+* @param[in] maxl maximum string length
+*
+* @return the length of the template
+*******************************************************************************/
 int OpcodeTemplateLength(char *ip, const int maxl){
 
 	int len=0;
@@ -94,7 +94,7 @@ int OpcodeTemplateLength(char *ip, const int maxl){
 * @param[in] maxl maximum string length
 *
 * @return 1 always - to indicate the reaction has changed
-*         todo: maybe some error handling here would be good!
+*         todo(sjh): maybe some error handling here would be good!
 *******************************************************************************/
 char * OpcodeSearchInner(char *iptr, char *sp, swt *T, const int *itog,
 		int *ftog,const int maxl){
@@ -123,16 +123,8 @@ char * OpcodeSearchInner(char *iptr, char *sp, swt *T, const int *itog,
 	start of the line using this technique with a little modification. But probably better to implement a "decrement"
 	operator */
 
-	/*
-	//first get the length of the string
-	while(*ip > 64 && *ip <91){
-		len++;
-		ip++;
-	}
-	*/
 	len = OpcodeTemplateLength(ip, maxl);
 	tp = iptr+len;
-	//ip=iptr+1;
 
 	if(!len){
 		//Ensure that the toggles are set:
@@ -146,8 +138,7 @@ char * OpcodeSearchInner(char *iptr, char *sp, swt *T, const int *itog,
 	for(i=0;i<len;i++)
 		tmp[i] = OpcodeComplement(tmp[i]);
 
-	//SmithWaterman(tmp,sp,&A,T,0);
-	/*float bprob =*/ SmithWatermanAlignment(tmp,sp,&A,T,0);
+	SmithWatermanAlignment(tmp,sp,&A,T,0);
 
 	//TODO: this will always match if any symbols match. There is no stochastic element..
 #ifndef SOFT_SEARCH
@@ -155,12 +146,11 @@ char * OpcodeSearchInner(char *iptr, char *sp, swt *T, const int *itog,
 #else
 	int l = A.e1-A.s1 < A.e2-A.s2 ? A.e1-A.s1 : A.e2-A.s2;
 	
-	//TODO: various different permutations of bprob...! 
+	//todo(sjh): various different permutations of bprob...!
 	//if(l<=2)
 	//	bprob=0;
 	//else
 	//	bprob = pow(A.score,l)/pow(l,l);
-
 
 	float s = A.score<l-1.124? A.score : l-1.124;
 	float bprob = s/(l-1.124);
@@ -170,7 +160,9 @@ char * OpcodeSearchInner(char *iptr, char *sp, swt *T, const int *itog,
 #endif
 		return tp + A.e2 - (tp-sp);
 
-	//Ensure that the toggles are set - if no match found, we currenty move *F to *I - might leave it on the opposite string if it was there in the 1st place...:
+	//Ensure that the toggles are set - if no match found, we currenty move
+	//*F to *I - might leave it on the opposite string
+	//           if it was there in the 1st place...:
 	*ftog = *itog;
 	return tp;
 }
@@ -207,7 +199,13 @@ void OpcodeSearch(s_ag *act, swt *blosum, const unsigned short int maxl){
 
 
 
-
+/*******************************************************************************
+* @brief execute the "move" opcode (">") in a reaction
+*
+* @details see technical report
+*
+* @param[in] act the agent
+*******************************************************************************/
 void OpcodeMove(s_ag *act){
 	char *tmp;
 
@@ -241,7 +239,7 @@ void OpcodeMove(s_ag *act){
 
 
 
-/******************************************************************************
+/*******************************************************************************
 * @brief execute the "if" opcode ("?")
 *
 * @details see technical report
@@ -257,28 +255,28 @@ void OpcodeMove(s_ag *act){
 * @param[in] maxl maximum string length
 *
 * @return new position of the instruction pointer, 0 if "error" (can't happen)
-*****************************************************************************/
-char * OpcodeIf(char *ip, char *rp, char *sp, swt *T, const int maxl){
+*******************************************************************************/
+void OpcodeIf(s_ag * act, swt *T, const int maxl){
 
+	char *ip,*rp;
 	char tmp[maxl],tmp2[maxl];
-	int i,len = OpcodeTemplateLength(ip, maxl);
-	ip++;
+	int i,len;
 	align A;
+
+	ip = act->i[act->it];
+	rp = act->r[act->rt];
+	len = OpcodeTemplateLength(ip, maxl);
+	ip++;
 
 	switch(len){
 
 	case 0:
+	case 1:
 		if(!*rp)
-			return ip+len+1;
-		return ip+len;
+			act->i[act->it] = ip+len+1;
+		else
+			act->i[act->it] = ip+len;
 
-		break;
-
-
-	case 1: //Possibly switch to look at different heads here....not implemented yet....
-		if(!*rp)
-			return ip+len+1;
-		return ip+len;
 		break;
 
 	default:
@@ -296,8 +294,9 @@ char * OpcodeIf(char *ip, char *rp, char *sp, swt *T, const int maxl){
 		SmithWatermanAlignment(tmp,tmp2,&A,T,0);
 
 		if(OpcodeTemplateAligns(&A,len))
-			return ip+len+1;
-		return ip+len;
+			act->i[act->it] = ip+len+1;
+		else
+			act->i[act->it] = ip+len;
 		break;
 	}
 }
@@ -306,17 +305,15 @@ char * OpcodeIf(char *ip, char *rp, char *sp, swt *T, const int maxl){
 
 
 
-
-
 /*******************************************************************************
- * @brief pointer position relative to start of string
- *
- * @param[in] pag the chemical agent
- *
- * @param[in] headtype the pointer type
- *
- * @return the pointer position
- ******************************************************************************/
+* @brief pointer position relative to start of string
+*
+* @param[in] pag the chemical agent
+*
+* @param[in] headtype the pointer type
+*
+* @return the pointer position
+*******************************************************************************/
 int PointerPosition(s_ag *pag, char headtype){
 
 	char *ph;
@@ -364,7 +361,26 @@ int PointerPosition(s_ag *pag, char headtype){
 
 
 
+
+
 //todo(sjh): Lot's of scope for refactor here...
+//todo(sjh): should probably set safe to false if the first check fails also!
+//           WRITE TESTS for this!
+/*******************************************************************************
+* @brief check pointer positions for a Copy operation
+*
+* @details First, checks if read or write head is beyond max string length;
+* 			returns -1 or -2 respectively if so.
+* 			Second, checks if the read pointer is 'on' a string (i.e. not
+* 			pointing at \0. Variable 'Safe' set to false if so.
+*
+* @param[in] act pointer to the active string (from which the partner string
+*            can be accessed)
+*
+* @return 0 if successful;
+*         -1 if attempt to write beyond maxl;
+*         -2 if attempt to read beyond maxl;
+*******************************************************************************/
 int OpcodeCopyCheckSafe(s_ag *act, const unsigned int maxl, int & safe){
 
 	int ppos;
@@ -403,6 +419,7 @@ int OpcodeCopyCheckSafe(s_ag *act, const unsigned int maxl, int & safe){
 
 
 
+
 // todo(sjh): These values should be recorded elsewhere!
 // MUTATION RATES:
 // THESE ARE HARD-CODED FOR NOW - THEY SHOULD BE DERIVED FROM THE BLOSUM SOMEHOW...
@@ -415,21 +432,26 @@ int OpcodeCopyCheckSafe(s_ag *act, const unsigned int maxl, int & safe){
 //
 // todo(sjh): tidy up the mix of setting "safe" and returning odd values!
 /*******************************************************************************
- * @brief Copy operator "\="
- *
- * @details writes the symbol at the read pointer to the position of the
- *          write pointer, with mutation
- *
- * @param[in] act pointer to the active string (from which the partner string
- *            can be accessed)
- *
- * @return 0 if successful;
- *         -1 if attempt to write beyond maxl;
- *         -2 if attempt to read beyond maxl;
- ******************************************************************************/
+* @brief Copy operator "\="
+*
+* @details writes the symbol at the read pointer to the position of the
+*          write pointer, with mutation. Has the following features:
+*          1: Checks position of pointers before attempting cleave -
+*          see OpcodeCopyCheckSafe. Does nothing if not "safe".
+*          Handles 'granular' flag by incrementing read & write pointers
+*          (or not).
+*
+*
+*
+* @param[in] act pointer to the active string (from which the partner string
+*            can be accessed)
+*
+* @return 0 always
+*******************************************************************************/
 int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
 		float subrate, const unsigned int maxl,
-		swt	*blosum, const int granular_1, long &biomass){
+		swt	*blosum, const int granular_1, long &biomass,
+		SMspp * spl, const unsigned long int timestep){//, int &finished){
 
 	int randomOpcodeIndex;
 	float rno;
@@ -439,12 +461,13 @@ int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
 		indelrate = subrate =0;
 	}
 
-	switch(OpcodeCopyCheckSafe(act,maxl,safe)){
-	case -1:
-		return -1;
-	case -2:
-		return -2;
-	}
+	//switch(OpcodeCopyCheckSafe(act,maxl,safe)){
+	//case -1:
+	//	return -1;
+	//case -2:
+	//	return -2;
+	//}
+	int pposcheck = OpcodeCopyCheckSafe(act,maxl,safe);
 
 	if(safe){
 
@@ -493,20 +516,31 @@ int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
 			}
 		}
 	}
-	//update lengths
-	act->len = strlen(act->S);
-	act->pass->len = strlen(act->pass->S);
 
+	if(pposcheck == 0){
+		//update lengths
+		act->len = strlen(act->S);
+		act->pass->len = strlen(act->pass->S);
 
-	act->i[act->it]++;
+		act->i[act->it]++;
 
+	#ifdef VERBOSE
+		if(mut)
+		printf("Mutant event %d. new string is:\n%s\n\n",mut,act->wt?act->S:act->pass->S);
+	#endif
+		act->biomass++;
+		biomass++;
+	}
+	else{
+		s_ag *pass;
+		pass = act->pass;
+		spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
+			AgentUnbind(act),timestep,maxl+1);
 
-#ifdef VERBOSE
-	if(mut)
-	printf("Mutant event %d. new string is:\n%s\n\n",mut,act->wt?act->S:act->pass->S);
-#endif
-	act->biomass++;
-	biomass++;
+		spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+			AgentUnbind(pass),timestep,maxl+1);
+		//finished = 1;
+	}
 	return 0;
 }
 
@@ -514,6 +548,15 @@ int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
 
 
 
+/*******************************************************************************
+* @brief Update the "spare" masses
+*
+* @param[in] mass the mass array
+*
+* @param[in] randomOpcodeIndex - the index of the randomly selected opcode
+*
+* @param[in] writePtrOpcodeIndex - the index of the opcode at the write ptr
+*******************************************************************************/
 void MassTableUpdate(int * mass, const int randomOpcodeIndex,
 		const int writePtrOpcodeIndex){
 
@@ -593,9 +636,10 @@ void OpcodeInsertInstruction(const s_ag * act, int inst_idx, int *mass, swt * bl
  *         -1 if attempt to write beyond maxl;
  *         -2 if attempt to read beyond maxl;
  ******************************************************************************/
-int OpcodeComassCopy(s_ag *act, const bool domut,float indelrate,
+int OpcodeCopy_Comass(s_ag *act, const bool domut,float indelrate,
 		float subrate, const unsigned int maxl,
-		swt	*blosum, const int granular_1, long &biomass, int *mass){
+		swt	*blosum, const int granular_1, long &biomass, int *mass,
+		SMspp * spl, const unsigned long int timestep){
 
 	int cidx;
 	float rno;
@@ -605,12 +649,13 @@ int OpcodeComassCopy(s_ag *act, const bool domut,float indelrate,
 		indelrate = subrate =0;
 	}
 
-	switch(OpcodeCopyCheckSafe(act,maxl,safe)){
-	case -1:
-		return -1;
-	case -2:
-		return -2;
-	}
+	//switch(OpcodeCopyCheckSafe(act,maxl,safe)){
+	//case -1:
+	//	return -1;
+	//case -2:
+	//	return -2;
+	//}
+	int pposcheck = OpcodeCopyCheckSafe(act,maxl,safe);
 
 	if(safe){
 
@@ -694,17 +739,44 @@ int OpcodeComassCopy(s_ag *act, const bool domut,float indelrate,
 			}
 		}
 	}
-	//update lengths
-	act->len = strlen(act->S);
-	act->pass->len = strlen(act->pass->S);
-	act->i[act->it]++;
+	////update lengths
+	//act->len = strlen(act->S);
+	//act->pass->len = strlen(act->pass->S);
+	//act->i[act->it]++;
 
-#ifdef VERBOSE
-	if(mut)
-	printf("Mutant event %d. new string is:\n%s\n\n",mut,act->wt?act->S:act->pass->S);
-#endif
-	act->biomass++;
-	biomass++;
+//#ifdef VERBOSE
+//	if(mut)
+//	printf("Mutant event %d. new string is:\n%s\n\n",mut,act->wt?act->S:act->pass->S);
+//#endif
+//	act->biomass++;
+//	biomass++;
+//	return 0;
+
+
+	if(pposcheck == 0){
+		//update lengths
+		act->len = strlen(act->S);
+		act->pass->len = strlen(act->pass->S);
+
+		act->i[act->it]++;
+
+	#ifdef VERBOSE
+		if(mut)
+		printf("Mutant event %d. new string is:\n%s\n\n",mut,act->wt?act->S:act->pass->S);
+	#endif
+		act->biomass++;
+		biomass++;
+	}
+	else{
+		s_ag *pass;
+		pass = act->pass;
+		spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
+			AgentUnbind(act),timestep,maxl+1);
+
+		spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+			AgentUnbind(pass),timestep,maxl+1);
+		//finished = 1;
+	}
 	return 0;
 }
 
@@ -713,7 +785,7 @@ int OpcodeComassCopy(s_ag *act, const bool domut,float indelrate,
 
 
 /*
-//TODO: see where speig_hcopy differs from other versions of hcopy!
+//todo(sjh): see where speig_hcopy differs from other versions of hcopy!
 int stringPM::speig_hcopy(s_ag *act){
 
 	//s_ag *pass;
@@ -885,11 +957,11 @@ void OpcodeIncrementRead(s_ag *act, bool granular_1){
 
 
 /*******************************************************************************
- * @brief Toggle pointers
- *
- * @param[in] act pointer to the active string (from which the partner string
- *            can be accessed)
- ******************************************************************************/
+* @brief Toggle pointers
+*
+* @param[in] act pointer to the active string (from which the partner string
+*            can be accessed)
+*******************************************************************************/
 void OpcodeToggle(s_ag *act){
 	char *tmp;
 	tmp=act->i[act->it];
@@ -916,20 +988,31 @@ void OpcodeToggle(s_ag *act){
 
 
 
-/******************************************************************************
- * @brief cleave
- *
- * @param[in] act
- *
- * @return which agents have been destroyed (if any) 0: none; 1: active only
- *         2: passive only; 3: both
- *****************************************************************************/
-int OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
+/*******************************************************************************
+* @brief cleave
+*
+* @param[in] act the active partner agent
+*
+* @param[in] nexthead the agent list to append things to
+*
+* @param[in] spl the species list
+*
+* @param[in] agct the agent count
+*
+* @param[in] timestep the current time
+*
+* @param[in] maxl0 the max string length including 0 terminating char
+*
+* @return which agents have been destroyed (if any) 0: none; 1: active only
+*         2: passive only; 3: both
+*******************************************************************************/
+bool OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
 		unsigned long int *agct,
 		const unsigned int timestep, const unsigned int maxl0){
 
 	int destroyAction = 0,cpy;
 	s_ag *c,*pass,*csite;
+	bool safe_append = true;
 
 	pass = act->pass;
 
@@ -941,7 +1024,7 @@ int OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
 		//1: MAKE THE NEW MOLECULE FROM THE CLEAVE POINT
 
 		//Can't really say what the label is easily - for ECAL, it's always pass
-		c = AgentMake(pass->label, *agct++,  maxl0);//,1);
+		c = AgentMake(pass->label, *agct++);//,  maxl0);//,1);
 
 		//Copy the cleaved string to the agent
 		char *cs;
@@ -994,6 +1077,7 @@ int OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
 				AgentAppend(&nexthead,pass);
 				AgentFree(act);
 				act = NULL;
+				safe_append = false;
 				break;
 			case 2://Destroy passive - only append active
 				//SMAgentUnbindAndSpeciesListUpdate(act,'A',1,act->spp,pass->spp);
@@ -1002,6 +1086,7 @@ int OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
 				AgentAppend(&nexthead,act);
 				AgentFree(pass);
 				pass = NULL;
+				safe_append = false;
 				break;
 			case 3://Destroy both
 				printf("This should never happen\n");
@@ -1015,6 +1100,7 @@ int OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
 				act = NULL;
 				AgentFree(pass);
 				pass = NULL;
+				safe_append = false;
 				break;
 			default://This can't be right can it? - NB destroyAction = 0 covered here - make explicit!
 				if(act->ft == act->it){
@@ -1029,5 +1115,39 @@ int OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
 		act->i[act->it]++;
 	}
 
-	return destroyAction;
+	//return destroyAction;
+	//if((OpcodeCleave(act,nexthead,spl,&agct,timestep,maxl0) )){
+	//	safe_append=0;
+	//}
+	return safe_append;
+}
+
+
+
+
+
+/*******************************************************************************
+* @brief Toggle pointers
+*
+* @param[in] act pointer to the active string (from which the partner string
+*            can be accessed)
+*
+* @param[in] spl the species list
+*
+* @param[in] timestep
+*
+* @param[in] maxl0 the max string length
+*******************************************************************************/
+void OpcodeTerminate(s_ag *act, SMspp *spl, const unsigned long int timestep,
+		const unsigned int maxl0){
+
+
+	s_ag *pass;
+	pass = act->pass;
+
+	spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
+			AgentUnbind(act),timestep,maxl0);
+
+	spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
+			AgentUnbind(pass),timestep,maxl0);
 }

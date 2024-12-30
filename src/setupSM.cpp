@@ -870,7 +870,7 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 	if(act->f[act->ft]-csite->S < csite->len){
 
 		//1: MAKE THE NEW MOLECULE FROM THE CLEAVE POINT
-		c = AgentMake(pass->label,(A->agct)++,A->maxl0);//,1);
+		c = AgentMake(pass->label,(A->agct)++);//,A->maxl0);//,1);
 
 		//Copy the cleaved string to the agent
 		char *cs;
@@ -1014,131 +1014,61 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 *
 * @return 1 if decay happens, 0 if not
 *******************************************************************************/
-int ReactionExecuteOpcodeSpatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int x, int y){
+int ReactionExecuteOpcode_Spatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int x, int y){
 
-	char *tmp;
-	int safe_append=1;
+	bool safe_append=true;
 
 	switch(*(act->i[act->it])){//*iptr[it]){
 
-	case '$'://h-search
-		//act->ft = act->it;
-		char *cs;
-		if(act->ft)
-			cs = act->S;
-		else
-			cs = act->pass->S;
-		tmp = OpcodeSearchInner(act->i[act->it],cs,A->blosum,&(act->it),&(act->ft),A->maxl);
-		act->f[act->ft] = tmp;
-		act->i[act->it]++;
+	/*************
+	 *   SEARCH  *
+	 *************/
+	case '$':
+		OpcodeSearch(act,A->blosum,A->maxl);
 		break;
 
+
 	/*************
-	 *   P_MOVE  *
+	 *   MOVE  *
 	 *************/
 	case '>':
-			tmp=act->i[act->it];
-			tmp++;
-			switch(*tmp){
-			case 'A':
-				act->it = act->ft;
-				act->i[act->it] = act->f[act->ft];
-				act->i[act->it]++;
-				break;
-			case 'B':
-				act->rt = act->ft;
-				act->r[act->rt] = act->f[act->ft];
-				act->i[act->it]++;
-				break;
-			case 'C':
-				act->wt = act->ft;
-				act->w[act->wt] = act->f[act->ft];
-				act->i[act->it]++;
-				break;
-			default:
-				act->it = act->ft;
-				act->i[act->it] = act->f[act->ft];
-				act->i[act->it]++;
-				break;
-			}
-			break;
+		OpcodeMove(act);
+		break;
 
 
 	/************
 	 *   HCOPY  *
 	 ************/
 	case '='://h-copy
-		//if(A->OpcodeCopy(act)<0){
-		if(OpcodeCopy(act,A->domut,A->indelrate,A->subrate,A->maxl,
-				A->blosum,A->granular_1,A->biomass)<0){
-
-			A->spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
-					AgentUnbind(act),A->timestep,A->maxl0);
-
-			A->spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
-					AgentUnbind(pass),A->timestep,A->maxl0);
-		}
+		OpcodeCopy(act,A->domut,A->indelrate,A->subrate,A->maxl,
+						A->blosum,A->granular_1,A->biomass,
+						A->spl,A->timestep);
 		break;
 
 
 	/************
 	 *   INC_R  *
 	 ************/
-	case '+'://h-copy
-		if(A->granular_1==1){
-			//printf("Incrementing read \n");
-			/* Select the modifier */
-			tmp=act->i[act->it];
-			tmp++;
-			switch(*tmp){
-			case 'A':
-				act->i[act->it]++;
-				break;
-			case 'B':
-				act->r[act->rt]++;
-				break;
-			case 'C':
-				act->w[act->wt]++;
-				break;
-			default:
-				act->f[act->ft]++;
-				break;
-			}
-		}
-		act->i[act->it]++;
+	case '+':
+		OpcodeIncrementRead(act,A->granular_1);
 		break;
-
 
 
 	/************
 	 *  TOGGLE  *
 	 ************/
 	case '^'://p-toggle: toggle active pointer
-			tmp=act->i[act->it];
-			tmp++;
-			switch(*tmp){
-			case 'A':
-				act->it = 1-act->it;
-				break;
-			case 'B':
-				act->rt = 1-act->rt;
-				break;
-			case 'C':
-				act->wt = 1-act->wt;
-				break;
-			default:
-				act->ft = 1-act->ft;
-				break;
-			}
-			act->i[act->it]++;
-			break;
+		OpcodeToggle(act);
+		break;
+
 
 	/************
 	 *  IFLABEL *
 	 ************/
 	case '?'://If-label
-			act->i[act->it]=OpcodeIf(act->i[act->it],act->r[act->rt],act->S,A->blosum,A->maxl);
-			break;
+			//act->i[act->it]=OpcodeIf(act->i[act->it],act->r[act->rt],act->S,A->blosum,A->maxl);
+		OpcodeIf(act,A->blosum,A->maxl);
+		break;
 
 
 	/************
@@ -1147,7 +1077,7 @@ int ReactionExecuteOpcodeSpatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pas
 	case '%':
 			//Decide where to put the cleaved molecule
 			if((/*dac = */OpcodeCleaveSpatial(A,run,act))){//,x,y))){
-				//TODO: Need to determine what safe_append is used for (after looking at cleave)
+				//todo(sjh): Need to determine what safe_append is used for (after looking at cleave)
 				safe_append=0;	//extract_ag(&nowhead,p);
 			}
 			break;
@@ -1567,13 +1497,13 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 
 					//find_ag_gridpos(pag->exec,run,&x,&y);
 
-					changed = ReactionExecuteOpcodeSpatial(A,run,pag->exec,pag);//,x,y);
+					changed = ReactionExecuteOpcode_Spatial(A,run,pag->exec,pag);//,x,y);
 
 					break;
 				case B_ACTIVE:
 
 					//find_ag_gridpos(pag,run,&x,&y);
-					changed = ReactionExecuteOpcodeSpatial(A,run,pag,pag->pass);//,x,y);
+					changed = ReactionExecuteOpcode_Spatial(A,run,pag,pag->pass);//,x,y);
 					break;
 				default:
 					printf("ERROR: agent with unknown state encountered!\n");

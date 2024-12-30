@@ -208,14 +208,14 @@ public:
 
 	//Checking the energy model: (THIS RESULTS IN AN UNSTABLE SYSTEM)
 	void 	energetic_TimestepIncrement();
-	int 	energetic_exec_step(s_ag *act, s_ag *pass);
+	int 	ReactionExecuteOpcode_Energetic(s_ag *act, s_ag *pass);
 	int 	energetic_attempt_bind(s_ag *pag);
 
 
 
 	//Trying conservation of mass
 	int 	comass_AgentAttemptDecay(s_ag *pag);
-	int 	comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass);
+	int 	ReactionExecuteOpcode_Comass(s_ag *act, s_ag *pass);
 	int 	load_comass(const char *fn, int verbose); //load single value from a file
 	int 	set_mass(const int *param);  //load a set of values from an array
 	void 	comass_TimestepIncrement();

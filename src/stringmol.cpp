@@ -92,7 +92,7 @@ int joinsplists(int argc, char *argv[]){
     A = &oA;
 
 
-    pag = AgentMake('A',A->agct++,A->maxl0);//,1);
+    pag = AgentMake('A',A->agct++);
     pag->S =(char *) malloc(A->maxl0*sizeof(char));
 //First lets do the loading:
     for(i=0;i<nlists;i++){
@@ -168,7 +168,7 @@ int joinsplists(int argc, char *argv[]){
 
 
 
-void add_spp(const int nag, stringPM *A, char *label, char symbol){
+void add_spp(const int nag, stringPM *A, char *sequence, char symbol){
     int i;
     s_ag *pag;
 
@@ -176,12 +176,7 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
         l_spp *species;
         species = NULL;
 
-        pag = AgentMake(symbol,A->agct++,A->maxl0);//,1);
-
-        pag->S =(char *) malloc(A->maxl0*sizeof(char));
-        memset(pag->S,0,A->maxl0*sizeof(char));
-        strncpy(pag->S,label,strlen(pag->S));
-        pag->len = strlen(pag->S);
+    	pag = AgentMakeWithSequence(sequence,symbol,A->agct++,A->maxl0);
 
         //No parents for these initial agents!
         pag->pp = A->spl->ParentsMake(NULL,NULL);
@@ -297,7 +292,7 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
 
     FILE *out;
     int i,j,idx,len=200;//,ntypes=nnew
-    char label[A->maxl0];
+    char sequence[A->maxl0];
     float rno;
     s_ag *pag;
 
@@ -308,24 +303,18 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
     //write to outfile
     for(j=0;j<nnew;j++){
 
-        memset(label,0,sizeof(char)*A->maxl0);
+        memset(sequence,0,sizeof(char)*A->maxl0);
         for(i=0;i<len;i++){
             rno=RandomBetween0And1();
             idx=floor(rno*A->blosum->N);
-            label[i]=A->blosum->key[idx];
+            sequence[i]=A->blosum->key[idx];
         }
 
         for(i=0;i<nag;i++){
             l_spp *s;
             s = NULL;
 
-            pag = AgentMake('A'+j,A->agct++,A->maxl0);//,1);
-
-            pag->S =(char *) malloc(A->maxl0*sizeof(char));
-            memset(pag->S,0,A->maxl0*sizeof(char));
-            //strncpy(pag->S,label,strlen(label));
-            memcpy(pag->S,label,strlen(label));
-            pag->len = strlen(pag->S);
+        	pag = AgentMakeWithSequence(sequence,'A'+j,A->agct++,A->maxl0);
 
             //No parents for these initial agents!
             pag->pp = A->spl->ParentsMake(NULL,NULL);
@@ -345,11 +334,6 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
             }
         }
     }
-
-
-    //now let's sort out the biomass-based ones we are keeping:
-
-
 
     out = fopen(fout,"w");
     A->print_conf(out);
@@ -2268,13 +2252,7 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
         l_spp *s;
         s = NULL;
 
-        pag = AgentMake('R',A->agct++,A->maxl0);//,1);
-
-        pag->S =(char *) malloc(A->maxl0*sizeof(char));
-        pag->label = 'R';
-        memset(pag->S,0,A->maxl0*sizeof(char));
-        strncpy(pag->S,repstring,strlen(pag->S));
-        pag->len = strlen(pag->S);
+    	pag = AgentMakeWithSequence(repstring,'R',(A->agct)++,A->maxl0);
 
         //No parents for these initial agents!
         pag->pp = A->spl->ParentsMake(NULL,NULL);

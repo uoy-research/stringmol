@@ -33,26 +33,30 @@ void OpcodeIncrementRead(s_ag *act, bool granular_1);
 
 void OpcodeToggle(s_ag *act);
 
-int OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
+bool OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
 		unsigned long int *agct,
 		const unsigned int timestep, const unsigned int maxl0);
 
-char * OpcodeIf(char *ip, char *rp, char *sp, swt *T, const int maxl);
+//char * OpcodeIf(char *ip, char *rp, char *sp, swt *T, const int maxl);
+void OpcodeIf(s_ag * act, swt *T, const int maxl);
 
 void OpcodeInsertInstruction(const s_ag * act, int inst_idx,
 		int *mass, swt * blosum,
 		const int writePtrOpcodeIndex = -1);
 
-int OpcodeCopy(      s_ag *act, const bool domut,float indelrate,
-		float subrate, const unsigned int maxl,
-		swt	*blosum, const int granular_1, long &biomass
-		);
-
-int OpcodeComassCopy(s_ag *act, const bool domut,float indelrate,
+int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
 		float subrate, const unsigned int maxl,
 		swt	*blosum, const int granular_1, long &biomass,
-		int *mass);
+		SMspp * spl, const unsigned long int timestep);//, int &finished);
+
+int OpcodeCopy_Comass(s_ag *act, const bool domut,float indelrate,
+		float subrate, const unsigned int maxl,
+		swt	*blosum, const int granular_1, long &biomass,
+		int *mass,
+		SMspp * spl, const unsigned long int timestep);
 
 
+void OpcodeTerminate(s_ag *act, SMspp *spl, const unsigned long int timestep,
+		const unsigned int maxl0);
 
 #endif /* OPCODES_H_ */
