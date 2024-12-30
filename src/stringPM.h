@@ -64,7 +64,7 @@ public:
 	swt	*blosum;
 	s_sw *swlist;
 
-	long agct;
+	unsigned long agct;
 	unsigned int timestep; 	//record of the cell iteration count
 
 	unsigned long randseed;
@@ -72,6 +72,9 @@ public:
 
 	long biomass; 	//used as a measure of fitness
 	long bstart;    //time of biomass reset
+	//Conservation of Mass structures:
+	int *mass; //This can be built and populated after "blosum" has been set...
+	//todo(sjh): what is the difference between mass and biomass?
 
 	int domut;
 	int dodecay;
@@ -81,8 +84,6 @@ public:
 	int thisepoch;
 	int nepochs;
 
-	//Conservation of Mass structures:
-	int *mass; //This can be built and populated after "blosum" has been set...
 
 	int run_number; //The run number
 	char swt_fn[256];
@@ -133,7 +134,6 @@ public:
 	~stringPM();
 	/*********************************************************************/
 
-	s_ag * AgentMake(int alab);//, int randpos);
 
 	void SetHeadsAndDefaults();
 	void BucketReset(int verbose = 0);
@@ -142,55 +142,40 @@ public:
 	char * parse_error(int errno);
 
 	//Loading
-	int load_splist(const char *fn,int verbose);
-	int AgentsLoad(const char *fn, char *fninput, int test=0, int verbose=0);
-	float load_mut(const char *fn, int verbose); //load the mutation rate
-	float load_decay(const char *fn, int verbose); //load the decay rate
-	int load_reactions(const char *fn, char *fntab, int test, int verbose);
-	int load_table_matrix(const char *fn);
+	int 	load_splist(const char *fn,int verbose);
+	float 	load_mut(const char *fn, int verbose); //load the mutation rate
+	float 	load_decay(const char *fn, int verbose); //load the decay rate
+	int 	load_reactions(const char *fn, char *fntab, int test, int verbose);
+	int 	load_table_matrix(const char *fn);
 
 	//Iteration
-	void TimestepIncrement() override;
-	int ReactionAttemptBind(s_ag *pag);
-	int AgentAttemptDecay(s_ag *pag);
+	void 	TimestepIncrement() override;
+	int 	ReactionAttemptBind(s_ag *pag);
+	//int AgentAttemptDecay(s_ag *pag);
 	//int hasdied();
 
-	void replenish_operons();
-	void divide();
+	void 	replenish_operons();
+	void 	divide();
 
 	//list stuff
-	int 	AgentAppend(s_ag **list, s_ag *ag);
-	int 	AgentExtract(s_ag **list, s_ag *ag);
-	int 	AgentsCount(s_ag *head, int state);
-	s_ag * 	AgentSelectRandomly(s_ag *head, int state);
-	int 	AgentFree(s_ag *pag);
-	bool 	AgentAddressInList(s_ag *list,const s_ag *tag);
+	int 	AgentsLoad(const char *fn, char *fninput,
+						int test=0, int verbose=0);
 
-
-	//First version works fine, but no species analysis...
-	//void 	unbind_ag(s_ag * pag,char sptype);
-	int 	AgentUnbind(s_ag * pag, char sptype, int update, l_spp *pa, l_spp *pp);
-
-	void UpdateNowNext();
+	void 	UpdateNowNext();
 
 	//INSTRUCTION SET:
-	int OpcodeCopy(s_ag *act); 	//	=	HCOPY
-	int OpcodeCleave(s_ag *act);  //	=	CLEAVE
+	//int OpcodeCleave(s_ag *act);  //	=	CLEAVE
 
     //Influx
-	void influx_special(int t);
-	void influx(int i);
+	void 	influx_special(int t);
+	void 	influx(int i);
 
 
     //list / array interface:
-	void update_aac();
+	void 	update_aac();
 
 	//Diagnostics
-	void AgentsPrint(FILE *fp, const char *spec, int verbose);
-	int AgentPrintWithIndex(FILE *fp, int det, int idx);
 	void testprop();
-	//void sanity_check();
-
 
 	//Distance calcs
 	float close_dist(s_ag *a1, s_ag *a2);
@@ -215,52 +200,41 @@ public:
 
 	//String & alignment stuff
 	int 	PointerPosition(s_ag *pag, char head); 	//Find the position of a particular head.
-	float 	AgentsAlign(s_ag *a1, s_ag *a2, align *sw);
-	float 	ReactionCalculateBindProbability(align *sw);
+	//float 	AgentsAlign(s_ag *a1, s_ag *a2, align *sw);
 	void 	ReactionSetupExecution(s_ag *A, s_ag *B, align *sw);
 	int 	ReactionExecuteOpcode(s_ag *act, s_ag *pass);
-			//print string stuff
-	void 	PointerPrintOffset(FILE *fp,const char *S,const char *p,int F, char c);
-	void 	ReactionPrintState(FILE *fp, s_ag *act, s_ag *pas);
 	void 	SmithWatermanFree(swt *pSWT, int verbose);
-	int 	AgentCheckZeroLengthString(s_ag* act);
-	int 	AgentRewindDanglingPtrs(s_ag* pag);
 
 
 	//Checking the energy model: (THIS RESULTS IN AN UNSTABLE SYSTEM)
 	void 	energetic_TimestepIncrement();
-	int 	energetic_exec_step(s_ag *act, s_ag *pass);
+	int 	ReactionExecuteOpcode_Energetic(s_ag *act, s_ag *pass);
 	int 	energetic_attempt_bind(s_ag *pag);
 
 
 
 	//Trying conservation of mass
 	int 	comass_AgentAttemptDecay(s_ag *pag);
-	int 	comass_ReactionExecuteOpcode(s_ag *act, s_ag *pass);
+	int 	ReactionExecuteOpcode_Comass(s_ag *act, s_ag *pass);
 	int 	load_comass(const char *fn, int verbose); //load single value from a file
 	int 	set_mass(const int *param);  //load a set of values from an array
 	void 	comass_TimestepIncrement();
 	int 	comass_free_ag(s_ag *pag);
 	int 	update_mass(char *S, int len, int val, const int doconcat);
-	int 	comass_hcopy(s_ag *act);
 
 	//Speigelman's monster
 	//int 	speig_hcopy(s_ag *act);
 
 
 	//Molecular species analysis:
-	//void 		update_lineage(s_ag *p,char sptype);
 	int 		get_ecosystem(); //TODO: sjh - is tis the same as Spatial Community stuff
-	int 		SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp, int mass);
 	void 		print_lineage_dot(FILE *fp, int time,int step); //traces everything descending from the initial set.
 	void 		SpeciesPrintAncestryDot(FILE *fp, int time); //takes all current agents and traces them back
 	void 		SpeciesPrintStrings(FILE *fp);
 	l_spp * 	SpeciesFromListByIndex(int n);
-	//int 		append_spp(s_spp *sp);
 	int 		append_lspp(l_spp *sp);
 	int 		SpeciesCount();
 	void 		SpeciesPrintCount(FILE *fp,int style, int state);
-	//void 		get_spp_count(int state);//Count the number of individuals of each species present in the system
 	//find a species that a molecule belongs to
 	int 		id_spp(l_spp *sp, s_ag *pag, int  aspno, char *spp_string);
 

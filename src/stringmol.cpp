@@ -41,6 +41,7 @@
 //metabolism
 #include "rules.h"
 #include "agents_base.h"
+#include "agent.h"
 #include "SMspp.h"
 #include "stringPM.h"
 
@@ -91,7 +92,7 @@ int joinsplists(int argc, char *argv[]){
     A = &oA;
 
 
-    pag = A->AgentMake('A');//,1);
+    pag = AgentMake('A',A->agct++);
     pag->S =(char *) malloc(A->maxl0*sizeof(char));
 //First lets do the loading:
     for(i=0;i<nlists;i++){
@@ -118,7 +119,7 @@ int joinsplists(int argc, char *argv[]){
                     pag->pp = A->spl->ParentsMake(NULL,NULL);
 
                     //int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
-                    A->SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
+                    A->spl->SpeciesListUpdate(pag,'I',1,NULL,NULL,0,A->timestep,A->maxl0);
                     //s = A->spl->getspp(pag,0);
                     //    s->tspp = 0;
                     //}
@@ -167,7 +168,7 @@ int joinsplists(int argc, char *argv[]){
 
 
 
-void add_spp(const int nag, stringPM *A, char *label, char symbol){
+void add_spp(const int nag, stringPM *A, char *sequence, char symbol){
     int i;
     s_ag *pag;
 
@@ -175,19 +176,14 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
         l_spp *species;
         species = NULL;
 
-        pag = A->AgentMake(symbol);//,1);
-
-        pag->S =(char *) malloc(A->maxl0*sizeof(char));
-        memset(pag->S,0,A->maxl0*sizeof(char));
-        strncpy(pag->S,label,strlen(pag->S));
-        pag->len = strlen(pag->S);
+    	pag = AgentMakeWithSequence(sequence,symbol,A->agct++,A->maxl0);
 
         //No parents for these initial agents!
         pag->pp = A->spl->ParentsMake(NULL,NULL);
 
         if(i==0){
             //int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
-            A->SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
+            A->spl->SpeciesListUpdate(pag,'I',1,NULL,NULL,0,A->timestep,A->maxl0);
             species = A->spl->getspp(pag,0,A->maxl0);
             species->tspp = 0;
         }
@@ -196,7 +192,7 @@ void add_spp(const int nag, stringPM *A, char *label, char symbol){
             A->nowhead = pag;
         }
         else{
-            A->AgentAppend(&(A->nowhead),pag);
+            AgentAppend(&(A->nowhead),pag);
         }
     }
 }
@@ -296,7 +292,7 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
 
     FILE *out;
     int i,j,idx,len=200;//,ntypes=nnew
-    char label[A->maxl0];
+    char sequence[A->maxl0];
     float rno;
     s_ag *pag;
 
@@ -307,31 +303,25 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
     //write to outfile
     for(j=0;j<nnew;j++){
 
-        memset(label,0,sizeof(char)*A->maxl0);
+        memset(sequence,0,sizeof(char)*A->maxl0);
         for(i=0;i<len;i++){
             rno=RandomBetween0And1();
             idx=floor(rno*A->blosum->N);
-            label[i]=A->blosum->key[idx];
+            sequence[i]=A->blosum->key[idx];
         }
 
         for(i=0;i<nag;i++){
             l_spp *s;
             s = NULL;
 
-            pag = A->AgentMake('A'+j);//,1);
-
-            pag->S =(char *) malloc(A->maxl0*sizeof(char));
-            memset(pag->S,0,A->maxl0*sizeof(char));
-            //strncpy(pag->S,label,strlen(label));
-            memcpy(pag->S,label,strlen(label));
-            pag->len = strlen(pag->S);
+        	pag = AgentMakeWithSequence(sequence,'A'+j,A->agct++,A->maxl0);
 
             //No parents for these initial agents!
             pag->pp = A->spl->ParentsMake(NULL,NULL);
 
             if(!i){
                 //int stringPM::SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp, l_spp * ppspp)
-                A->SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
+                A->spl->SpeciesListUpdate(pag,'I',1,NULL,NULL,0,A->timestep,A->maxl0);
                 s = A->spl->getspp(pag,0,A->maxl0);
                 s->tspp = 0;
             }
@@ -340,15 +330,10 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
                 A->nowhead = pag;
             }
             else{
-                A->AgentAppend(&(A->nowhead),pag);
+                AgentAppend(&(A->nowhead),pag);
             }
         }
     }
-
-
-    //now let's sort out the biomass-based ones we are keeping:
-
-
 
     out = fopen(fout,"w");
     A->print_conf(out);
@@ -517,7 +502,7 @@ int origlife(int argc, char *argv[]){
                 }
 
 
-                if(!A.AgentsCount(A.nowhead,-1) || (!rr && nsteps >1500000) || nsteps >15000000){
+                if(!AgentsCount(A.nowhead,-1) || (!rr && nsteps >1500000) || nsteps >15000000){
                     printf("DEATH\n");
                     printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
                     //A.AgentsPrint_count(stdout);
@@ -636,7 +621,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 
 
-        BucketA.AgentsPrint(stdout,"NOW",0);
+        AgentsPrint(stdout,BucketA.nowhead,0,BucketA.maxl);
 
         BucketA.run_number=rr;
         PopdyInitFile(&BucketA);
@@ -709,7 +694,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 #endif
 
-            if(!BucketA.AgentsCount(BucketA.nowhead,-1) || (!rr && nsteps >15000000) || nsteps >15000000){
+            if(!AgentsCount(BucketA.nowhead,-1) || (!rr && nsteps >15000000) || nsteps >15000000){
                 printf("DEATH\n");
                 //fprintf(fpdiv,"%d\t%d\t%d",div,i,(int)A.energy);
                 //BucketA.AgentsPrint_count(fpdiv);
@@ -790,7 +775,7 @@ int comass_AlifeXII(int argc, char *argv[]){
     //FILE *fpo,*fpdiv;
     FILE *fsumm,*ftmp;
 
-    char    fn[128],pfn[128];
+    char    fn[128];
 
     sprintf(fn,"%s.spatial.summary.dat",argv[1]);
     if((fsumm=fopen(fn,"w"))==NULL){
@@ -870,12 +855,14 @@ int comass_AlifeXII(int argc, char *argv[]){
         A.AgentsLoad(argv[2],NULL,0,1);
 
         A.load_comass(argv[2],1);
-        A.AgentsPrint(stdout,"NOW",0);
+        AgentsPrint(stdout,A.nowhead,false,A.maxl);
 
         A.run_number=rr;
-        sprintf(pfn,"popdy%03d.dat",A.run_number);
-        ftmp = fopen(pfn,"w");
-        fclose(ftmp);
+    	PopdyInitFile(&A);
+
+        //sprintf(pfn,"popdy%03d.dat",A.run_number);
+        //ftmp = fopen(pfn,"w");
+        //fclose(ftmp);
 
         if(!rr)
             maxcode = (int *) malloc(A.blosum->N * sizeof(int));
@@ -890,7 +877,6 @@ int comass_AlifeXII(int argc, char *argv[]){
             A.timestep = i;
 
             A.comass_TimestepIncrement();
-
 
             if(!(i%1000)){
                 A.SpeciesPrintCount(stdout,0,-1);
@@ -943,7 +929,7 @@ int comass_AlifeXII(int argc, char *argv[]){
             }
 
 
-            if(!A.AgentsCount(A.nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
+            if(!AgentsCount(A.nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
                 printf("DEATH\n");
                 printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
                 A.SpeciesPrintCount(stdout,0,-1);
@@ -1608,7 +1594,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
 
         //test_adj(A.blosum);
 
-        A.AgentsPrint(stdout,"NOW",0);
+        AgentsPrint(stdout,A.nowhead,false,A.maxl);
 
         A.run_number=rr;
         sprintf(pfn,"popdy%03d.dat",A.run_number);
@@ -1679,7 +1665,7 @@ int energetic_AlifeXII(int argc, char *argv[]){
             }
 
 
-            if(!A.AgentsCount(A.nowhead,-1) || (!rr && nsteps >1500000) || nsteps >15000000){
+            if(!AgentsCount(A.nowhead,-1) || (!rr && nsteps >1500000) || nsteps >15000000){
                 printf("DEATH\n");
                 printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
                 //A.AgentsPrint_count(stdout);
@@ -1847,8 +1833,8 @@ int SmPm_conpop(int argc, char *argv[]){
             }
             printf("\nCount:");
             for(c=0;c<NCON;c++){
-                printf("\t%d",A[c]->AgentsCount(A[c]->nowhead,-1));
-                fprintf(fpdiv,"\t%d",A[c]->AgentsCount(A[c]->nowhead,-1));
+                printf("\t%d",AgentsCount(A[c]->nowhead,-1));
+                fprintf(fpdiv,"\t%d",AgentsCount(A[c]->nowhead,-1));
                 SpeciesPrintCounts(A[c],gclock);
                 score[c] = ctspp(A[c],3);
             }
@@ -1922,7 +1908,7 @@ int SmPm_conpop(int argc, char *argv[]){
         //}
 
         for(c=0;c<NCON;c++){
-            if(!(A[c]->AgentsCount(A[c]->nowhead,-1))){
+            if(!(AgentsCount(A[c]->nowhead,-1))){
 
                 //Pick the cell with the highest score:
                 printf("At time %d, Cell %d has died. Selecting fittest container for division...\n",gclock,c);
@@ -1978,7 +1964,7 @@ int SmPm_conpop(int argc, char *argv[]){
                 l_spp *s;
                 for(pag = A[c]->nowhead;pag!=NULL;pag=pag->next){
                     pag->pp = A[c]->spl->ParentsMake(NULL,NULL);
-                    A[c]->SpeciesListUpdate(pag,'I',1,NULL,NULL,0);
+                    A[c]->spl->SpeciesListUpdate(pag,'I',1,NULL,NULL,0,A[c]->timestep,A[c]->maxl0);
                     s = A[c]->spl->getspp(pag,A[c]->timestep,A[c]->maxl0);
                     s->tspp = 0;
                     pag->spp=s;
@@ -2008,7 +1994,7 @@ int SmPm_conpop(int argc, char *argv[]){
 
     //Print out the end of the ancestries
     for(c=0;c<NCON;c++){
-        if(!(A[c]->AgentsCount(A[c]->nowhead,-1))){
+        if(!(AgentsCount(A[c]->nowhead,-1))){
 
             //Print the ancestry of this cell:
             FILE *afp;
@@ -2094,12 +2080,9 @@ void SmPm_1on1(int argc,char *argv[]){
             case B_ACTIVE:
                 a = p;
                 b = p->pass;
-                A.ReactionPrintState(stdout,a,b);
+                ReactionPrintState(stdout,a,b,A.maxl);
                 break;
             case B_PASSIVE:
-                //a = p->exec;
-                //b = p;
-                //A.ReactionPrintState(stdout,a,b);
                 break;
             }
             p = p->next;
@@ -2269,19 +2252,13 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
         l_spp *s;
         s = NULL;
 
-        pag = A->AgentMake('R');//,1);
-
-        pag->S =(char *) malloc(A->maxl0*sizeof(char));
-        pag->label = 'R';
-        memset(pag->S,0,A->maxl0*sizeof(char));
-        strncpy(pag->S,repstring,strlen(pag->S));
-        pag->len = strlen(pag->S);
+    	pag = AgentMakeWithSequence(repstring,'R',(A->agct)++,A->maxl0);
 
         //No parents for these initial agents!
         pag->pp = A->spl->ParentsMake(NULL,NULL);
 
         if(!i){
-            A->SpeciesListUpdate(pag,'R',1,NULL,NULL,0);
+            A->spl->SpeciesListUpdate(pag,'R',1,NULL,NULL,0,A->timestep,A->maxl0);
             s = A->spl->getspp(pag,0,A->maxl0);
             //TODO: tidy up handling of seed species, but for now:
             s->tspp = 0;
@@ -2289,31 +2266,31 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 
         //Record that the replicase copies itself
         pag->spp=s;
-        A->AgentAppend(&(A->nexthead),pag);
+        AgentAppend(&(A->nexthead),pag);
     }
 
 
 
     while(A->nowhead!=NULL && count < nmols){
-        pag = A->AgentSelectRandomly(A->nowhead,-1);
-        A->AgentExtract(&(A->nowhead),pag);
-        A->SpeciesListUpdate(pag,'R',1,NULL,NULL,0);
+        pag = AgentSelectRandomly(A->nowhead,-1);
+        AgentExtract(&(A->nowhead),pag);
+        A->spl->SpeciesListUpdate(pag,'R',1,NULL,NULL,0,A->timestep,A->maxl0);
 
         //safest & quickest to destroy the replicases and replenish.
         if(!(strncmp(pag->spp->S,repstring,replen))){
-            A->AgentFree(pag);
+            AgentFree(pag);
             pag = NULL;
             continue;
         }
         else{
             if(pag->status!=B_UNBOUND){
-                A->AgentFree(pag);
+                AgentFree(pag);
                 pag = NULL;
                 continue;
             }
         }
-        A->SpeciesListUpdate(pag,'M',1,NULL,NULL,0);
-        A->AgentAppend(&(A->nexthead),pag);
+        A->spl->SpeciesListUpdate(pag,'M',1,NULL,NULL,0,A->timestep,A->maxl0);
+        AgentAppend(&(A->nexthead),pag);
         count++;
     }
 
@@ -2438,7 +2415,7 @@ int speigmonst(int argc, char *argv[]){
         }
 
         A.energy=20;
-        A.AgentsPrint(stdout,"NOW",0);
+        AgentsPrint(stdout,A.nowhead,false,A.maxl);
 
         A.run_number=rr;
         sprintf(pfn,"popdy%03d.dat",A.run_number);
@@ -2516,7 +2493,7 @@ int speigmonst(int argc, char *argv[]){
             }
 
 
-            if(!A.AgentsCount(A.nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
+            if(!AgentsCount(A.nowhead,-1)){// || (!rr && nsteps >1500000) || nsteps >15000000){
                 printf("DEATH\n");
                 printf("At  time %d e=%d,div=%d\t",i,(int)A.energy,div);
                 A.SpeciesPrintCount(stdout,0,B_UNBOUND);

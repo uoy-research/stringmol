@@ -9,11 +9,11 @@
 #include "../src/stringmanip.h"
 #include "../src/params.h"
 #include "../src/alignment.h"
-#include "../src/instructions.h"
 
 //metabolism stuff
 #include "../src/rules.h"
 #include "../src/agents_base.h"
+#include "../src/agent.h"
 #include "../src/SMspp.h"
 #include "../src/stringPM.h"
 

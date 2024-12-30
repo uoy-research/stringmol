@@ -52,6 +52,12 @@ echo "exit status is $?"
 rm tmp_stdout.txt
 sh ../util/rm_runfiles.sh
 echo "---------------------------------"
+echo "Checking TTYPE 8 (COMASS ALXII) runs ok"
+../release/stringmol 8 ../config/quick_test8.conf > tmp_stdout.txt
+echo "exit status is $?"
+rm tmp_stdout.txt
+sh ../util/rm_runfiles.sh
+echo "---------------------------------"
 echo "Checking TTYPE 33 (Spatial Stringmol) runs ok"
 ../release/stringmol 33 ../config/quick_test33.conf > tmp_stdout.txt
 echo "exit status is $?"
@@ -96,9 +102,10 @@ cd ../tests
 RP="../debug"
 #TODO: can't use wildcards e.g. ../release/*.o because of multiple 'main's... fix!
 g++ -std=gnu++11 -Wall  -DDEBUG -g -o test  *.cpp ${RP}/mt19937-2.o ${RP}/randutil.o \
-  ${RP}/SMspp.o ${RP}/stringPM.o ${RP}/agents_base.o ${RP}/rules.o ${RP}/alignment.o \
-  ${RP}/params.o ${RP}/memoryutil.o ${RP}/instructions.o ${RP}/stringmanip.o \
-  ${RP}/hsort.o
+  ${RP}/agent.o ${RP}/SMspp.o ${RP}/stringPM.o ${RP}/agents_base.o ${RP}/rules.o \
+  ${RP}/alignment.o ${RP}/params.o ${RP}/memoryutil.o ${RP}/stringmanip.o \
+  ${RP}/hsort.o ${RP}/opcodes.o
+  
 cd ..
 echo ""
 echo "  now testing.."

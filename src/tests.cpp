@@ -37,6 +37,7 @@
 //stringmol
 #include "params.h"
 #include "alignment.h"
+#include "agent.h"
 #include "SMspp.h"
 #include "stringPM.h"
 
@@ -204,6 +205,8 @@ int compare_config(stringPM *A, stringPM *B){
 }
 
 
+
+//todo(sjh): move to catch.hpp test folder
 /* Test loading and saving of configs..
  * STRATEGY:
  * 		1: Load a file with known settings - see if we've got the right number.
@@ -249,7 +252,7 @@ int test_loadsave(int argc, char *argv[]){
 
 	//Run the Trial forward
 
-	A->AgentsPrint(stdout,"NOW",0);
+	AgentsPrint(stdout,A->nowhead,0,A->maxl);
 
 
 	run_one_AlifeXII_trial(A);
@@ -300,6 +303,9 @@ int test_all(int argc, char *argv[]){
 
 	return failed;
 }
+
+
+
 
 
 void test_rand_config(int argc, char *argv[]){
