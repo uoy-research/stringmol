@@ -38,7 +38,6 @@
 
 //metabolism
 #include "rules.h"
-#include "agents_base.h"
 #include "SMspp.h"
 #include "stringPM.h"
 

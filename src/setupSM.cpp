@@ -41,7 +41,6 @@
 //metabolism
 #include "rules.h"
 #include "opcodes.h"
-#include "agents_base.h"
 #include "stringPM.h"
 
 

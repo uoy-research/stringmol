@@ -40,7 +40,6 @@
 
 //metabolism
 #include "rules.h"
-#include "agents_base.h"
 #include "agent.h"
 #include "SMspp.h"
 #include "stringPM.h"
@@ -1601,7 +1600,6 @@ int SmPm_conpop(int argc, char *argv[]){
         if(!ParametersLoadFromMainArgs(A[c], argc, argv))
             return 0;
 
-        A[c]->biomass=A[c]->bstart = 0;
         A[c]->domut=1;
 
         sprintf(pfn,"popdy%03d.dat",c);

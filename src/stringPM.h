@@ -21,6 +21,11 @@
 #ifndef STRINGPM_H_
 #define STRINGPM_H_
 
+
+#define FN_LEN (256)
+
+
+
 enum e_mut{M_NONE,M_INCREMENT,M_DECREMENT,M_INSERT,M_DELETE};
 
 /* Cellular Automata parameters */
@@ -43,12 +48,26 @@ typedef struct td_smsprun{
 
 
 
-class stringPM: public agents_base
+class stringPM//: public agents_base
 {
 
 private:
 
 public:
+
+
+	float cellrad;  //The radius of the "cell"
+	float agrad;    //The active radius of the agent
+	float vcellrad;	//The radius as a function of the number of div count things
+	long energy;	//The initial energy present in the system
+	float nsteps;	//The number of steps (SHOULD BE AN INT!)
+	//todo(sjh): I think 'move' is never set in stringmol - it's a hangover from the particle metabolome:
+	float move;		//The amount an agent can move. Set to 1.1 * agrad...
+
+	//for testing propensity
+	int  *bct; //count of times we've tried for a particular reagent count
+	int  *bpp; //count of times we've been close enough to run a bind...
+	int  bmax; //max reagents we are going to bother with.
 
 	//! the head of the linked list for the 'now' timestep
 	s_ag *nowhead;
@@ -71,12 +90,11 @@ public:
 	s_loadtype loadtype;		//Type of load we are doing (for backwards compatibility)
 
 	long biomass; 	//used as a measure of fitness
-	long bstart;    //time of biomass reset
 	//Conservation of Mass structures:
 	int *mass; //This can be built and populated after "blosum" has been set...
 	//todo(sjh): what is the difference between mass and biomass?
 
-	int domut;
+	bool domut;
 	int dodecay;
 
 	//Epoch recording
@@ -86,7 +104,7 @@ public:
 
 
 	int run_number; //The run number
-	char swt_fn[256];
+	char swt_fn[FN_LEN];
 
 	//Mutation
 	float subrate;
@@ -97,7 +115,7 @@ public:
 
 	//Reporting flags
 	int verbose_bind;
-	int verbose_load;
+	bool verbose_load;
 	unsigned int splprint;		//the number of timesteps before printing out the specieslist
 
 	//Reporting timings
@@ -115,7 +133,7 @@ public:
 	int granular_1;
 
 	//File name for the popdy file...
-	char popdyfn[128];
+	char popdyfn[FN_LEN];
 
 	//linecount variable for loading
 	int linecount;
@@ -134,7 +152,6 @@ public:
 	~stringPM();
 	/*********************************************************************/
 
-
 	void SetHeadsAndDefaults();
 	void BucketReset(int verbose = 0);
 
@@ -142,14 +159,21 @@ public:
 	char * parse_error(int errno);
 
 	//Loading
+	int 	ParametersLoad(const char *fn, int test, int verbose);
 	int 	load_splist(const char *fn,int verbose);
 	float 	load_mut(const char *fn, int verbose); //load the mutation rate
 	float 	load_decay(const char *fn, int verbose); //load the decay rate
 	int 	load_reactions(const char *fn, char *fntab, int test, int verbose);
 	int 	load_table_matrix(const char *fn);
 
+	//Propensity
+	int 	PropensityEquation(const int n);
+	void 	PropensityRecord(int N,int X);
+	void 	PropensityPrint(FILE *fp);
+	void 	setBmaxBctAndBpp(const unsigned int val);
+
 	//Iteration
-	void 	TimestepIncrement() override;
+	void 	TimestepIncrement();
 	int 	ReactionAttemptBind(s_ag *pag);
 	//int AgentAttemptDecay(s_ag *pag);
 	//int hasdied();
