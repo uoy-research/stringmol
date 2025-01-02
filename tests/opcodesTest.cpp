@@ -12,7 +12,6 @@
 
 //metabolism stuff
 #include "../src/rules.h"
-#include "../src/agents_base.h"
 #include "../src/agent.h"
 #include "../src/SMspp.h"
 #include "../src/opcodes.h"

@@ -32,7 +32,6 @@
 
 //abm stuff
 #include "rules.h"
-#include "agents_base.h"
 
 //stringmol
 #include "params.h"

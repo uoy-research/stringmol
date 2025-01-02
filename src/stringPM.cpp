@@ -37,7 +37,6 @@
 
 //metabolism stuff
 #include "rules.h"
-#include "agents_base.h"
 #include "opcodes.h"
 #include "stringPM.h"
 
@@ -108,8 +107,46 @@ stringPM::stringPM(SMspp * pSP){
 	image_every	 = 100; //How often to generate an image (spatial stringmol only)
 
 
+	timestep = 0;
+	randseed = 2008;
+	biomass = 0;
+	mass = 0;
+	domut = true;
+	lastepoch = 0;
+	thisepoch = 0;
+	nepochs = 0;
+	energy = 0;
+	move = 0;
+	nsteps = 0;
+
+	run_number = 0;
+
+	//for preset
+	setBmaxBctAndBpp(100);
+
+	memset(swt_fn,0,FN_LEN*sizeof(char));
+	memset(popdyfn,0,FN_LEN*sizeof(char));
+	linecount = 0;
+
+
+	subrate=0;
+	indelrate=0;
+	decayrate=0;
+
+	verbose_load = false;
+
 }
 
+
+void stringPM::setBmaxBctAndBpp(const unsigned int val){
+
+	bmax = val;
+	bct = (int *) malloc(bmax * sizeof(int));
+	bpp = (int *) malloc(bmax * sizeof(int));
+	memset(bct,0,bmax*sizeof(int));
+	memset(bpp,0,bmax*sizeof(int));
+
+}
 
 
 
@@ -155,6 +192,30 @@ stringPM& stringPM::operator=(const stringPM &spm){
 	report_every = spm.report_every;   //How often to write splists and configs
 	image_every  = spm.image_every;	   //How often to generate an image (spatial stringmol only)
 
+	timestep = spm.timestep;
+	randseed = spm.randseed;
+	biomass = spm.biomass;
+	mass = spm.mass;
+	domut = spm.domut;
+	lastepoch = spm.lastepoch;
+	thisepoch = spm.thisepoch;
+	nepochs = spm.nepochs;
+	energy = spm.energy;
+	nsteps = spm.nsteps;
+
+	setBmaxBctAndBpp(spm.bmax);
+
+	run_number = spm.run_number;
+
+	strcpy(swt_fn,spm.swt_fn);
+	strcpy(popdyfn,spm.popdyfn);
+	linecount = spm.linecount;
+
+	subrate=spm.subrate;
+	indelrate=spm.indelrate;
+	decayrate=spm.decayrate;
+
+	verbose_load = spm.verbose_load;
 
 	return *this;
 }
@@ -189,8 +250,12 @@ void stringPM::SetHeadsAndDefaults(){
 	nowhead = NULL;
 	nexthead = NULL;
 
-	//note - it's possible that this'll be called twice - but will do no harm!
-	agents_base::ParametersSetDefaults();
+	cellrad = 2500;
+	agrad = 10;
+	energy = 0;
+	move = 0;
+
+	vcellrad = 0;
 }
 
 
@@ -211,6 +276,67 @@ char * stringPM::parse_error(int errno){
 	sprintf(message,"Unspecified error");
 
 	return message;
+
+}
+
+
+
+
+
+/*******************************************************************************
+* @brief Load the parameters set from a config file
+*
+* @details loads the run parameters
+*
+* @param[in] fn name of the config file
+*
+* @param[in] test poorly designed test flag - todo: remove
+*
+* @param[in] verbose flag for verbose output
+*
+* @return 0 if error; 1 if success... todo reverse this
+*******************************************************************************/
+int stringPM::ParametersLoad(const char *fn, int test, int verbose){
+
+	FILE *fp;
+
+	if((fp=fopen(fn,"r"))!=NULL){
+		float tmpen;
+		int err = 0;
+		int e=  ParameterReadFloat(fp,"CELLRAD",&cellrad, verbose);
+		if(e>1)err++;
+
+		vcellrad = cellrad;
+		e=  ParameterReadFloat(fp,"AGRAD",&agrad, verbose);
+		if(e>1)err++;
+
+		//err +=  ParameterReadFloat(fp,"MOVE",&move);
+		e=  ParameterReadFloat(fp,"ENERGY",&tmpen, verbose);
+		if(e>1)err++;
+		energy = (int) tmpen;
+
+		e=  ParameterReadFloat(fp,"NSTEPS",&nsteps, verbose);
+		if(e>1)err++;
+		//err += 	ParameterReadFloat(fp,"DIVTIME",&divtime);
+
+		if(err){
+			printf("Some error reading config file\n");
+			fclose(fp);
+			return 0;
+		}
+		else{
+			if(test){//Make sure things will collide
+				vcellrad=cellrad=agrad;
+			}
+			fclose(fp);
+			return 1;
+		}
+	}
+	else{
+		printf("Unable to open file %s\n",fn);
+		fflush(stdout);
+		return 0;
+	}
 
 }
 
@@ -509,6 +635,89 @@ int stringPM::load_splist(const char *fn,int verbose){
 	}
 	return 0;
 }
+
+
+
+
+
+/******************************************************************************
+* @brief calculate the chances of two agents being close enough to bind
+*
+* @details propensity is aspatial-stringmol's way of calculating the likelihood
+*          of two molecules meeting - this function implements the equation
+*
+* @param[in] n number of agents
+*
+* @return 1 if reaction can happen; 0 if not
+*****************************************************************************/
+int stringPM::PropensityEquation(const int n){
+
+	float agarea = (float) M_PI*pow((float) agrad,2);
+	float cellarea = M_PI*pow((float) vcellrad-(2.*(float) move),2);
+	float arearatio = agarea/cellarea;
+
+
+	if(n){
+		//reactant coverage = 1 - ( 1- (area of reactant/area of cell) )^(number of reactants)
+		float cov = 1.-pow(1.-arearatio,n) ;
+
+		//printf("%d\t%f\t%f\t%f\t%f\n",n,cov,agarea,cellarea,arearatio);
+
+		float rno = RandomBetween0And1();
+
+		if(rno<cov)
+			return 1;
+		else
+			return 0;
+	}
+	else{
+		//printf("Zero mean coverage\n");
+		return 0;
+	}
+}
+
+
+
+
+
+/*******************************************************************************
+* @brief keep a record of this propensity event
+*
+* @details propensity is aspatial-stringmol's way of calculaing the likelihood
+*          of two molecules meeting
+*
+* @param[in] N the number todo: what does it do?
+*
+* @param[in] X another number todo: what does it do?
+*******************************************************************************/
+void stringPM::PropensityRecord(int N,int X){
+	if(N<bmax){
+		bct[N]++;
+		if(X)
+			bpp[N]++;
+	}
+}
+
+
+
+
+
+/*******************************************************************************
+* @brief print the propensity to file
+*
+* @details propensity is aspatial-stringmol's way of calculaing the likelihood
+*          of two molecules meeting
+*
+* @param[in] fp the file pointer
+*******************************************************************************/
+void stringPM::PropensityPrint(FILE *fp){
+	int i;
+	fprintf(fp,"\nPropensity table\n");
+	for(i=0;i<bmax;i++)
+		fprintf(fp,"%d\t%d\t%d\n",i,bct[i],bpp[i]);
+	fflush(fp);
+}
+
 
 
 
