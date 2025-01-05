@@ -1075,8 +1075,8 @@ bool OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
 						AgentUnbind(pass),timestep,maxl0);
 
 				AgentAppend(&nexthead,pass);
-				AgentFree(act);
-				act = NULL;
+				AgentFreeAndNull(&act);
+				//act = NULL;
 				safe_append = false;
 				break;
 			case 2://Destroy passive - only append active
@@ -1084,8 +1084,8 @@ bool OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
 				spl->SpeciesListUpdate(act,'A',1,act->spp,pass->spp,
 						AgentUnbind(act),timestep,maxl0);
 				AgentAppend(&nexthead,act);
-				AgentFree(pass);
-				pass = NULL;
+				AgentFreeAndNull(&pass);
+				//pass = NULL;
 				safe_append = false;
 				break;
 			case 3://Destroy both
@@ -1096,10 +1096,10 @@ bool OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
 				//SMAgentUnbindAndSpeciesListUpdate(pass,'P',1,act->spp,pass->spp);
 				spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
 						AgentUnbind(pass),timestep,maxl0);
-				AgentFree(act);
-				act = NULL;
-				AgentFree(pass);
-				pass = NULL;
+				AgentFreeAndNull(&act);
+				//act = NULL;
+				AgentFreeAndNull(&pass);
+				//pass = NULL;
 				safe_append = false;
 				break;
 			default://This can't be right can it? - NB destroyAction = 0 covered here - make explicit!

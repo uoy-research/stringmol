@@ -78,7 +78,7 @@ int 	AgentUnbind(s_ag * pag);
 
 int 	AgentAppend(s_ag **list, s_ag *ag);
 
-int 	AgentFree(s_ag *pag);
+int AgentFreeAndNull(s_ag **pag);
 
 int 	SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp,
 			l_spp * ppspp, int mass);

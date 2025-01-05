@@ -887,8 +887,8 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 		if(!cpy){
 			printf("ERROR: Zero length molecule definitely being created!\nbail..\n");
-			AgentFree(c);
-			c=NULL;
+			AgentFreeAndNull(&c);
+			//c=NULL;
 		}
 		else{
 
@@ -909,8 +909,8 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				AgentAppend(&(A->nexthead),c);
 			}
 			else{
-				AgentFree(c);
-				c=NULL;
+				AgentFreeAndNull(&c);
+				//c=NULL;
 			}
 		}
 		//TODO: check string lens of act and pass?
@@ -947,8 +947,8 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				run->grid[act->x][act->y]=NULL;
 				run->status[act->x][act->y]=G_EMPTY;
 
-				AgentFree(act);
-				act = NULL;
+				AgentFreeAndNull(&act);
+				//act = NULL;
 
 				break;
 			case 2://Destroy passive - only append active
@@ -964,8 +964,8 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				run->grid[pass->x][pass->y]=NULL;
 				run->status[pass->x][pass->y]=G_EMPTY;
 
-				AgentFree(pass);
-				pass = NULL;
+				AgentFreeAndNull(&pass);
+				//pass = NULL;
 
 				break;
 			case 3://Destroy both
@@ -975,10 +975,10 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 				A->spl->SpeciesListUpdate(pass,'P',1,act->spp,pass->spp,
 						AgentUnbind(pass),A->timestep,A->maxl0);
 
-				AgentFree(act);
-				act = NULL;
-				AgentFree(pass);
-				pass = NULL;
+				AgentFreeAndNull(&act);
+				//act = NULL;
+				AgentFreeAndNull(&pass);
+				//pass = NULL;
 				break;
 			default://This can't be right can it?
 				if(act->ft == act->it){
@@ -1142,7 +1142,7 @@ int ReactionExecuteOpcode_Spatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pa
 *
 * @return 1 if decay happens, 0 if not
 *******************************************************************************/
-int AgentAttemptDecaySpatial(stringPM *A, smsprun *run, s_ag *pag){
+int AgentAttemptDecaySpatial(stringPM *A, smsprun *run, s_ag **pag){
 
  	float prob = A->decayrate;//1./pow(65,2);//4./3.); //This is now done in load_decay...
 
@@ -1154,24 +1154,24 @@ int AgentAttemptDecaySpatial(stringPM *A, smsprun *run, s_ag *pag){
 
 		s_ag *bag;
 		bag = NULL;//To prevend compiler "uninitialised" warning
-		switch(pag->status){
+		switch((*pag)->status){
 		case B_UNBOUND:
 			bag = NULL;
 			break;
 		case B_ACTIVE:
-			bag = pag->pass;
+			bag = (*pag)->pass;
 			break;
 		case B_PASSIVE:
-			bag = pag->exec;
+			bag = (*pag)->exec;
 			break;
 		}
 		//int x,y;
 
 		//find_ag_gridpos(pag,run,&x,&y);
-		run->grid[pag->x][pag->y]=NULL;
-		run->status[pag->x][pag->y]=G_EMPTY;
+		run->grid[(*pag)->x][(*pag)->y]=NULL;
+		run->status[(*pag)->x][(*pag)->y]=G_EMPTY;
 
-		AgentFree(pag);
+		AgentFreeAndNull(pag);
 		//TODO: sort this null-ing of free'd agents out!
 		//pag = NULL;
 
@@ -1181,8 +1181,8 @@ int AgentAttemptDecaySpatial(stringPM *A, smsprun *run, s_ag *pag){
 			run->grid[bag->x][bag->y]=NULL;
 			run->status[bag->x][bag->y]=G_EMPTY;
 
-			AgentFree(bag);
-			bag = NULL;
+			AgentFreeAndNull(&bag);
+			//bag = NULL;
 		}
 
 		return 1;
@@ -1450,7 +1450,7 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 			break;
 		}
 
-		if(!AgentAttemptDecaySpatial(A,run,pag)){
+		if(!AgentAttemptDecaySpatial(A,run,&pag)){
 			int changed = 0;
 			if(A->energy>0){
 				switch(pag->status){
