@@ -2,7 +2,6 @@
 ################## VARIABLES               ##################
 #############################################################
 
-
 # which compiler to use 
 C4C = gcc -O3 -Wall -Wunused
 CC = g++ -O3 -Wall -Wunused -std=c++11
@@ -25,8 +24,6 @@ RELEASE_DIR =  ../release
 #TODO: There's a lot of repetition of $(OUTPUT_DIR) atm...!!!
 OUTPUT_DIR = $(RELEASE_DIR)
 debug: OUTPUT_DIR = $(DEBUG_DIR)
-
-
 
 #############################################################
 ################## TOP LEVEL TARGETS       ##################
