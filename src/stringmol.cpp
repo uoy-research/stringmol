@@ -57,8 +57,8 @@
 //microbial GA
 #include "microbial_ga.h"
 
-//tests
-#include "tests.h"
+#include "error_codes.h"
+#include "default_config.h"
 
 //DEFINES
 //Calculate the ancestry & epochs inline
@@ -134,6 +134,7 @@ int joinsplists(int argc, char *argv[]){
             printf("Unable to open file %s for reading species data\n",fn);
             fflush(stdout);
             getchar();
+    		exit(FILE_READ_ERROR);
             return 1;
         }
 
@@ -150,6 +151,7 @@ int joinsplists(int argc, char *argv[]){
             printf("Unable to open file %s for reading population data\n",fn);
             fflush(stdout);
             getchar();
+    		exit(FILE_READ_ERROR);
             return 1;
         }
         tottime += tt;
@@ -378,24 +380,24 @@ int origlife(int argc, char *argv[]){
     ftmp = fopen("epochs.dat","w");
     fclose(ftmp);
 
-    unsigned int rerr,rlim=20;
+    unsigned int rerr,ntrials=STRINGPM_NTRIALS;
     if((fp=fopen(argv[2],"r"))!=NULL){
-        rerr = ParameterReadUnsignedInt(fp,"NTRIALS",&rlim,1);
+        rerr = ParameterReadUnsignedInt(fp,"NTRIALS",&ntrials,1);
         switch(rerr){
         case 2:
             printf("Multiple NTRIALS specified. Check config file\n");
             getchar();
             exit(0);
         case 0:
-            printf("Setting NTRIALS to %u\n",rlim);
+            printf("Setting NTRIALS to %u\n",ntrials);
             break;
         default:
-            printf("NTRIALS not specified;\nSetting NTRIALS to %u\n",rlim);
+            printf("NTRIALS not specified;\nSetting NTRIALS to %u\n",ntrials);
             break;
         }
         fclose(fp);
     }
-    printf("NTRIALS = %u\n",rlim);
+    printf("NTRIALS = %u\n",ntrials);
 
     //Read nsteps:
     //unsigned int maxnsteps=0;
@@ -408,7 +410,7 @@ int origlife(int argc, char *argv[]){
             getchar();
             exit(0);
         case 0:
-            printf("Setting NSTEPS to %u\n",rlim);
+            printf("Setting NSTEPS to %u\n",ntrials);
             indefinite=0;
             break;
         default:
@@ -419,12 +421,12 @@ int origlife(int argc, char *argv[]){
     }
     printf("NSTEPS = %u\n",maxnsteps);
 
-    for(unsigned int rep=0;rep<rlim;rep++){
+    for(unsigned int rep=0;rep<ntrials;rep++){
 
         sprintf(fitfile,"rep%03ufitness.dat",rep);
         ftmp=fopen(fitfile,"w");
         fclose(ftmp);
-        for(unsigned int rr=0;rr<rlim;rr++){
+        for(unsigned int rr=0;rr<ntrials;rr++){
 
             div=0;
             //divct = divit = diven = 0;
@@ -567,8 +569,8 @@ int SmPm_AlifeXII(int argc, char *argv[]){
     ftmp = fopen("epochs.dat","w");
     fclose(ftmp);
 
-    unsigned int rlim = 1;
-    ParameterReadOrDefineUnsignedInt(argv[2], "NTRIALS", &rlim, rlim, 1);
+    unsigned int ntrials = STRINGPM_NTRIALS;
+    ParameterReadOrDefineUnsignedInt(argv[2], "NTRIALS", &ntrials, ntrials, 1);
 
 
 
@@ -593,7 +595,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
 
 
 
-    for(unsigned int rr=0;rr<rlim;rr++){
+    for(unsigned int rr=0;rr<ntrials;rr++){
 
         div=0;
 
@@ -789,24 +791,24 @@ int comass_AlifeXII(int argc, char *argv[]){
     ftmp = fopen("epochs.dat","w");
     fclose(ftmp);
 
-    unsigned int rerr,rlim=20;
+    unsigned int rerr,ntrials=STRINGPM_NTRIALS;
     if((fp=fopen(argv[2],"r"))!=NULL){
-        rerr = ParameterReadUnsignedInt(fp,"NTRIALS",&rlim,1);
+        rerr = ParameterReadUnsignedInt(fp,"NTRIALS",&ntrials,1);
         switch(rerr){
         case 2:
             printf("Multiple NTRIALS specified. Check config file\n");
             getchar();
             exit(0);
         case 0:
-            printf("Setting NTRIALS to %u\n",rlim);
+            printf("Setting NTRIALS to %u\n",ntrials);
             break;
         default:
-            printf("NTRIALS not sepcified;\nSetting NTRIALS to %u\n",rlim);
+            printf("NTRIALS not sepcified;\nSetting NTRIALS to %u\n",ntrials);
             break;
         }
         fclose(fp);
     }
-    printf("NTRIALS = %u\n",rlim);
+    printf("NTRIALS = %u\n",ntrials);
 
 
 
@@ -821,7 +823,7 @@ int comass_AlifeXII(int argc, char *argv[]){
             getchar();
             exit(0);
         case 0:
-            printf("Setting NSTEPS to %u\n",rlim);
+            printf("Setting NSTEPS to %u\n",ntrials);
             indefinite=0;
             break;
         default:
@@ -838,7 +840,7 @@ int comass_AlifeXII(int argc, char *argv[]){
     maxcode = NULL;
 
 
-    for(unsigned int rr=0;rr<rlim;rr++){
+    for(unsigned int rr=0;rr<ntrials;rr++){
 
         FILE *mc;
         sprintf(fn,"maxcodes%03u.txt",rr);
@@ -1369,6 +1371,7 @@ float *generate_avg_conc(char *fn, int *en){
     else{
         printf("Unable to open garun file %s\n",fn);
         fflush(stdout);
+		exit(FILE_READ_ERROR);
     }
 
     return avg;
@@ -1816,16 +1819,6 @@ int SmPm_conpop(int argc, char *argv[]){
 
 
 
-void check_setup(int argc, char *argv[]){
-    //for now, all we'll do is check the parameters:
-
-    test_config_settings(argc, argv, 0);
-    return;
-
-}
-
-
-
 
 
 
@@ -1942,24 +1935,24 @@ void swdist(int argc, char *argv[]){
     ftmp = fopen("epochs.dat","w");
     fclose(ftmp);
 
-    unsigned int rerr,rlim=20;
+    unsigned int rerr,ntrials=STRINGPM_NTRIALS;
     if((fp=fopen(argv[2],"r"))!=NULL){
-        rerr = ParameterReadUnsignedInt(fp,"NTRIALS",&rlim,1);
+        rerr = ParameterReadUnsignedInt(fp,"NTRIALS",&ntrials,1);
         switch(rerr){
         case 2:
             printf("Multiple NTRIALS specified. Check config file\n");
             getchar();
             exit(0);
         case 0:
-            printf("Setting NTRIALS to %u\n",rlim);
+            printf("Setting NTRIALS to %u\n",ntrials);
             break;
         default:
-            printf("NTRIALS not sepcifid;\nSetting NTRIALS to %u\n",rlim);
+            printf("NTRIALS not sepcifid;\nSetting NTRIALS to %u\n",ntrials);
             break;
         }
         fclose(fp);
     }
-    printf("NTRIALS = %u\n",rlim);
+    printf("NTRIALS = %u\n",ntrials);
 
 
 
@@ -1973,7 +1966,7 @@ void swdist(int argc, char *argv[]){
             getchar();
             exit(0);
         case 0:
-            printf("Setting NSTEPS to %u\n",rlim);
+            printf("Setting NSTEPS to %u\n",ntrials);
             break;
         default:
             printf("NSTEPS not sepcified;\nEach trial will run to extinction\n");
@@ -2146,24 +2139,24 @@ int speigmonst(int argc, char *argv[]){
     ftmp = fopen("epochs.dat","w");
     fclose(ftmp);
 
-    unsigned int rerr,rlim=20;
+    unsigned int rerr,ntrials=STRINGPM_NTRIALS;
     if((fp=fopen(argv[2],"r"))!=NULL){
-        rerr = ParameterReadUnsignedInt(fp,"NTRIALS",&rlim,1);
+        rerr = ParameterReadUnsignedInt(fp,"NTRIALS",&ntrials,1);
         switch(rerr){
         case 2:
             printf("Multiple NTRIALS specified. Check config file\n");
             getchar();
             exit(0);
         case 0:
-            printf("Setting NTRIALS to %u\n",rlim);
+            printf("Setting NTRIALS to %u\n",ntrials);
             break;
         default:
-            printf("NTRIALS not sepcifid;\nSetting NTRIALS to %u\n",rlim);
+            printf("NTRIALS not sepcifid;\nSetting NTRIALS to %u\n",ntrials);
             break;
         }
         fclose(fp);
     }
-    printf("NTRIALS = %u\n",rlim);
+    printf("NTRIALS = %u\n",ntrials);
 
 
 
@@ -2178,7 +2171,7 @@ int speigmonst(int argc, char *argv[]){
             getchar();
             exit(0);
         case 0:
-            printf("Setting NSTEPS to %u\n",rlim);
+            printf("Setting NSTEPS to %u\n",ntrials);
             indefinite=0;
             break;
         default:
@@ -2197,7 +2190,7 @@ int speigmonst(int argc, char *argv[]){
 
     char *repstring;
     repstring = (char*)malloc(A.maxl0 * sizeof(char));
-    for(unsigned int rr=0;rr<rlim;rr++){
+    for(unsigned int rr=0;rr<ntrials;rr++){
 
         FILE *mc;
         sprintf(fn,"maxcodes%03u.txt",rr);
@@ -2365,8 +2358,6 @@ void StringmolPrintTrialTypes(){
 	printf("speigmonst        9\n");
 	printf("Check setup       10          1: .conf;  (2: .mtx)\n");
 	printf("Comass GA boost   44          1: .conf;   2: boost.dat\n");
-	printf("Test All          99          1: .conf;  (2: .mtx)\n");
-	printf("Test RNG          901)       (1: .conf;) (2: .mtx)\n");
 
 
 }
@@ -2449,11 +2440,6 @@ int main(int argc, char *argv[]) {
 				break;
 
 			/*************************************************/
-			case 10:  // TODO(sjh): obsolete now we have test_all() (case 99)?
-				check_setup(argc, argv);
-				break;
-
-			/*************************************************/
 			case 33:  // Spatial stringmol experiments, summer 2016
 				StringmolSpatial(argc, argv);
 				break;
@@ -2480,18 +2466,6 @@ int main(int argc, char *argv[]) {
 			/*************************************************/
 			case 44:  // For final experiment in the comass experiment, spring 2015
 				comass_GA_boostwinners(argc, argv);
-				break;
-
-			/*************************************************/
-			case 99:
-				test_all(argc, argv);
-				break;
-
-
-			/*************************************************/
-			case 901:
-
-				test_rand_config(argc, argv);
 				break;
 			}
 			printf("Finished!\n");

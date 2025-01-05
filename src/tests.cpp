@@ -51,112 +51,6 @@
 
 
 
-/*Test the random number generator. It must:
- *
- * 1: give the same sequence from a seed
- * 2: give the current position so that we can re-seed
- */
-int test_rand(int verbose){
-
-	int failed = 0;
-	int rin = 436;
-
-	if(verbose){
-		printf("Testing seeding using dev/rand... \n");fflush(stdout);
-		}
-	int rout = RandomInit(-1);
-	if(rout == rin){
-		printf("FAILED - requested seed from dev/random, but got -1\n");
-		failed = 1;
-	}
-	else
-		if(verbose){
-			printf("PASSED - init set seed as %d (%u)\n",rout,(unsigned int) rout);
-		}
-
-	if(verbose){
-		printf("Testing seeding using dev/rand again... \n");
-		fflush(stdout);
-	}
-	rout = rout - RandomInit(-1);
-	if(rout == 0 ){
-		printf("FAILED - requested new seed from dev/random, but got same one\n");
-		failed = 1;
-	}
-	else
-		if(verbose){
-			printf("PASSED - init set seed as %d\n",rout);
-		}
-	if(verbose){
-		printf("Testing seeding using ingeter %d... \n",rin);
-		fflush(stdout);
-	}
-	rout = RandomInit(rin);
-	if(rout != rin){
-		printf("FAILED - seed not set - different seed used\n");
-		failed = 1;
-	}
-	else
-		if(verbose){
-			printf("PASSED - init set seed as %d\n",rout);
-		}
-
-	if(verbose){
-		printf("Testing re-setting mt index... \n");fflush(stdout);
-	}
-	
-	/*TODO: this looks like a test that is never tested! 
-	int pos = 22;
-	set_mti(pos);
-	pos = get_mti();
-	*/
-
-	if(!failed)
-		printf("ALL RNG TESTS PASSED\n\n");
-	return failed;
-}
-
-
-
-//stringPM * test_config_settings( int argc, char *argv[], int return_SM){
-stringPM * test_config_settings( int argc, char *argv[], int return_SM){
-	/** The idea here is to report the default values of the parameters, then parse the config and report them again. */
-
-	stringPM *A;
-
-	A = new stringPM(NULL);
-	unsigned int ntrials = 0;
-	unsigned int nsteps = 0;
-
-	printf("\nBEFORE loading the config, params are:\n");
-	print_params(A,ntrials,nsteps);
-	printf("..c'est ca!\n\n");
-
-	//int readordef_param_int(char *fn, const char *label, int *val, const int defaultvalue, const int verbose)
-	ParameterReadOrDefineUnsignedInt(argv[2], "NTRIALS", &ntrials, 1, 1);
-	int nns = ParameterReadOrDefineUnsignedInt(argv[2], "NSTEPS", &nsteps, -1, 1);
-
-	//A->ConfigLoad(argv[2],NULL,0,1);
-    A->ParametersLoad(argv[2],0,1);
-    A->AgentsLoad(argv[2],NULL,0,1);
-	//if(!arg_load(A, argc, argv, 0))
-	//	return NULL;
-
-	printf("\n\nAFTER loading the config, params are:\n");
-	print_params(A,ntrials,nsteps);
-	if(nns==1)
-		printf("NSTEPS was not specified. Simulations will run indefinitely");
-	printf("..c'est ca!\n\n");
-
-	if(return_SM)
-		return A;
-	else{
-		A->BucketReset();
-		delete A;
-		return NULL;
-	}
-}
-
 int compare_config(stringPM *A, stringPM *B){
 
 	/*TODO: compare non-stringPM variables
@@ -250,9 +144,7 @@ int test_loadsave(int argc, char *argv[]){
 	printf("csc for (A,B) is %d\n",csc);
 
 	//Run the Trial forward
-
 	AgentsPrint(stdout,A->nowhead,0,A->maxl);
-
 
 	run_one_AlifeXII_trial(A);
 
@@ -274,34 +166,6 @@ int test_loadsave(int argc, char *argv[]){
 	return csc;
 }
 
-
-
-
-/* Refactoring practice demands that tests are written whilst writing code!
- * This function tests that each stringmol configuration works
- */
-int test_all(int argc, char *argv[]){
-
-	int failed = 0;
-
-	printf("Testing rng\n");
-	failed = test_rand(0);
-	if(failed){
-		printf("test_rand failed\n");
-		return failed;
-	}
-
-
-	failed = test_loadsave(argc,argv);
-
-
-
-	printf("Check config test\n");
-
-
-
-	return failed;
-}
 
 
 
@@ -362,9 +226,5 @@ void test_rand_config(int argc, char *argv[]){
 
 	fclose(tfp1);
 	fclose(tfp2);
-
-
-
-
 }
 

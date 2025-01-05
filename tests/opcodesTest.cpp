@@ -8,9 +8,9 @@
 //#include "../src/memoryutil.h"
 //#include "../src/stringmanip.h"
 //#include "../src/params.h"
-#include "../src/alignment.h"
 
 //metabolism stuff
+#include "../src/alignment.h"
 #include "../src/rules.h"
 #include "../src/agent.h"
 #include "../src/SMspp.h"

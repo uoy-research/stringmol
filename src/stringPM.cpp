@@ -41,6 +41,7 @@
 #include "stringPM.h"
 
 #include "error_codes.h"
+#include "default_config.h"
 
 //For debugging:
 //#define VERBOSE
@@ -83,6 +84,7 @@ stringPM::stringPM(SMspp * pSP){
 	blosum->T=NULL;
 	blosum->key=NULL;
 	SetHeadsAndDefaults();
+
 	agct = 0;
 	//species=NULL;
 	spp_count=1;
@@ -90,8 +92,8 @@ stringPM::stringPM(SMspp * pSP){
 
 	//Set defaults:
 
-	maxl = 2000;
-	maxl0 = maxl+1; //allow room for a terminating 0
+	maxl = STRINGPM_MAXL;
+	maxl0 = STRINGPM_MAXL0; //allow room for a terminating 0
 	estep = 20;
 
 	/** This is a toggle to turn the '+' operator on and off
@@ -319,6 +321,14 @@ int stringPM::ParametersLoad(const char *fn, int test, int verbose){
 		if(e>1)err++;
 		//err += 	ParameterReadFloat(fp,"DIVTIME",&divtime);
 
+		int destep = estep;
+		e = ParameterReadOrDefineUnsignedInt(fn,"ESTEP", &estep, destep, 0);
+		if(e>1){
+			printf("ESTEP not specified on loading energy per time step\n");
+			printf("Using default value of %d\n",destep);
+		}
+
+
 		if(err){
 			printf("Some error reading config file\n");
 			fclose(fp);
@@ -335,7 +345,8 @@ int stringPM::ParametersLoad(const char *fn, int test, int verbose){
 	else{
 		printf("Unable to open file %s\n",fn);
 		fflush(stdout);
-		return 0;
+		exit(FILE_READ_ERROR);
+		//return 0;
 	}
 
 }
@@ -489,10 +500,8 @@ int stringPM::load_table_matrix(const char *fn){
 
 int stringPM::load_table(const char *fn){
 
-
 	//const int maxl=256;
 	FILE *fp;
-
 
 	if((fp=fopen(fn,"r"))!=NULL){
 		int found = 0;
@@ -1279,7 +1288,7 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 	int err = ParameterReadOrDefineUnsignedInt(fn,"MAXLEN", &maxl, dmxl, 0);
 	if(err>1){
 		printf("ERROR %d on loading max line length (MAXLEN)\n",err);
-		exit(0);
+		exit(PARAM_LOAD_ERROR);
 	}
 	maxl0 = maxl+1;
 
@@ -1320,16 +1329,6 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 	int nag;
 	s_ag *pag;
 	int ntt = 0;
-
-
-
-	int destep = estep;
-	int estep_err = ParameterReadOrDefineUnsignedInt(fn,"ESTEP", &estep, destep, 0);
-	if(estep_err>1){
-		printf("ERROR %d on loading energy per time step (ESTEP)\n",estep_err);
-		exit(PARAM_LOAD_ERROR);
-	}
-
 
 	//ALSO important to load blosum table here too!
 	int table_err;
@@ -1495,7 +1494,7 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 		}
 		else{
 			printf("Unable to open file %s\n",fn);
-			return 0;
+			exit(FILE_READ_ERROR);
 		}
 
 	}

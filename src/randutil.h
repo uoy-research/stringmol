@@ -26,7 +26,7 @@
 
 		double raisin();
 
-		int RandomInit(int seed);
+		unsigned int RandomInit(int seed);
 		unsigned long RandomInitLong(const unsigned long *inseed);
 
 		double RandomBetween0And1();

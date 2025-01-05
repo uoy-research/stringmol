@@ -29,6 +29,8 @@
 #define USING_MT 			/* This means we are using the Mersenne twister      */
 #define USING_SEED_DEVRAND 	/* This means we are using dev/random to get a seed. */
 
+#define RNG_VERBOSE
+
 #ifdef USING_MT
 #include "mt19937-2.h"
 #endif
@@ -48,21 +50,22 @@
 *
 * @return a random integer
 *******************************************************************************/
-int RandomSeedFromSystem(){
+unsigned int RandomNumberFromSystem(){
 
-	int randomData = open("/dev/random", O_RDONLY);
-	int sjhRandomInteger;
-	if(!read(randomData, &sjhRandomInteger, sizeof sjhRandomInteger)){
+	unsigned int randomData = open("/dev/urandom", O_RDONLY);
+	unsigned int sysRandomInteger;
+	if(!read(randomData, &sysRandomInteger, sizeof sysRandomInteger)){
 		printf("WARNING!: 0 bytes read from /dev/random");
 		printf("in devrandomseed(), randutil.c\n");
 	}
 	// you now have a random integer!
 	close(randomData);
 
-	printf("in devrandomseed, seed is %d (%u)\n",
-		sjhRandomInteger,(unsigned int) sjhRandomInteger);
-		
-	return sjhRandomInteger;
+#ifdef RNG_VERBOSE
+	printf("in RandomNumberFromSystem(), seed is %%d: %d  (%%u: %u)\n",
+		(int) sysRandomInteger,(unsigned int) sysRandomInteger);
+#endif
+	return sysRandomInteger;
 }
 
 
@@ -72,31 +75,35 @@ int RandomSeedFromSystem(){
 /*******************************************************************************
 * @brief initialise the random number generator with a seed or time
 *
-* @details uses the Mersenne Twister algorithm (TODO: check range is [0,1)
-*
 * @param[in] seed used to seed the rng. if <0, chosen by the program
 *
 * @return the value of the seed, however it was chosen
 *******************************************************************************/
-int RandomInit(int seed){
+unsigned int RandomInit(int seed){
+
+	unsigned int actualSeed;
 
 	if(seed<0){
 #ifdef USING_SEED_DEVRAND
-		seed = RandomSeedFromSystem();
+		actualSeed = RandomNumberFromSystem();
 #else
-		seed = time(NULL);
+		actualSeed = time(NULL);
 #endif
+	}else{
+		actualSeed = seed;
 	}
 
-	printf("in initmyrand, seed is %d (%u)\n",seed,(unsigned int) seed);
-
-#ifdef USING_MT
-	SetRNGSeed(seed);
-#else
-	srand(seed);
+#ifdef RNG_VERBOSE
+	printf("in RandomInit(), seed is  %%d: %d  (%%u: %u)\n",(int) seed,(unsigned int) seed);
 #endif
 
-	return seed;
+#ifdef USING_MT
+	SetRNGSeed(actualSeed);
+#else
+	srand(ActualSeed);
+#endif
+
+	return actualSeed;
 }
 
 
@@ -118,7 +125,7 @@ unsigned long RandomInitLong(const unsigned long *inseed){
 	unsigned long seed;
 	if(inseed==NULL){
 #ifdef USING_SEED_DEVRAND
-		seed = RandomSeedFromSystem();
+		seed = RandomNumberFromSystem();
 		printf("in longinitmyrand, seed is %ld", (long int) seed  );
 		printf("(%lu)\n",(unsigned long int) seed);
 #else

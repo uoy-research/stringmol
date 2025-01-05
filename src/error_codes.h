@@ -10,6 +10,7 @@
 
 #define PARAM_LOAD_ERROR (42)
 #define SEQ_LEN_ERROR (3)
+#define FILE_READ_ERROR (4)
 
 
 #endif /* ERROR_CODES_H_ */
