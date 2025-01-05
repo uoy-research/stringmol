@@ -2,7 +2,6 @@
 ################## VARIABLES               ##################
 #############################################################
 
-
 # which compiler to use 
 C4C = gcc -O3 -Wall -Wunused
 CC = g++ -O3 -Wall -Wunused -std=c++11
@@ -26,8 +25,6 @@ RELEASE_DIR =  ../release
 OUTPUT_DIR = $(RELEASE_DIR)
 debug: OUTPUT_DIR = $(DEBUG_DIR)
 
-
-
 #############################################################
 ################## TOP LEVEL TARGETS       ##################
 #############################################################
@@ -38,11 +35,10 @@ debug: OUTPUT_DIR = $(DEBUG_DIR)
 # config
 
 #Make everything from scratch:
-all: $(OUTPUT_DIR)/stringmol $(OUTPUT_DIR)/smspatial
+all: $(OUTPUT_DIR)/stringmol
 
 #TODO: Figure out how to set the debug flag to call SDL-devel (or SDL-dev)
-#debug: stringmol web_api smspatial
-debug: $(OUTPUT_DIR)/stringmol $(OUTPUT_DIR)/smspatial
+debug: $(OUTPUT_DIR)/stringmol
 
 web_api: bind step
 
@@ -57,8 +53,6 @@ clean:
 	rm -f ../release/stringmol
 	rm -f stringmol
 	rm -f stringmol_dbg
-	rm -f smspatial
-	rm -f smspatial_dbg
 	rm -f webapi_*.cgi
 
 #just remove the object files:
@@ -179,21 +173,6 @@ $(OUTPUT_DIR)/tests.o:	tests.cpp tests.h
 #############################################################
 ################## LIBS and EXECUTABLES    ##################
 #############################################################
-
-
-#############################################################
-# spatial stringmol
-
-$(OUTPUT_DIR)/smspatial: 	$(OUTPUT_DIR)/smspatial.o \
-			$(COBJECTS) $(CPPOBJECTS) 	
-	$(CC) -o smspatial -s -lm 	\
-	        -funroll-loops -fomit-frame-pointer \
-	        $(OUTPUT_DIR)/smspatial.o \
-			$(COBJECTS) $(CPPOBJECTS) 
-#			-lSDL 
-		
-		
-###########################################################
 # stringmol
 $(OUTPUT_DIR)/stringmol: 	$(OUTPUT_DIR)/stringmol.o \
 			$(COBJECTS) $(CPPOBJECTS)
@@ -230,11 +209,6 @@ step: 	webapi_step.o webapi_util.o stringPM.o rules.o SMspp.o setupSM.o \
 $(OUTPUT_DIR)/stringmol.o:  	stringmol.cpp \
 			$(COBJECTS) $(CPPOBJECTS)
 	$(CC) -c stringmol.cpp -o  	$(OUTPUT_DIR)/stringmol.o
-			
-
-$(OUTPUT_DIR)/smspatial.o:  	smspatial.cpp \
-			$(COBJECTS) $(CPPOBJECTS)
-	$(CC) -c smspatial.cpp 	-o $(OUTPUT_DIR)/smspatial.o
 
 #########################
 ### web_api objects ###
