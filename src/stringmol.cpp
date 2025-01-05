@@ -2082,14 +2082,14 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
 
         //safest & quickest to destroy the replicases and replenish.
         if(!(strncmp(pag->spp->S,repstring,replen))){
-            AgentFree(pag);
-            pag = NULL;
+            AgentFreeAndNull(&pag);
+            //pag = NULL;
             continue;
         }
         else{
             if(pag->status!=B_UNBOUND){
-                AgentFree(pag);
-                pag = NULL;
+                AgentFreeAndNull(&pag);
+                //pag = NULL;
                 continue;
             }
         }

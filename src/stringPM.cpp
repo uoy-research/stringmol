@@ -1959,8 +1959,8 @@ void stringPM::TimestepIncrement(){
 		int dc = AgentAttemptDecay(pag,decayrate,dodecay);
 		if(dc){//we must check what else needs to be destroyed...
 			if(bag!=NULL){
-				AgentFree(bag);
-				bag = NULL;
+				AgentFreeAndNull(&bag);
+				//bag = NULL;
 			}
 		}
 		else{
@@ -2450,14 +2450,14 @@ void stringPM::BucketReset(int verbose){
 	agp = nowhead;
 	while(agp!=NULL){
 		agp2=agp->next;
-		AgentFree(agp);
+		AgentFreeAndNull(&agp);
 		agp=agp2;
 	}
 
 	agp=nexthead;
 	while(agp!=NULL){
 		agp2=agp->next;
-		AgentFree(agp);
+		AgentFreeAndNull(&agp);
 		agp=agp2;
 	}
 

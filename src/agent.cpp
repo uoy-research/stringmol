@@ -360,6 +360,27 @@ int AgentFree(s_ag *pag){
 
 
 /*******************************************************************************
+* @brief free memory used by an agent, and set the pointer to it to NULL
+*
+* @param[in] pointer to pointer to pag the agent to free
+*
+* @return 0 always
+*******************************************************************************/
+int AgentFreeAndNull(s_ag **pag){
+
+	AgentFree(*pag);
+
+	//TODO: we should set this to null at the moment we have to do it after each call to this function...!
+	(*pag) = NULL;
+
+	return 0;
+}
+
+
+
+
+
+/*******************************************************************************
 * @brief align two agents
 *
 * @param[in] a1 first agent
