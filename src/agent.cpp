@@ -35,7 +35,8 @@
 #include "agent.h"
 #include "SMspp.h"
 
-
+//FORWARD FUNCTION DECLARATIONS
+int 	AgentFree(s_ag *pag);
 
 
 /******************************************************************************

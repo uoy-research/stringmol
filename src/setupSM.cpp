@@ -1142,7 +1142,7 @@ int ReactionExecuteOpcode_Spatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pa
 *
 * @return 1 if decay happens, 0 if not
 *******************************************************************************/
-int AgentAttemptDecaySpatial(stringPM *A, smsprun *run, s_ag *pag){
+int AgentAttemptDecaySpatial(stringPM *A, smsprun *run, s_ag **pag){
 
  	float prob = A->decayrate;//1./pow(65,2);//4./3.); //This is now done in load_decay...
 
@@ -1154,24 +1154,24 @@ int AgentAttemptDecaySpatial(stringPM *A, smsprun *run, s_ag *pag){
 
 		s_ag *bag;
 		bag = NULL;//To prevend compiler "uninitialised" warning
-		switch(pag->status){
+		switch((*pag)->status){
 		case B_UNBOUND:
 			bag = NULL;
 			break;
 		case B_ACTIVE:
-			bag = pag->pass;
+			bag = (*pag)->pass;
 			break;
 		case B_PASSIVE:
-			bag = pag->exec;
+			bag = (*pag)->exec;
 			break;
 		}
 		//int x,y;
 
 		//find_ag_gridpos(pag,run,&x,&y);
-		run->grid[pag->x][pag->y]=NULL;
-		run->status[pag->x][pag->y]=G_EMPTY;
+		run->grid[(*pag)->x][(*pag)->y]=NULL;
+		run->status[(*pag)->x][(*pag)->y]=G_EMPTY;
 
-		AgentFree(pag);
+		AgentFreeAndNull(pag);
 		//TODO: sort this null-ing of free'd agents out!
 		//pag = NULL;
 
@@ -1450,7 +1450,7 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 			break;
 		}
 
-		if(!AgentAttemptDecaySpatial(A,run,pag)){
+		if(!AgentAttemptDecaySpatial(A,run,&pag)){
 			int changed = 0;
 			if(A->energy>0){
 				switch(pag->status){
