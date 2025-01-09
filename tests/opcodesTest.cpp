@@ -3,6 +3,9 @@
 
 #include "catch.hpp"
 
+#include "../src/error_codes.h"
+#include "../src/default_config.h"
+
 //string stuff
 //#include "../src/hsort.h"
 //#include "../src/memoryutil.h"

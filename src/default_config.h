@@ -13,5 +13,7 @@
 #define STRINGPM_MAXL0 (2001)
 #define STRINGPM_NTRIALS (1)
 
+#define FN_LEN (80)
+
 
 #endif /* ERROR_CODES_H_ */

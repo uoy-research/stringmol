@@ -1,5 +1,8 @@
 #include "catch.hpp"
 
+#include "../src/error_codes.h"
+#include "../src/default_config.h"
+
 #include "../src/mt19937-2.h"
 #include "../src/randutil.h"
 #include "../src/params.h"
@@ -18,10 +21,11 @@
 #include <iostream>
 
 #include "../src/setupSM.h"
-#include "../src/default_config.h"
 
 #define CONFIG_TEST_VERBOSE
 
+// GLOBAL VARIABLES
+static const char configFileName[] =  "../tests/config/alXII_config_for_tests.conf";
 
 TEST_CASE("loading non-default parameters works"){
 
@@ -35,7 +39,6 @@ TEST_CASE("loading non-default parameters works"){
 	unsigned int ntrials = 0;
 	unsigned int nsteps = 0;
 	
-	static const char configFileName[] =  "../tests/config/config_for_tests.conf";
 
 #ifdef CONFIG_TEST_VERBOSE
 	printf("\nBEFORE loading the config, params are:\n");
@@ -116,6 +119,60 @@ TEST_CASE("loading non-default parameters works"){
 
 
 
+void compare_config(stringPM *A, stringPM *B){
+
+	/*TODO: compare non-stringPM variables
+	printf("Non-stringPM variables:\n");
+	if(ntrials<0)
+		printf("NTRIALS     not set - the default value would be used if needed\n");
+	else
+		printf("NTRIALS     %d\n",ntrials);
+	*/
+
+	//load params:
+	//if(A->cellrad-B->cellrad>FLT_MIN){
+	//	printf("ERROR - cellrad not saved properly\n");
+	//}
+	REQUIRE_THAT(A->cellrad, Catch::Matchers::WithinAbs(B->cellrad,0.05));
+	
+	/*
+	if(A->vcellrad-B->vcellrad>FLT_MIN){
+		printf("ERROR - vcellrad not saved properly\n");
+	}
+	if(A->energy!=B->energy){
+		printf("ERROR - energy not saved properly\n");
+	}
+	if(A->nsteps!=B->nsteps){
+		printf("ERROR - nsteps not saved properly\n");
+	}
+	
+
+
+	if(A->indelrate-B->indelrate>FLT_MIN){
+		printf("ERROR - indelrate not saved properly\n");
+	}
+	if(A->subrate-B->subrate>FLT_MIN){
+		printf("ERROR - subrate not saved properly\n");
+	}
+	if(A->decayrate-B->decayrate>FLT_MIN){
+		printf("ERROR - decayrate not saved properly\n");
+	}
+	if(A->maxl0!=B->maxl0){
+		printf("ERROR - maxl0 not saved properly\n");
+	}
+	if(A->estep!=B->estep){
+		printf("ERROR - estep not saved properly\n");
+	}
+
+	return 0;
+	*/
+
+}
+
+
+
+
+
 //todo(sjh): move to catch.hpp test folder
 /* Test loading and saving of configs..
  * STRATEGY:
@@ -130,57 +187,89 @@ TEST_CASE("Loading and saving of configs is consistent"){
 //int test_loadsave(int argc, char *argv[]){
 
 	/*TODO: test arguments */
-	stringPM *A;
-	stringPM *B;
-	stringPM *C;
+	//stringPM *A;
+	//stringPM *B;
+	//stringPM *C;
+	SMspp        SP_A;
+	SMspp        SP_B;
+	//SMspp        SP_C;
+	stringPM     A(&SP_A);
+	stringPM     B(&SP_B);
+	//stringPM     C(&SP_C);
+    
 	const int fnlen =200;
 	FILE *fp;
 	char fn[] = "test_output.cfg";
 	char fn1000[] = "test_output_1000.cfg";
+
+	int argc2 = 3;
 	char **argv2;
 
 	//Load the simulation and test that the config settings are correct
-	A = test_config_settings(argc,argv,1);
+	//A = test_config_settings(argc,argv,1);
+	//A = new stringPM(NULL);
+	A.ParametersLoad(configFileName,0,1);
+	A.AgentsLoad(configFileName,NULL,0,1);
 
 	//Write the resulting config to file
 	fp = fopen(fn,"w");
-	A->print_conf(fp);
+	A.print_conf(fp);
 	fclose(fp);
 
-	argv2 = (char **) malloc(argc*sizeof(char *));
-	for(int c=0;c<argc;c++){
-		argv2[c] = (char *)malloc(fnlen*sizeof(char));
-		memset(argv2[c],0,fnlen*sizeof(char));
-		sprintf(argv2[c],"%s",argv[c]);
-	}
-	sprintf(argv2[2],"%s",fn);
 
 	//Load the simulation and test that the config settings are correct
-	B = test_config_settings(argc,argv2,1);
-
-	int csc = compare_config(A,B);
-	printf("csc for (A,B) is %d\n",csc);
+	B.ParametersLoad(fn,0,1);
+	B.AgentsLoad(fn,NULL,0,1);
+	//compare_config(A,B);
+	//printf("csc for (A,B) is %d\n",csc);
+	//REQUIRE_THAT(A->cellrad, WithinAbs(B->cellrad,0.05));
+	CHECK(((A.cellrad - B.cellrad)*(A.cellrad - B.cellrad)) < 0.01);
 
 	//Run the Trial forward
-	AgentsPrint(stdout,A->nowhead,0,A->maxl);
+	//AgentsPrint(stdout,A.nowhead,0,A.maxl);
 
-	run_one_AlifeXII_trial(A);
 
+
+
+
+	/*
 	//Write the resulting config to file
 	fp = fopen(fn1000,"w");
 	A->print_conf(fp);
 	fclose(fp);
 
-	sprintf(argv2[2],"%s",fn1000);
+
+	//C = test_config_settings(argc,argv2,1);
+	C = new stringPM(NULL);
+	C->ParametersLoad(fn1000,0,1);
+	C->AgentsLoad(fn1000,NULL,0,1);
+	//compare_config(A,C);
+	//printf("csc for (A,C) is %d\n",csc);
+
+	//return csc;
+	*/
+}
 
 
-	C = test_config_settings(argc,argv2,1);
 
 
-	csc = compare_config(A,C);
-	printf("csc for (A,C) is %d\n",csc);
+
+TEST_CASE("Able to reload a run with RNG info from arbitrary point"){
 
 
-	return csc;
+	argv2 = (char **) malloc(argc2*sizeof(char *));
+	for(int c=0;c<argc2;c++){
+		argv2[c] = (char *)malloc(fnlen*sizeof(char));
+		memset(argv2[c],0,fnlen*sizeof(char));
+		//sprintf(argv2[c],"%s",argv[c]);
+	}
+	sprintf(argv2[2],"%s",fn);
+
+	//run_one_AlifeXII_trial(&A);
+	//
+	SmPm_AlifeXII(argc2, argv2);
+
+	//todo(sjh): finish this!
+
 }
 

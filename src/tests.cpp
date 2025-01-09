@@ -25,6 +25,9 @@
 #include <string.h>
 #include <float.h>
 
+#include "error_codes.h"
+#include "default_config.h"
+
 /*TODO: To many interdependencies here - stringPM.h requires agests_base.h requires rules.h ...*/
 //utilities
 #include "mt19937-2.h"
@@ -48,6 +51,51 @@
 #include "setupSM.h"
 
 #include "tests.h"
+
+
+
+
+//todo(sjh): mark for deletion when ../tests/configTest.cpp is working
+//stringPM * test_config_settings( int argc, char *argv[], int return_SM){
+stringPM * test_config_settings( int argc, char *argv[], int return_SM){
+	/** The idea here is to report the default values of the parameters, then parse the config and report them again. */
+
+	stringPM *A;
+
+	A = new stringPM(NULL);
+	unsigned int ntrials = 0;
+	unsigned int nsteps = 0;
+
+	printf("\nBEFORE loading the config, params are:\n");
+	print_params(A,ntrials,nsteps);
+	printf("..c'est ca!\n\n");
+
+	//int readordef_param_int(char *fn, const char *label, int *val, const int defaultvalue, const int verbose)
+	ParameterReadOrDefineUnsignedInt(argv[2], "NTRIALS", &ntrials, 1, 1);
+	int nns = ParameterReadOrDefineUnsignedInt(argv[2], "NSTEPS", &nsteps, -1, 1);
+
+	//A->ConfigLoad(argv[2],NULL,0,1);
+    A->ParametersLoad(argv[2],0,1);
+    A->AgentsLoad(argv[2],NULL,0,1);
+	//if(!arg_load(A, argc, argv, 0))
+	//	return NULL;
+
+	printf("\n\nAFTER loading the config, params are:\n");
+	print_params(A,ntrials,nsteps);
+	if(nns==1)
+		printf("NSTEPS was not specified. Simulations will run indefinitely");
+	printf("..c'est ca!\n\n");
+
+	if(return_SM)
+		return A;
+	else{
+		A->BucketReset();
+		delete A;
+		return NULL;
+	}
+}
+
+
 
 
 

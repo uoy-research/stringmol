@@ -23,6 +23,9 @@
 #include <math.h>
 #include <float.h>
 
+#include "error_codes.h"
+#include "default_config.h"
+
 #include "memoryutil.h"
 #include "mt19937-2.h"
 #include "randutil.h"
@@ -39,9 +42,6 @@
 #include "rules.h"
 #include "opcodes.h"
 #include "stringPM.h"
-
-#include "error_codes.h"
-#include "default_config.h"
 
 //For debugging:
 //#define VERBOSE
@@ -2936,7 +2936,9 @@ void stringPM::write_extant_spp(FILE *fp){
 		case B_UNBOUND:
 			//Write this as a traditional agent...
 			fprintf(fp,"AGENT  %s 1 Q\n",pag->S);fflush(fp);
-			fprintf(fp,"GRIDPOS  %d %d\n\n",pag->x,pag->y);
+			if(grid != NULL){
+				fprintf(fp,"GRIDPOS  %d %d\n\n",pag->x,pag->y);
+			}
 
 			done[aa] = 1;
 
@@ -3104,10 +3106,10 @@ int stringPM::print_conf(FILE *fp){
 	fprintf(fp,"%%%%%%AUTOMATICALLY GENERATED Stringmol CONFIG FILE\n");
 	fprintf(fp,"%%%%%%Generated at time:\nEXTIT  		%u\n\n",timestep);
 	fprintf(fp,"%%%%%%CELL PARAMETERS\n");
-	fprintf(fp,"CELLRAD		%d\n",(int) cellrad);
+	fprintf(fp,"CELLRAD	    %d\n",(int) cellrad);
 	fprintf(fp,"AGRAD       %d\n",(int) agrad);
-	fprintf(fp,"ENERGY		%d\n",(int) energy);
-	fprintf(fp,"NSTEPS		%d\n",(int) nsteps);//1200000000\n");
+	fprintf(fp,"ENERGY      %d\n",(int) energy);
+	fprintf(fp,"NSTEPS      %d\n",(int) nsteps);//1200000000\n");
 	fprintf(fp,"DECAY       %f\n",decayrate);
 
 
@@ -3130,17 +3132,17 @@ int stringPM::print_conf(FILE *fp){
 
 	if((indelrate - subrate)<FLT_EPSILON){
 		if(indelrate<FLT_EPSILON)
-			fprintf(fp,"MUTATE		0\n");
+			fprintf(fp,"MUTATE      0\n");
 		else
-			fprintf(fp,"MUTATE		%f\n",indelrate);
+			fprintf(fp,"MUTATE      %f\n",indelrate);
 	}
 	else{
 		//No mutation rate needs to be set: the hard-wired alife values will be loaded.
 	}
 
 	fprintf(fp,"\n%%%%%% REPORTING PARAMETERS %%%%%%\n");
-	fprintf(fp,"REPORTEVERY %d\n",(int) report_every);
-	fprintf(fp,"IMAGEEVERY	%d\n",(int) image_every);
+	fprintf(fp,"REPORTEVERY         %d\n",(int) report_every);
+	fprintf(fp,"IMAGEEVERY          %d\n",(int) image_every);
 
 
 	/*TODO: Need to distinguish between 'USING' and 'SUBMAT' configurations.
@@ -3149,11 +3151,11 @@ int stringPM::print_conf(FILE *fp){
 	 * Also need to know what to do if these are missing - do we create a separate file?
 	 */
 	if(strstr(swt_fn,".mtx")!=NULL){
-		fprintf(fp,"SUBMAT	%s\n\n",swt_fn);
+		fprintf(fp,"SUBMAT               %s\n\n",swt_fn);
 	}
 	else{
 		if(strstr(swt_fn,".mis")!=NULL){
-			fprintf(fp,"USING	%s\n\n",swt_fn);
+			fprintf(fp,"USING                %s\n\n",swt_fn);
 		}
 		else{
 			fprintf(fp,"\n%%%%%% Warning! no SWT substitution matrix specified\n");
@@ -3178,11 +3180,11 @@ int stringPM::print_conf(FILE *fp){
 
 	fprintf(fp,"%%%%%%RNG DATA FILE:\nRNGFILE %s\n\n",mt_file);
 
-
-	fprintf(fp,"%%%%%%GRID PARAMETERS\n");
-	fprintf(fp,"GRIDX		%d\n",(int) grid->gridx);
-	fprintf(fp,"GRIDY       %d\n\n\n",(int) grid->gridy);
-
+	if(grid != NULL){
+		fprintf(fp,"%%%%%%GRID PARAMETERS\n");
+		fprintf(fp,"GRIDX		%d\n",(int) grid->gridx);
+		fprintf(fp,"GRIDY       %d\n\n\n",(int) grid->gridy);
+	}
 
 
 
