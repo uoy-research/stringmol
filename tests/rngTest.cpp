@@ -3,6 +3,55 @@
 #include "../src/mt19937-2.h"
 #include "../src/randutil.h"
 
+
+
+
+
+
+TEST_CASE("seeding with initmyrand(-1) returns the random seed as output"){
+  
+    unsigned int rout = RandomInit(-1);
+    REQUIRE(rout > 0);
+}
+
+
+
+TEST_CASE("RE-seeding with initmyrand(-1) returns a different random seed as output"){
+  
+    unsigned int rout = RandomInit(-1);    
+    
+    REQUIRE((rout - RandomInit(-1))!=0);
+}
+
+
+
+TEST_CASE("seeding with different positive integer types produces same seed"){
+  
+    short int seed_s = 436;
+    int       seed_i = 436;
+    long int  seed_l = 436;
+    unsigned short int seed_us = 436;
+    unsigned int       seed_ui = 436;
+    unsigned long int  seed_ul = 436;
+    
+    unsigned int rout_s = RandomInit(seed_s);   
+    unsigned int rout_i = RandomInit(seed_i);   
+    unsigned int rout_l = RandomInit(seed_l);  
+    unsigned int rout_us = RandomInit(seed_us);   
+    unsigned int rout_ui = RandomInit(seed_ui);   
+    unsigned int rout_ul = RandomInit(seed_ul);   
+    
+    REQUIRE(rout_s == rout_i);
+    REQUIRE(rout_s == rout_l);
+    REQUIRE(rout_s == rout_us);
+    REQUIRE(rout_s == rout_ui);
+    REQUIRE(rout_s == rout_ul);
+}
+
+
+
+
+
 /*Test the random number generator. It must:
  *
  * 1: give the same sequence from a seed
@@ -116,11 +165,11 @@ TEST_CASE("save and load RNG to/from file"){
 
 	if((mtf = fopen(fn,"w"))!=NULL){
         //Save the RNG
-		MersenneTwisterPrintStatusToFile(mtf);
-		fclose(mtf);
+        MersenneTwisterPrintStatusToFile(mtf);
+        fclose(mtf);
 	}
 	else{
-		printf("Failed to record RNG state to file %s\n",fn);
+        printf("Failed to record RNG state to file %s\n",fn);
         FAIL();
 	}
 

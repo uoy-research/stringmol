@@ -25,6 +25,7 @@
 
 #include "rules.h"
 
+#include "error_codes.h"
 
 rules::rules(char *fn){
 
@@ -70,6 +71,7 @@ rules::rules(char *fn){
 	else{
 		printf("Unable to open file %s\n",fn);
 		fflush(stdout);
+		exit(FILE_READ_ERROR);
 	}
 }
 

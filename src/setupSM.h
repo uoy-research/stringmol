@@ -66,8 +66,6 @@
 
 /************************************************************/
 
-
-
 	/* Spatial Stringmol functions */
 	int GridSelectRandomMooreNeighbour(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout);
 	int StringmolSpatial(int argc, char *argv[]);
@@ -87,4 +85,11 @@
 	};
 
 	int GridSavePNG(stringPM *A, smpic pt);
+
+	/************************************************************/
+	/* Originally in stringmol.cpp ******************************/
+	/************************************************************/
+
+	int SmPm_AlifeXII(int argc, char *argv[]);
+
 #endif /* SETUPSM_H_ */

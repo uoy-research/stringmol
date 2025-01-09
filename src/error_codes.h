@@ -8,8 +8,14 @@
 #ifndef ERROR_CODES_H_
 #define ERROR_CODES_H_
 
-#define PARAM_LOAD_ERROR (42)
 #define SEQ_LEN_ERROR (3)
+
+//todo(sjh): are the next two the same thing?
+#define FILE_READ_ERROR (4)
+#define EXIT_FILE_ERROR (5)
+
+
+#define PARAM_LOAD_ERROR (42)
 
 
 #endif /* ERROR_CODES_H_ */

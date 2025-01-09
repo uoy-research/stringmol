@@ -94,26 +94,10 @@ echo "Running Catch.hpp Tests.  Please Wait."
 
 echo "  compiling..."
 
-cd src
-make clean
-make debug
+cd tests
+ls -ltrh
 
-cd ../tests
-RP="../debug"
-#TODO: can't use wildcards e.g. ../release/*.o because of multiple 'main's... fix!
-g++ -std=gnu++11 -Wall  -DDEBUG -g -o test  *.cpp ${RP}/mt19937-2.o ${RP}/randutil.o \
-  ${RP}/agent.o ${RP}/SMspp.o ${RP}/stringPM.o ${RP}/rules.o \
-  ${RP}/alignment.o ${RP}/params.o ${RP}/memoryutil.o ${RP}/stringmanip.o \
-  ${RP}/hsort.o ${RP}/opcodes.o
-  
-cd ..
-echo ""
-echo "  now testing.."
-./tests/test
-
-
-echo "  cleaning up.."
-rm -f rng.txt
+/bin/bash RunCatchTests.sh
 
 
 #############

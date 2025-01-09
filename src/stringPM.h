@@ -22,10 +22,6 @@
 #define STRINGPM_H_
 
 
-#define FN_LEN (256)
-
-
-
 enum e_mut{M_NONE,M_INCREMENT,M_DECREMENT,M_INSERT,M_DELETE};
 
 /* Cellular Automata parameters */

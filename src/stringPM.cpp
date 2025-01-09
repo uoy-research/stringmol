@@ -23,6 +23,9 @@
 #include <math.h>
 #include <float.h>
 
+#include "error_codes.h"
+#include "default_config.h"
+
 #include "memoryutil.h"
 #include "mt19937-2.h"
 #include "randutil.h"
@@ -39,8 +42,6 @@
 #include "rules.h"
 #include "opcodes.h"
 #include "stringPM.h"
-
-#include "error_codes.h"
 
 //For debugging:
 //#define VERBOSE
@@ -83,6 +84,7 @@ stringPM::stringPM(SMspp * pSP){
 	blosum->T=NULL;
 	blosum->key=NULL;
 	SetHeadsAndDefaults();
+
 	agct = 0;
 	//species=NULL;
 	spp_count=1;
@@ -90,8 +92,8 @@ stringPM::stringPM(SMspp * pSP){
 
 	//Set defaults:
 
-	maxl = 2000;
-	maxl0 = maxl+1; //allow room for a terminating 0
+	maxl = STRINGPM_MAXL;
+	maxl0 = STRINGPM_MAXL0; //allow room for a terminating 0
 	estep = 20;
 
 	/** This is a toggle to turn the '+' operator on and off
@@ -319,6 +321,14 @@ int stringPM::ParametersLoad(const char *fn, int test, int verbose){
 		if(e>1)err++;
 		//err += 	ParameterReadFloat(fp,"DIVTIME",&divtime);
 
+		int destep = estep;
+		e = ParameterReadOrDefineUnsignedInt(fn,"ESTEP", &estep, destep, 0);
+		if(e>1){
+			printf("ESTEP not specified on loading energy per time step\n");
+			printf("Using default value of %d\n",destep);
+		}
+
+
 		if(err){
 			printf("Some error reading config file\n");
 			fclose(fp);
@@ -335,7 +345,8 @@ int stringPM::ParametersLoad(const char *fn, int test, int verbose){
 	else{
 		printf("Unable to open file %s\n",fn);
 		fflush(stdout);
-		return 0;
+		exit(FILE_READ_ERROR);
+		//return 0;
 	}
 
 }
@@ -489,10 +500,8 @@ int stringPM::load_table_matrix(const char *fn){
 
 int stringPM::load_table(const char *fn){
 
-
 	//const int maxl=256;
 	FILE *fp;
-
 
 	if((fp=fopen(fn,"r"))!=NULL){
 		int found = 0;
@@ -1279,7 +1288,7 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 	int err = ParameterReadOrDefineUnsignedInt(fn,"MAXLEN", &maxl, dmxl, 0);
 	if(err>1){
 		printf("ERROR %d on loading max line length (MAXLEN)\n",err);
-		exit(0);
+		exit(PARAM_LOAD_ERROR);
 	}
 	maxl0 = maxl+1;
 
@@ -1320,16 +1329,6 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 	int nag;
 	s_ag *pag;
 	int ntt = 0;
-
-
-
-	int destep = estep;
-	int estep_err = ParameterReadOrDefineUnsignedInt(fn,"ESTEP", &estep, destep, 0);
-	if(estep_err>1){
-		printf("ERROR %d on loading energy per time step (ESTEP)\n",estep_err);
-		exit(PARAM_LOAD_ERROR);
-	}
-
 
 	//ALSO important to load blosum table here too!
 	int table_err;
@@ -1495,7 +1494,7 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 		}
 		else{
 			printf("Unable to open file %s\n",fn);
-			return 0;
+			exit(FILE_READ_ERROR);
 		}
 
 	}
@@ -2937,7 +2936,9 @@ void stringPM::write_extant_spp(FILE *fp){
 		case B_UNBOUND:
 			//Write this as a traditional agent...
 			fprintf(fp,"AGENT  %s 1 Q\n",pag->S);fflush(fp);
-			fprintf(fp,"GRIDPOS  %d %d\n\n",pag->x,pag->y);
+			if(grid != NULL){
+				fprintf(fp,"GRIDPOS  %d %d\n\n",pag->x,pag->y);
+			}
 
 			done[aa] = 1;
 
@@ -3105,10 +3106,10 @@ int stringPM::print_conf(FILE *fp){
 	fprintf(fp,"%%%%%%AUTOMATICALLY GENERATED Stringmol CONFIG FILE\n");
 	fprintf(fp,"%%%%%%Generated at time:\nEXTIT  		%u\n\n",timestep);
 	fprintf(fp,"%%%%%%CELL PARAMETERS\n");
-	fprintf(fp,"CELLRAD		%d\n",(int) cellrad);
+	fprintf(fp,"CELLRAD	    %d\n",(int) cellrad);
 	fprintf(fp,"AGRAD       %d\n",(int) agrad);
-	fprintf(fp,"ENERGY		%d\n",(int) energy);
-	fprintf(fp,"NSTEPS		%d\n",(int) nsteps);//1200000000\n");
+	fprintf(fp,"ENERGY      %d\n",(int) energy);
+	fprintf(fp,"NSTEPS      %d\n",(int) nsteps);//1200000000\n");
 	fprintf(fp,"DECAY       %f\n",decayrate);
 
 
@@ -3131,17 +3132,17 @@ int stringPM::print_conf(FILE *fp){
 
 	if((indelrate - subrate)<FLT_EPSILON){
 		if(indelrate<FLT_EPSILON)
-			fprintf(fp,"MUTATE		0\n");
+			fprintf(fp,"MUTATE      0\n");
 		else
-			fprintf(fp,"MUTATE		%f\n",indelrate);
+			fprintf(fp,"MUTATE      %f\n",indelrate);
 	}
 	else{
 		//No mutation rate needs to be set: the hard-wired alife values will be loaded.
 	}
 
 	fprintf(fp,"\n%%%%%% REPORTING PARAMETERS %%%%%%\n");
-	fprintf(fp,"REPORTEVERY %d\n",(int) report_every);
-	fprintf(fp,"IMAGEEVERY	%d\n",(int) image_every);
+	fprintf(fp,"REPORTEVERY         %d\n",(int) report_every);
+	fprintf(fp,"IMAGEEVERY          %d\n",(int) image_every);
 
 
 	/*TODO: Need to distinguish between 'USING' and 'SUBMAT' configurations.
@@ -3150,11 +3151,11 @@ int stringPM::print_conf(FILE *fp){
 	 * Also need to know what to do if these are missing - do we create a separate file?
 	 */
 	if(strstr(swt_fn,".mtx")!=NULL){
-		fprintf(fp,"SUBMAT	%s\n\n",swt_fn);
+		fprintf(fp,"SUBMAT               %s\n\n",swt_fn);
 	}
 	else{
 		if(strstr(swt_fn,".mis")!=NULL){
-			fprintf(fp,"USING	%s\n\n",swt_fn);
+			fprintf(fp,"USING                %s\n\n",swt_fn);
 		}
 		else{
 			fprintf(fp,"\n%%%%%% Warning! no SWT substitution matrix specified\n");
@@ -3179,11 +3180,11 @@ int stringPM::print_conf(FILE *fp){
 
 	fprintf(fp,"%%%%%%RNG DATA FILE:\nRNGFILE %s\n\n",mt_file);
 
-
-	fprintf(fp,"%%%%%%GRID PARAMETERS\n");
-	fprintf(fp,"GRIDX		%d\n",(int) grid->gridx);
-	fprintf(fp,"GRIDY       %d\n\n\n",(int) grid->gridy);
-
+	if(grid != NULL){
+		fprintf(fp,"%%%%%%GRID PARAMETERS\n");
+		fprintf(fp,"GRIDX		%d\n",(int) grid->gridx);
+		fprintf(fp,"GRIDY       %d\n\n\n",(int) grid->gridy);
+	}
 
 
 
