@@ -39,26 +39,6 @@ TEST_CASE("loading non-default parameters works"){
 	unsigned int ntrials = 0;
 	unsigned int nsteps = 0;
 	
-
-#ifdef CONFIG_TEST_VERBOSE
-	printf("\nBEFORE loading the config, params are:\n");
-	print_params(A,ntrials,nsteps);
-	/*
-	NTRIALS     0
-	NSTEPS      0
-	CELLRAD     2500.000000 (vcellrad = 0.000000)
-	AGRAD       10.000000
-	ENERGY      0
-	NSTEPS      0.000000
-	BLOSUM      0 size table loaded
-	MUTATE      indelrate = 0.000000; subrate = 0.000000
-	DECAY       0.000000
-	MAXLEN      2000, (maxl0 = 2001)
-	ESTEP       20
-	*/
-#endif
-
-
 	CHECK(A->dodecay == 1);
 	CHECK(A->agct == 0);
 	CHECK(A->spp_count == 1);
@@ -75,7 +55,7 @@ TEST_CASE("loading non-default parameters works"){
 
 	//int readordef_param_int(char *fn, const char *label, int *val, const int defaultvalue, const int verbose)
 	ParameterReadOrDefineUnsignedInt(configFileName, "NTRIALS", &ntrials, 1, 1);
-	int nns = ParameterReadOrDefineUnsignedInt(configFileName, "NSTEPS", &nsteps, -1, 1);
+	ParameterReadOrDefineUnsignedInt(configFileName, "NSTEPS", &nsteps, -1, 1);
 	CHECK(nsteps == 1000);
 
 	//A->ConfigLoad(argv[2],NULL,0,1);
@@ -99,15 +79,6 @@ TEST_CASE("loading non-default parameters works"){
 	A->AgentsLoad(configFileName,NULL,0,1);
 	//if(!arg_load(A, argc, argv, 0))
 	//	return NULL;
-
-#ifdef CONFIG_TEST_VERBOSE
-	printf("\n\nAFTER loading the config, params are:\n");
-	print_params(A,ntrials,nsteps);
-	
-	if(nns==1)
-		printf("NSTEPS was not specified. Simulations will run indefinitely");
-	printf("..c'est ca!\n\n");
-#endif
 
 	A->BucketReset();
 	delete A;
@@ -184,26 +155,15 @@ void compare_config(stringPM *A, stringPM *B){
  * 		5: Compare states.
  */
 TEST_CASE("Loading and saving of configs is consistent"){ 
-//int test_loadsave(int argc, char *argv[]){
 
-	/*TODO: test arguments */
-	//stringPM *A;
-	//stringPM *B;
-	//stringPM *C;
 	SMspp        SP_A;
 	SMspp        SP_B;
-	//SMspp        SP_C;
+
 	stringPM     A(&SP_A);
 	stringPM     B(&SP_B);
-	//stringPM     C(&SP_C);
     
-	const int fnlen =200;
 	FILE *fp;
 	char fn[] = "test_output.cfg";
-	char fn1000[] = "test_output_1000.cfg";
-
-	int argc2 = 3;
-	char **argv2;
 
 	//Load the simulation and test that the config settings are correct
 	//A = test_config_settings(argc,argv,1);
@@ -256,11 +216,14 @@ TEST_CASE("Loading and saving of configs is consistent"){
 
 TEST_CASE("Able to reload a run with RNG info from arbitrary point"){
 
+	int argc2 = 3;
+	char **argv2;
+	char fn[] = "test_output.cfg";
 
 	argv2 = (char **) malloc(argc2*sizeof(char *));
 	for(int c=0;c<argc2;c++){
-		argv2[c] = (char *)malloc(fnlen*sizeof(char));
-		memset(argv2[c],0,fnlen*sizeof(char));
+		argv2[c] = (char *)malloc(FN_LEN*sizeof(char));
+		memset(argv2[c],0,FN_LEN*sizeof(char));
 		//sprintf(argv2[c],"%s",argv[c]);
 	}
 	sprintf(argv2[2],"%s",fn);

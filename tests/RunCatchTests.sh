@@ -33,7 +33,10 @@ echo "  now testing.."
 
 
 echo "  cleaning up.."
-rm -f rng.txt
+rm -f *.txt
+rm -f *.conf
+rm -f *.dat
+rm -f *.cfg
 
 cd ../tests
 

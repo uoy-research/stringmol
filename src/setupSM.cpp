@@ -414,42 +414,6 @@ int ParametersLoadFromMainArgs(stringPM *A, int argc, char *argv[], int verbose 
 
 
 
-void print_params(stringPM *A, int ntrials, int nsteps){
-
-	printf("Non-stringPM variables:\n");
-	if(ntrials<0)
-		printf("NTRIALS     not set - the default value would be used if needed\n");
-	else
-		printf("NTRIALS     %d\n",ntrials);
-
-	if(nsteps<0)
-		printf("NSTEPS      not set - the default value would be used if needed\n");
-	else
-		printf("NSTEPS      %d\n",nsteps);
-
-	//load params:
-	printf("CELLRAD     %f (vcellrad = %f)\n",A->cellrad,A->vcellrad);
-	printf("AGRAD       %f\n",A->agrad);
-	printf("ENERGY      %d\n",(int) A->energy);
-	printf("NSTEPS      %f\n",A->nsteps);
-
-	//load agents: load_table(_mtx); load_mut; load_decay
-	if(A->blosum == NULL)
-		printf("BLOSUM      not set - needs to be loaded explicitly\n");
-	else
-		printf("BLOSUM      %d size table loaded\n",A->blosum->N);
-	printf("MUTATE      indelrate = %f; subrate = %f\n",A->indelrate,A->subrate);
-	printf("DECAY       %f\n",A->decayrate);
-	printf("MAXLEN      %u, (maxl0 = %u)\n",A->maxl, A->maxl0);
-	printf("ESTEP       %u\n",A->estep);
-
-
-}
-
-
-
-
-
 /* This is used in the comass GA - see test.cpp for how to set up randseed properly
  *
  */
@@ -500,72 +464,6 @@ void init_randseed_config(int argc, char *argv[]){
 		fclose(frs);
 	}
 
-}
-
-
-
-
-
-/*
- * NB: To get identical trials to those run for ALifeXII, do the following:
- * 1: Use the file "replicase.conf" as the input
- * 2: Fix the random number seed to 437
- * 3: #define DO_ANCESTRY to get ancestry files out...
- * 4: Run on a 32-bit linux slackware system, circa 2008 vintage...:)
- */
-//todo: SmPm_AlifeXII() should call this
-int run_one_AlifeXII_trial(stringPM *A){
-
-	int i;
-
-	//A->AgentsPrint(stdout,"NOW",0);
-	AgentsPrint(stdout,A->nowhead,false,A->maxl);
-	A->run_number=0;
-
-	int nsteps=0;
-	//TODO: Accommodate indefinitre runs, like this:
-	//for(i=0;indefinite || nsteps <= maxnsteps;i++){
-
-	for(i=0;nsteps <= A->nsteps;i++){
-
-		//TODO: find out what this does - rename the variable to  make it clear.
-		A->timestep = i;
-
-		A->TimestepIncrement();
-		A->UpdateNowNext();
-
-		if(!(i%1000)){
-			A->SpeciesPrintCount(stdout,0,-1);
-		//}
-		//
-		//if(!(i%1000)){
-			printf("At  time %d e=%d, mutrate = %0.9f & %0.9f\n",i,(int)A->energy,A->subrate,A->indelrate);
-			SpeciesPrintCounts(A,i);
-		}
-
-//TODO: See equivalent line in SmPm_AlifeXII() function for what should be in the following #ifdef...
-//#ifdef DO_ANCESTRY
-//#endif
-
-		if(!AgentsCount(A->nowhead,-1)){
-			printf("DEATH\n");
-			printf("At  time %d e=%d, mutrate = %0.9f & %0.9f\t",i,(int)A->energy,A->indelrate,A->subrate);
-			A->SpeciesPrintCount(stdout,0,-1);
-			//nsteps=i;
-			break;
-		}
-		nsteps++;
-
-		A->energy += A->estep;
-	}
-
-	printf("Finished - alls well!\nclear out memory now:\n");
-	fflush(stdout);
-
-	//TODO: need to do this outside the function!
-	//A.clearout();
-
-	return 0;
 }
 
 
@@ -2749,7 +2647,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
         	//todo(sjh):code block below is new for configTest.cpp
     		if(!(BucketA.timestep % BucketA.report_every)){
     			char ofn[FN_LEN];
-    			sprintf(ofn,"status%07d.conf",BucketA.timestep);
+    			sprintf(ofn,"status%07u.conf",BucketA.timestep);
     			if((fp = fopen(ofn,"w"))!=NULL){
         			BucketA.print_conf(fp);
         			fclose(fp);

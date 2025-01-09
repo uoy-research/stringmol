@@ -113,7 +113,6 @@ CPPOBJECTS = $(OUTPUT_DIR)/lodepng.o \
 		$(OUTPUT_DIR)/SMspp.o \
 		$(OUTPUT_DIR)/stringmanip.o \
 		$(OUTPUT_DIR)/stringPM.o \
-		$(OUTPUT_DIR)/tests.o \
 		
 
 ###################
@@ -163,9 +162,6 @@ $(OUTPUT_DIR)/stringPM.o:	stringPM.cpp stringPM.h \
 		rules.h	SMspp.h error_codes.h
 	$(CC) -c stringPM.cpp -o $(OUTPUT_DIR)/stringPM.o
 
-$(OUTPUT_DIR)/tests.o:	tests.cpp tests.h
-	$(CC) -c tests.cpp -o $(OUTPUT_DIR)/tests.o
-
 	
 	
 	
@@ -186,18 +182,18 @@ $(OUTPUT_DIR)/stringmol: 	$(OUTPUT_DIR)/stringmol.o \
 			
 bind: 	webapi_bind.o webapi_util.o stringPM.o rules.o SMspp.o setupSM.o \
 			$(COBJECTS) \
-			stringmanip.o	alignment.o tests.o lodepng.o
+			stringmanip.o	alignment.o lodepng.o
 	$(CC) -o webapi_bind.cgi -lm webapi_bind.o webapi_util.o stringPM.o rules.o SMspp.o setupSM.o \
 			$(COBJECTS) \
-			stringmanip.o	alignment.o tests.o lodepng.o
+			stringmanip.o	alignment.o lodepng.o
 			
 			
 step: 	webapi_step.o webapi_util.o stringPM.o rules.o SMspp.o setupSM.o \
 			$(COBJECTS) \
-			stringmanip.o	alignment.o tests.o lodepng.o
+			stringmanip.o	alignment.o lodepng.o
 	$(CC) -o webapi_step.cgi -lm webapi_step.o webapi_util.o stringPM.o rules.o SMspp.o setupSM.o \
 			$(COBJECTS) \
-			stringmanip.o	alignment.o tests.o lodepng.o		
+			stringmanip.o	alignment.o lodepng.o		
 		
 
 
