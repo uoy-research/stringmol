@@ -96,7 +96,7 @@ int OpcodeTemplateLength(char *ip, const int maxl){
 * @return 1 always - to indicate the reaction has changed
 *         todo(sjh): maybe some error handling here would be good!
 *******************************************************************************/
-char * OpcodeSearchInner(char *iptr, char *sp, swt *T, const int *itog,
+char * OpcodeSearchInner(char *iptr, char *sp, smith_waterman_table *T, const int *itog,
 		int *ftog,const int maxl){
 
 	char *ip,*tp,tmp[maxl];
@@ -182,7 +182,7 @@ char * OpcodeSearchInner(char *iptr, char *sp, swt *T, const int *itog,
 *
 * @param[in] maxl the max line length
 *******************************************************************************/
-void OpcodeSearch(s_ag *act, swt *blosum, const unsigned short int maxl){
+void OpcodeSearch(s_ag *act, smith_waterman_table *blosum, const unsigned short int maxl){
 	char *cs;
 	char *tmp;
 
@@ -256,7 +256,7 @@ void OpcodeMove(s_ag *act){
 *
 * @return new position of the instruction pointer, 0 if "error" (can't happen)
 *******************************************************************************/
-void OpcodeIf(s_ag * act, swt *T, const int maxl){
+void OpcodeIf(s_ag * act, smith_waterman_table *T, const int maxl){
 
 	char *ip,*rp;
 	char tmp[maxl],tmp2[maxl];
@@ -450,7 +450,7 @@ int OpcodeCopyCheckSafe(s_ag *act, const unsigned int maxl, int & safe){
 *******************************************************************************/
 int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
 		float subrate, const unsigned int maxl,
-		swt	*blosum, const int granular_1, long &biomass,
+		smith_waterman_table	*blosum, const int granular_1, long &biomass,
 		SMspp * spl, const unsigned long int timestep){//, int &finished){
 
 	int randomOpcodeIndex;
@@ -594,7 +594,7 @@ void MassTableUpdate(int * mass, const int randomOpcodeIndex,
  *            in the blosum table
  *
  ******************************************************************************/
-void OpcodeInsertInstruction(const s_ag * act, int inst_idx, int *mass, swt * blosum,
+void OpcodeInsertInstruction(const s_ag * act, int inst_idx, int *mass, smith_waterman_table * blosum,
 		const int writePtrOpcodeIndex){
 
 
@@ -638,7 +638,7 @@ void OpcodeInsertInstruction(const s_ag * act, int inst_idx, int *mass, swt * bl
  ******************************************************************************/
 int OpcodeCopy_Comass(s_ag *act, const bool domut,float indelrate,
 		float subrate, const unsigned int maxl,
-		swt	*blosum, const int granular_1, long &biomass, int *mass,
+		smith_waterman_table	*blosum, const int granular_1, long &biomass, int *mass,
 		SMspp * spl, const unsigned long int timestep){
 
 	int cidx;

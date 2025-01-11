@@ -79,7 +79,7 @@ stringPM::stringPM(SMspp * pSP){
 	swlist=NULL;
 
 	blosum = NULL;
-	blosum = (swt *) malloc(sizeof(swt));
+	blosum = (smith_waterman_table *) malloc(sizeof(smith_waterman_table));
 	blosum->N=0;
 	blosum->T=NULL;
 	blosum->key=NULL;
@@ -165,7 +165,7 @@ stringPM& stringPM::operator=(const stringPM &spm){
 	swlist	 = spm.swlist;
 
 	blosum = NULL;
-	blosum = (swt *) malloc(sizeof(swt));
+	blosum = (smith_waterman_table *) malloc(sizeof(smith_waterman_table));
 	blosum->N   = 0;
 	blosum->T   = NULL;
 	blosum->key = NULL;
@@ -2355,7 +2355,7 @@ void stringPM::UpdateNowNext(){
  *
  * @param[in] verbose flag
  ******************************************************************************/
-void stringPM::SmithWatermanFree(swt *pSWT, int verbose){
+void stringPM::SmithWatermanFree(smith_waterman_table *pSWT, int verbose){
 
 
 	//print for debug.

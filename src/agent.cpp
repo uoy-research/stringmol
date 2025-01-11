@@ -396,10 +396,10 @@ int AgentFreeAndNull(s_ag **pag){
 *
 * @return the bind probability
 *******************************************************************************/
-float AgentsAlign(s_ag *a1, s_ag *a2, align *sw, swt *blosum, s_sw *swlist){
+float AgentsAlign(s_ag *a1, s_ag *a2, align *sw, smith_waterman_table *blosum, stored_smith_waterman *swlist){
 
 	float bprob;
-	s_sw *swa;
+	stored_smith_waterman *swa;
 
 	//SUGGEST: pass in pointer to the species - not its index
 	swa = ReactionReadAlignmentFromSWList(swlist,a1->spp->spp,a2->spp->spp);

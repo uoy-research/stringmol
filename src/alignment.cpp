@@ -62,9 +62,9 @@ float ReactionCalculateBindProbability(align *sw){
 *
 * @return 0 always
 *******************************************************************************/
-s_sw * ReactionReadAlignmentFromSWList(s_sw *swlist, int sp1, int sp2){
+stored_smith_waterman * ReactionReadAlignmentFromSWList(stored_smith_waterman *swlist, int sp1, int sp2){
 
-	s_sw *p;
+	stored_smith_waterman *p;
 
 	for(p=swlist;p!=NULL;p=p->next){
 		if(p->sp1 == sp1)
@@ -92,17 +92,17 @@ s_sw * ReactionReadAlignmentFromSWList(s_sw *swlist, int sp1, int sp2){
 *
 * @return 0 always
 *******************************************************************************/
-int ReactionStoreAlignmentToSWList(s_sw **head, align *sw, int sp1, int sp2){
+int ReactionStoreAlignmentToSWList(stored_smith_waterman **head, align *sw, int sp1, int sp2){
 
 	// idea is to place new alignments at the front of the list, since
 	// they are more likely to be used..
 
-	s_sw *p;
-	s_sw *old;
+	stored_smith_waterman *p;
+	stored_smith_waterman *old;
 
 	old = *head;
 
-	p=(s_sw *) malloc(sizeof(s_sw));
+	p=(stored_smith_waterman *) malloc(sizeof(stored_smith_waterman));
 
 	p->next = old;
 	p->sp1 = sp1;
@@ -135,7 +135,7 @@ int ReactionStoreAlignmentToSWList(s_sw **head, align *sw, int sp1, int sp2){
 *
 * @return 0 always
 *******************************************************************************/
-int SmithWatermanDataFromAlignmentObject(s_sw *b, align *sw){
+int SmithWatermanDataFromAlignmentObject(stored_smith_waterman *b, align *sw){
 	sw->match = b->match;		// the number of matching characters.
 	sw->score = b->score; 		// the score of the match
 	sw->prob =  b->prob;		// the probability of the match - used for
@@ -156,9 +156,9 @@ int SmithWatermanDataFromAlignmentObject(s_sw *b, align *sw){
 *
 * @param[in] head the top of the list
 *******************************************************************************/
-void SmithWatermanListFree(s_sw **head){
+void SmithWatermanListFree(stored_smith_waterman **head){
 
-	s_sw *p,*pold;
+	stored_smith_waterman *p,*pold;
 
 	pold=*head;
 	while(pold!=NULL){
@@ -182,7 +182,7 @@ void SmithWatermanListFree(s_sw **head){
 *
 * @return the index; or -1 on error
 *******************************************************************************/
-int AlignmentTableIndex(int c,swt *T){
+int AlignmentTableIndex(int c,smith_waterman_table *T){
 	int i = 0;
 
 	for(i=0;i<T->N;i++){
@@ -211,7 +211,7 @@ int AlignmentTableIndex(int c,swt *T){
 *
 * @return the score; or -10000 on error
 *******************************************************************************/
-float AlignmentSimilarityScore(int a, int b,swt *T){
+float AlignmentSimilarityScore(int a, int b,smith_waterman_table *T){
 
 	int ai,bi;
 
@@ -263,7 +263,7 @@ float AlignmentSimilarityScore(int a, int b,swt *T){
 *
 * @return 0 always
 *****************************************************************************/
-int SmithWatermanAlignment(char *s1, char *s2, align *A, swt *swT, int verbose){
+int SmithWatermanAlignment(char *s1, char *s2, align *A, smith_waterman_table *swT, int verbose){
 
 	//align *A;
 	int l1,l2;
@@ -462,7 +462,7 @@ float instr_wt(char C){
 }
 
 
-void print_swt(FILE *fp, swt *sss){
+void print_swt(FILE *fp, smith_waterman_table *sss){
 	int i,j;
 	printf("   ");
 	for(i=0;i<sss->N;i++)
@@ -496,7 +496,7 @@ void print_swt(FILE *fp, swt *sss){
  *
  * @return the index, or -1 on error
  *****************************************************************************/
-int OpcodeIndex(char X, swt *T){
+int OpcodeIndex(char X, smith_waterman_table *T){
 
 	int i;
 	for(i=0;i<T->N;i++)
@@ -520,7 +520,7 @@ int OpcodeIndex(char X, swt *T){
  *
  * @return 0 the opcode char if found; 0 if not found
  *****************************************************************************/
-char OpcodeAdjacent(char X, swt *swt){
+char OpcodeAdjacent(char X, smith_waterman_table *swt){
 
 	int idx = OpcodeIndex(X,swt);
 	float rno=RandomBetween0And1();
@@ -599,7 +599,7 @@ void table_from_string(float **T, char *key, const int N){
 }
 
 
-int load_table(char *fn,swt *T){
+int load_table(char *fn,smith_waterman_table *T){
 
 	const int maxl=256;
 	FILE *fp;
@@ -712,7 +712,7 @@ float score_sw(char *s1, char *s2, swt *swT){
 
 /////////TESTING
 
-void test_adj(swt *swt){
+void test_adj(smith_waterman_table *swt){
 	int i,j,ntrials=10;
 	printf("Adjacency matrix:\n");
 	printf("  %s\n",swt->key);
@@ -817,15 +817,15 @@ ABC$DEF%GH^IJK?LMN}OPQ>RST=UVWXYZ
 
 
 
-swt * default_table(){
+smith_waterman_table * default_table(){
 
-	swt * table;
+	smith_waterman_table * table;
 	char ** TData;
 	const int tlen = 500;
 	int i,j;
 	char *p;
 
-	table = (swt *) malloc(sizeof(swt));
+	table = (smith_waterman_table *) malloc(sizeof(smith_waterman_table));
 
 	//Set N and key:
 	table->N = 33;

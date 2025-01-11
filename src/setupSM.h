@@ -20,76 +20,78 @@
 #ifndef SETUPSM_H_
 #define SETUPSM_H_
 
-	/*Utilities */
-	//For restarted runs, we need to make sure we don't overwrite...
-	void FilenameGetUnused(char *fn);
+/*Utilities */
+//For restarted runs, we need to make sure we don't overwrite...
+void FilenameGetUnused(char *fn);
 
 
-	/*Flags and parameters that exist outside the stringPM object*/
-	struct runparams{
-		int gaqnn;		//0 or 1: whether to use the QNN measure in comass_GA
-		int randseed;	//if >= 0, random number seed, if -1, use /dev/random as the seed
-		int indefinite;	//if 1, run forever
-		unsigned int maxnsteps;	//if 0, run forever(?) if positive, max number of steps to run
-	};
+/*Flags and parameters that exist outside the stringPM object*/
+struct runparams{
+	int gaqnn;		//0 or 1: whether to use the QNN measure in comass_GA
+	int randseed;	//if >= 0, random number seed, if -1, use /dev/random as the seed
+	int indefinite;	//if 1, run forever
+	unsigned int maxnsteps;	//if 0, run forever(?) if positive, max number of steps to run
+};
 
-    void clearfiles( char *argv[]);
-	void setupSMol(struct runparams &R, int argc, char *argv[]);
-	void record_spp(stringPM *A);
-	void SpeciesPrintCounts(stringPM *A, int t);
+void clearfiles( char *argv[]);
+void setupSMol(struct runparams &R, int argc, char *argv[]);
+void record_spp(stringPM *A);
+void SpeciesPrintCounts(stringPM *A, int t);
 
-	void setmaxcode(stringPM *A, int *maxcode);
-	int run_one_comass_trial(const int rr, stringPM *A, int * params, struct runparams *R);
-	int run_one_AlifeXII_trial(stringPM *A);
+void setmaxcode(stringPM *A, int *maxcode);
+int run_one_comass_trial(const int rr, stringPM *A, int * params, struct runparams *R);
+int run_one_AlifeXII_trial(stringPM *A);
 
-	void setmutnet(const int * mutnet, swt *blosum);
+void setmutnet(const int * mutnet, smith_waterman_table *blosum);
 
-	//count species in a containers nowhead
-	float ctspp(stringPM *A, const int spp);
+//count species in a containers nowhead
+float ctspp(stringPM *A, const int spp);
 
-	//get stats for evolution cf seed community
-	//float * evostats(char * Afn, stringPM *B,s_sw **spp_matches, float *class_score,float *self);
-	void evostats(char * Afn, stringPM *B,s_sw **spp_matches, float *self, float *gvm);
+//get stats for evolution cf seed community
+//float * evostats(char * Afn, stringPM *B,s_sw **spp_matches, float *class_score,float *self);
+void evostats(char * Afn, stringPM *B,stored_smith_waterman **spp_matches, float *self, float *gvm);
 
-	//Different ways of loading, dependant upon the no. of arguments
-	int ParametersLoadFromMainArgs(stringPM *A, int argc, char *argv[], int verbose=0);
+//Different ways of loading, dependant upon the no. of arguments
+int ParametersLoadFromMainArgs(stringPM *A, int argc, char *argv[], int verbose=0);
 
 
-	/* Standard initialisation of random number seed */
-	void init_randseed_config(int argc, char *argv[]);
+/* Standard initialisation of random number seed */
+void init_randseed_config(int argc, char *argv[]);
 
-	/* Print parameters of the trial */
-	void print_params(stringPM *A, int ntrials, int nsteps);
+/* Print parameters of the trial */
+void print_params(stringPM *A, int ntrials, int nsteps);
 
-	/* set up the popdy file for writing*/
-	void PopdyInitFile(stringPM *A, bool overwrite = false);
+/* set up the popdy file for writing*/
+void PopdyInitFile(stringPM *A, bool overwrite = false);
+
+
+void SpeciesPrintCounts(stringPM *A, int t);
 
 /************************************************************/
 
-	/* Spatial Stringmol functions */
-	int GridSelectRandomMooreNeighbour(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout);
-	int StringmolSpatial(int argc, char *argv[]);
-	int StringmolSpatialConfigureFromFile(const char *fn, stringPM *A, smsprun **run, int runno);
-	int TimestepIncrementSpatial(stringPM *A, smsprun *run);
+/* Spatial Stringmol functions */
+int GridSelectRandomMooreNeighbour(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout);
+int StringmolSpatial(int argc, char *argv[]);
+int StringmolSpatialConfigureFromFile(const char *fn, stringPM *A, smsprun **run, int runno);
+int TimestepIncrementSpatial(stringPM *A, smsprun *run);
 
-	/* diagnostics for spatial stringmol */
-	int StringmolSpatialAncestry(int argc, char *argv[]);
-	int StringmolSpatialCommunity(int argc, char *argv[]);
-	int StringmolSpatialPicsFromLogs(int argc, char *argv[]);
+/* diagnostics for spatial stringmol */
+int StringmolSpatialAncestry(int argc, char *argv[]);
+int StringmolSpatialCommunity(int argc, char *argv[]);
+int StringmolSpatialPicsFromLogs(int argc, char *argv[]);
 
-	void PNGEncodeAndSave(const char* filename, const std::vector<unsigned char>& image, unsigned width, unsigned height);
+void PNGEncodeAndSave(const char* filename, const std::vector<unsigned char>& image, unsigned width, unsigned height);
 
-	enum smpic{
-		smpic_spp,
-		smpic_len
-	};
+void AgentPlaceOnGrid(s_ag *ag,smsprun *run,int x, int y);
+void TimestepGridIncrement(smsprun *run);
 
-	int GridSavePNG(stringPM *A, smpic pt);
 
-	/************************************************************/
-	/* Originally in stringmol.cpp ******************************/
-	/************************************************************/
+int GridSavePNG(stringPM *A, smpic pt);
 
-	int SmPm_AlifeXII(int argc, char *argv[]);
+/************************************************************/
+/* Originally in stringmol.cpp ******************************/
+/************************************************************/
+
+int SmPm_AlifeXII(int argc, char *argv[]);
 
 #endif /* SETUPSM_H_ */

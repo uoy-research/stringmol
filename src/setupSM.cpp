@@ -361,7 +361,7 @@ void setmaxcode(stringPM *A, int *maxcode){
 //}
 
 
-void setmutnet(const int * mutnet, swt *blosum){
+void setmutnet(const int * mutnet, smith_waterman_table *blosum){
 
 	int i,j;
 	for(i=0;i<blosum->N;i++)
@@ -1096,194 +1096,8 @@ int AgentAttemptDecaySpatial(stringPM *A, smsprun *run, s_ag **pag){
 
 
 
-/*******************************************************************************
-* @brief get a filename for an input filename that doesn't exist
-*
-* @param[in] fn the filename of the file that might exist
-*******************************************************************************/
-void FilenameGetUnused(char *fn){
-
-	int found = 1;
-	char *point_pos, *tmp_pos;
-	char tmp[128];
-	char ofn[128];
-	int ncopies=1;
 
 
-	int ppos;
-	strcpy(ofn,fn);
-
-	point_pos = strchr(fn,'.');
-
-	while(found){
-		FILE * fpr;
-
-		if((fpr=fopen(ofn,"r"))!=NULL){
-			fclose(fpr);
-
-			//Keep track of the original filename
-			printf("Found a file called %s, incrementing counter...\n",ofn);
-			/* STRATEGY: add a number at the file extension point
-			 * until we find a file that hasn't been used yet...
-			 */
-
-
-			if(point_pos==NULL){
-				printf("Can't extend the filename %s, exiting\n",fn);
-				fflush(stdout);
-				exit(37);
-			}
-			else{
-				if(strlen(ofn)>127){
-					printf("potential buffer overrun for filename %s, exiting\n",ofn);
-					fflush(stdout);
-					exit(38);
-				}
-
-				ppos = point_pos-fn;
-
-				/*Build a new filename based on the original (ignoring the digits from intermediate attempts) */
-
-				strncpy(tmp,fn,ppos);
-
-				tmp_pos = &(tmp[ppos]);
-
-				sprintf(tmp_pos,".%d%s",ncopies++,point_pos);
-
-				strcpy(ofn,tmp);
-
-			}
-		}
-		else{
-			found = 0;
-		}
-	}
-	//copy the result back to the filename
-	strcpy(fn,ofn);
-}
-
-
-
-
-
-/*******************************************************************************
-* @brief diagnostic printfs for MT load failure
-*
-* @details todo(sjh): "another attempt to do randseed properly"
-*
-* @param[in] fn the file name where the rng seed is found
-*
-* @param[in] printrandseed flag to print the seed
-*
-* @return the random seed
-*******************************************************************************/
-unsigned long RandomSeedInitFromFile(char *fn, int printrandseed=0){
-
-	//TODO: more work needed with the rand seed and rng logic!!
-	unsigned long seedin{42};
-	unsigned int stmp{0};
-	unsigned long sl{};
-
-	bool foundrng{true};
-
-	FILE *fpr;
-	if((fpr=fopen(fn,"r"))!=NULL){
-		//TODO: load the full RNG state using load_mt (RNGFILE in config)
-		char *rngfn,*rngpath;
-		rngfn=NULL;
-		//rngfn = (char *) malloc (256*sizeof(char));
-		rngpath = (char *) malloc (512*sizeof(char));
-		memset(rngpath,0,512*sizeof(char));
-		rngfn =  ParameterReadString(&fpr, "RNGFILE",0);
-
-		if(rngfn !=NULL){
-			//Add the file path from the input file to the RNGfile
-			int l = strlen(fn);
-			while(l>0){
-				if(fn[l]=='/')
-					break;
-				else
-					l--;
-			}
-			strncpy(rngpath,fn,l+1);
-			char *pp;
-			pp = &(rngpath[l+1]);
-			strcpy(pp,rngfn);
-			
-			//TODO: check the logic of the following! Write in the usr guide..!
-			FILE *fprng;
-			if((fprng = fopen(rngpath,"r"))!=NULL){
-				if(MersenneTwisterLoadState(rngpath) != load_mt_success){
-					printf("ERROR reading Random Number Generator config %s\n",rngfn);
-					foundrng = false;
-				}
-				else{
-					//Record the RNG state (for debugging)
-					FILE *rfp;
-					rfp=fopen("RNGsmsp_initX_shouldwork.dat","w");
-                    MersenneTwisterPrintStatusToFile(rfp);
-					fclose(rfp);
-				}
-				fclose(fprng);
-			}
-			else{
-				printf("ERROR reading Random Number Generator config %s\n",rngfn);
-				foundrng = false;
-			}
-		}
-		else{
-			foundrng=false;
-		}
-
-		int rerr = ParameterReadOrDefineUnsignedInt(fn,"RANDSEED", &stmp, seedin, 0);//read_param_int(fpr,"RANDSEED",&stmp,1);
-
-
-		if(rerr){
-			printf("Error %d reading RANDSEED\n",rerr);
-			exit(0);
-		}
-
-		free(rngfn);
-		free(rngpath);
-		fclose(fpr);
-	}
-
-
-	unsigned long rseed;
-	if(!foundrng){
-		if(stmp){//This means we have read it from the file...
-			sl = stmp;
-			rseed = RandomInitLong(&sl);
-		}
-		else{
-			rseed = RandomInitLong(NULL);
-		}
-	}
-	else{
-		rseed = seedin = sl = stmp;
-	}
-
-	if(printrandseed){
-		char frfn[128];
-
-		sprintf(frfn,"randseed.txt");
-
-		FilenameGetUnused(&(frfn[0]));
-
-		FILE *frs;
-		if((frs=fopen(frfn,"w"))==NULL){
-			printf("Coundln't open %s\n",frfn);
-			getchar();
-			exit(39);
-		}else{
-			fprintf(frs,"(unsigned) random seed is %lu (%lu was seedin)  \n",rseed,seedin);
-			fflush(frs);
-			fclose(frs);
-		}
-	}
-
-	return rseed;
-}
 
 
 
@@ -1597,7 +1411,7 @@ int StringmolSpatial(int argc, char *argv[]) {
 	smsprun *run{};
 	run = NULL;
 
-	A.randseed = RandomSeedInitFromFile(argv[2]);
+	A.randseed = RandomSeedInitFromFile(argv[2],0);
 	StringmolSpatialConfigureFromFile(argv[2],&A,&run,1);
 
 	int bt,ct{0};

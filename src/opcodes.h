@@ -22,10 +22,10 @@
 #define OPCODES_H_
 
 
-char * OpcodeSearchInner(char *iptr, char *sp, swt *T, const int *itog,
+char * OpcodeSearchInner(char *iptr, char *sp, smith_waterman_table *T, const int *itog,
 		int *ftog, int maxl);
 
-void OpcodeSearch(s_ag *act, swt *blosum, const unsigned short int maxl);
+void OpcodeSearch(s_ag *act, smith_waterman_table *blosum, const unsigned short int maxl);
 
 void OpcodeMove(s_ag *act);
 
@@ -38,20 +38,20 @@ bool OpcodeCleave(s_ag *act, s_ag *nexthead, SMspp *spl,
 		const unsigned int timestep, const unsigned int maxl0);
 
 //char * OpcodeIf(char *ip, char *rp, char *sp, swt *T, const int maxl);
-void OpcodeIf(s_ag * act, swt *T, const int maxl);
+void OpcodeIf(s_ag * act, smith_waterman_table *T, const int maxl);
 
 void OpcodeInsertInstruction(const s_ag * act, int inst_idx,
-		int *mass, swt * blosum,
+		int *mass, smith_waterman_table * blosum,
 		const int writePtrOpcodeIndex = -1);
 
 int OpcodeCopy(s_ag *act, const bool domut,float indelrate,
 		float subrate, const unsigned int maxl,
-		swt	*blosum, const int granular_1, long &biomass,
+		smith_waterman_table	*blosum, const int granular_1, long &biomass,
 		SMspp * spl, const unsigned long int timestep);//, int &finished);
 
 int OpcodeCopy_Comass(s_ag *act, const bool domut,float indelrate,
 		float subrate, const unsigned int maxl,
-		swt	*blosum, const int granular_1, long &biomass,
+		smith_waterman_table	*blosum, const int granular_1, long &biomass,
 		int *mass,
 		SMspp * spl, const unsigned long int timestep);
 

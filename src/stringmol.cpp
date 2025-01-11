@@ -45,9 +45,6 @@
 #include "SMspp.h"
 #include "stringPM.h"
 
-//signal
-//#include "signalSM.h"
-
 //TODO: Sort out this dependency nightmare!
 // Writing PNGs
 #include "lodepng.h"
@@ -68,7 +65,6 @@
 //extern const int maxl;//150;// 512;
 //extern const int maxl0; //allow room for a terminating 0
 
-void SpeciesPrintCounts(stringPM *A, int t);
 
 
 int joinsplists(int argc, char *argv[]){

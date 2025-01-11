@@ -23,7 +23,9 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 
+#include "params.h"
 #include "randutil.h"
 
 #define USING_MT 			/* This means we are using the Mersenne twister      */
@@ -239,3 +241,123 @@ void set_mti(int val){
 	printf("NOT USING MERSENNE TWISTER - CAN'T SET MTI!!\n");
 #endif
 }*/
+
+
+/*******************************************************************************
+* @brief diagnostic printfs for MT load failure
+*
+* @details todo(sjh): "another attempt to do randseed properly"
+*
+* @param[in] fn the file name where the rng seed is found
+*
+* @param[in] printrandseed flag to print the seed
+*
+* @return the random seed
+*******************************************************************************/
+unsigned long RandomSeedInitFromFile(char *fn, int printrandseed){
+
+	//TODO: more work needed with the rand seed and rng logic!!
+	unsigned long seedin{42};
+	unsigned int stmp{0};
+	unsigned long sl{};
+
+	bool foundrng{true};
+
+	FILE *fpr;
+	if((fpr=fopen(fn,"r"))!=NULL){
+		//TODO: load the full RNG state using load_mt (RNGFILE in config)
+		char *rngfn,*rngpath;
+		rngfn=NULL;
+		//rngfn = (char *) malloc (256*sizeof(char));
+		rngpath = (char *) malloc (512*sizeof(char));
+		memset(rngpath,0,512*sizeof(char));
+		rngfn =  ParameterReadString(&fpr, "RNGFILE",0);
+
+		if(rngfn !=NULL){
+			//Add the file path from the input file to the RNGfile
+			int l = strlen(fn);
+			while(l>0){
+				if(fn[l]=='/')
+					break;
+				else
+					l--;
+			}
+			strncpy(rngpath,fn,l+1);
+			char *pp;
+			pp = &(rngpath[l+1]);
+			strcpy(pp,rngfn);
+
+			//TODO: check the logic of the following! Write in the usr guide..!
+			FILE *fprng;
+			if((fprng = fopen(rngpath,"r"))!=NULL){
+				if(MersenneTwisterLoadState(rngpath) != load_mt_success){
+					printf("ERROR reading Random Number Generator config %s\n",rngfn);
+					foundrng = false;
+				}
+				else{
+					//Record the RNG state (for debugging)
+					FILE *rfp;
+					rfp=fopen("RNGsmsp_initX_shouldwork.dat","w");
+                    MersenneTwisterPrintStatusToFile(rfp);
+					fclose(rfp);
+				}
+				fclose(fprng);
+			}
+			else{
+				printf("ERROR reading Random Number Generator config %s\n",rngfn);
+				foundrng = false;
+			}
+		}
+		else{
+			foundrng=false;
+		}
+
+		int rerr = ParameterReadOrDefineUnsignedInt(fn,"RANDSEED", &stmp, seedin, 0);//read_param_int(fpr,"RANDSEED",&stmp,1);
+
+
+		if(rerr){
+			printf("Error %d reading RANDSEED\n",rerr);
+			exit(0);
+		}
+
+		free(rngfn);
+		free(rngpath);
+		fclose(fpr);
+	}
+
+
+	unsigned long rseed;
+	if(!foundrng){
+		if(stmp){//This means we have read it from the file...
+			sl = stmp;
+			rseed = RandomInitLong(&sl);
+		}
+		else{
+			rseed = RandomInitLong(NULL);
+		}
+	}
+	else{
+		rseed = seedin = sl = stmp;
+	}
+
+	if(printrandseed){
+		char frfn[128];
+
+		sprintf(frfn,"randseed.txt");
+
+		FilenameGetUnused(&(frfn[0]));
+
+		FILE *frs;
+		if((frs=fopen(frfn,"w"))==NULL){
+			printf("Coundln't open %s\n",frfn);
+			getchar();
+			exit(39);
+		}else{
+			fprintf(frs,"(unsigned) random seed is %lu (%lu was seedin)  \n",rseed,seedin);
+			fflush(frs);
+			fclose(frs);
+		}
+	}
+
+	return rseed;
+}

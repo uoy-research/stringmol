@@ -16,4 +16,10 @@
 #define FN_LEN (80)
 
 
+enum smpic{
+	smpic_spp,
+	smpic_len
+};
+
+
 #endif /* ERROR_CODES_H_ */
