@@ -36,7 +36,7 @@ struct runparams{
 void clearfiles( char *argv[]);
 void setupSMol(struct runparams &R, int argc, char *argv[]);
 void record_spp(stringPM *A);
-void SpeciesPrintCounts(stringPM *A, int t);
+void ForDeletion_SpeciesPrintCounts(stringPM *A, int t);
 
 void setmaxcode(stringPM *A, int *maxcode);
 int run_one_comass_trial(const int rr, stringPM *A, int * params, struct runparams *R);
@@ -73,7 +73,7 @@ void SpeciesPrintCounts(stringPM *A, int t);
 int GridSelectRandomMooreNeighbour(const int X, const int Y, const int Xlim, const int Ylim, int *xout, int *yout);
 int StringmolSpatial(int argc, char *argv[]);
 int StringmolSpatialConfigureFromFile(const char *fn, stringPM *A, smsprun **run, int runno);
-int TimestepIncrementSpatial(stringPM *A, smsprun *run);
+int ForDeletion_TimestepIncrementSpatial(stringPM *A, smsprun *run);
 
 /* diagnostics for spatial stringmol */
 int StringmolSpatialAncestry(int argc, char *argv[]);

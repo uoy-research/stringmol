@@ -161,6 +161,7 @@ public:
 	float 	load_decay(const char *fn, int verbose); //load the decay rate
 	int 	load_reactions(const char *fn, char *fntab, int test, int verbose);
 	int 	load_table_matrix(const char *fn);
+	void    PopdyInitFile(bool overwrite);
 
 	//Propensity
 	int 	PropensityEquation(const int n);

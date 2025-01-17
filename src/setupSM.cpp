@@ -121,6 +121,36 @@ void setupSMol(struct runparams &RunPar, int argc, char *argv[]){
 
 }
 
+/*******************************************************************************
+* @brief set up the popdy output file
+*
+* @param[in] A the stringPM object (i.e. the "bucket")
+*
+* @param[in] overwrite whether to overwrite or not... TODO(sjh): investigate!
+*
+* @return a double between 0 and 1
+*******************************************************************************/
+void PopdyInitFile(stringPM *A, bool overwrite){
+	char pfn[128];
+	memset(pfn,0,128*sizeof(char));
+
+	FILE *ftmp;
+
+	sprintf(pfn,"popdy%03d.dat",A->run_number);
+
+	if(!overwrite){
+		FilenameGetUnused(pfn);
+	}
+
+	//Make sure this file is empty...
+	ftmp = fopen(pfn,"w");
+	fclose(ftmp);
+
+	//Record the file name so we can append to it later
+	strcpy(A->popdyfn,pfn);
+
+}
+
 
 
 /* Used in comass_ga and comass_ga_boostwinners
@@ -165,41 +195,6 @@ float ctspp(stringPM *A, const int spp){
 
 
 
-
-/*******************************************************************************
-* @brief set up the popdy output file
-*
-* @param[in] A the stringPM object (i.e. the "bucket")
-*
-* @param[in] overwrite whether to overwrite or not... TODO(sjh): investigate!
-*
-* @return a double between 0 and 1
-*******************************************************************************/
-void PopdyInitFile(stringPM *A, bool overwrite){
-	char pfn[128];
-	memset(pfn,0,128*sizeof(char));
-
-	FILE *ftmp;
-
-	sprintf(pfn,"popdy%03d.dat",A->run_number);
-
-	if(!overwrite){
-		FilenameGetUnused(pfn);
-	}
-
-	//Make sure this file is empty...
-	ftmp = fopen(pfn,"w");
-	fclose(ftmp);
-
-	//Record the file name so we can append to it later
-	strcpy(A->popdyfn,pfn);
-
-}
-
-
-
-
-
 /*******************************************************************************
 * @brief print the count of each species in the present timestep
 *
@@ -213,7 +208,7 @@ void PopdyInitFile(stringPM *A, bool overwrite){
 *
 * @return a double between 0 and 1
 *******************************************************************************/
-void SpeciesPrintCounts(stringPM *A, int timestep){
+void ForDeletion_SpeciesPrintCounts(stringPM *A, int timestep){
 
 	//char fn[128];
 	FILE *fp;
@@ -299,7 +294,7 @@ int run_one_comass_trial(const int rr, stringPM *A,  int * params, struct runpar
 
 			//todo: put the below in a function
 			printf("%03d At  time %d e=%d\n",rr,i,(int)A->energy);
-			SpeciesPrintCounts(A,i);
+			ForDeletion_SpeciesPrintCounts(A,i);
 
 			setmaxcode(A,maxcode);
 
@@ -553,7 +548,7 @@ int GridSelectRandomMooreNeighbour(const int X, const int Y, const int Xlim, con
 *
 * @return mt_error_code
 *******************************************************************************/
-s_ag * ReactionSeekRandomSpatialPartner(stringPM *A, smsprun *run,int x, int y){
+s_ag * ForDeletion_ReactionSeekRandomSpatialPartner(stringPM *A, smsprun *run,int x, int y){
 
 	int i,j,xx,yy;
 
@@ -671,7 +666,7 @@ void AgentPlaceOnGrid(s_ag *ag,smsprun *run,int x, int y){
 *
 * @return c if placed, else NULL
 *******************************************************************************/
-s_ag * AgentPlaceInMooreNeighbourhood(stringPM *A, smsprun *run,s_ag *c,int x,int y){
+s_ag * ForDeletion_AgentPlaceInMooreNeighbourhood(stringPM *A, smsprun *run,s_ag *c,int x,int y){
 
 
 	int xx,yy;
@@ -758,7 +753,7 @@ s_ag * AgentPlaceInMooreNeighbourhood(stringPM *A, smsprun *run,s_ag *c,int x,in
 * @return which agents have been destroyed (if any) 0: none; 1: active only
  *         2: passive only; 3: both
 *******************************************************************************/
-int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
+int ForDeletion_OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 	int dac = 0,cpy;
 	s_ag *c,*pass,*csite;
@@ -806,7 +801,7 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 			act->biomass=0; //reset this; we might continue to make stuff!
 
 			//TODO: place the new agent on the grid
-			if((AgentPlaceInMooreNeighbourhood(A,run,c,act->x,act->y))!=NULL){//,x,y))!=NULL){
+			if((ForDeletion_AgentPlaceInMooreNeighbourhood(A,run,c,act->x,act->y))!=NULL){//,x,y))!=NULL){
 				//append the agent to nexthead
 				AgentAppend(&(A->nexthead),c);
 			}
@@ -901,7 +896,74 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 
 
 
-//todo(sjh): this should be part of the smspatial subclass
+
+
+
+
+
+/*******************************************************************************
+* @brief attempt decay of a spatial agent
+*
+* @param[in] A the stringmol bucket
+*
+* @param[in] run the grid information
+*
+* @param[in] pag the agent
+*
+* @return 1 if decay happens, 0 if not
+*******************************************************************************/
+int ForDeletion_AgentAttemptDecaySpatial(stringPM *A, smsprun *run, s_ag **pag){
+
+ 	float prob = A->decayrate;//1./pow(65,2);//4./3.); //This is now done in load_decay...
+
+	float rno = RandomBetween0And1();
+
+	if(rno<prob){
+		//unbind_ag(pag);
+
+
+		s_ag *bag;
+		bag = NULL;//To prevend compiler "uninitialised" warning
+		switch((*pag)->status){
+		case B_UNBOUND:
+			bag = NULL;
+			break;
+		case B_ACTIVE:
+			bag = (*pag)->pass;
+			break;
+		case B_PASSIVE:
+			bag = (*pag)->exec;
+			break;
+		}
+		//int x,y;
+
+		//find_ag_gridpos(pag,run,&x,&y);
+		run->grid[(*pag)->x][(*pag)->y]=NULL;
+		run->status[(*pag)->x][(*pag)->y]=G_EMPTY;
+
+		AgentFreeAndNull(pag);
+		//TODO: sort this null-ing of free'd agents out!
+		//pag = NULL;
+
+		if(bag!=NULL){
+
+			//find_ag_gridpos(bag,run,&x,&y);
+			run->grid[bag->x][bag->y]=NULL;
+			run->status[bag->x][bag->y]=G_EMPTY;
+
+			AgentFreeAndNull(&bag);
+			//bag = NULL;
+		}
+
+		return 1;
+	}
+	else
+		return 0;
+}
+
+
+
+
 /*******************************************************************************
 * @brief execute the current opcode in a reaction
 *
@@ -915,7 +977,7 @@ int OpcodeCleaveSpatial(stringPM *A, smsprun *run, s_ag *act){//, int x, int y){
 *
 * @return 1 if decay happens, 0 if not
 *******************************************************************************/
-int ReactionExecuteOpcode_Spatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int x, int y){
+int ForDeletion_ReactionExecuteOpcode_Spatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pass){//, int x, int y){
 
 	bool safe_append=true;
 
@@ -977,7 +1039,7 @@ int ReactionExecuteOpcode_Spatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pa
 	 ************/
 	case '%':
 			//Decide where to put the cleaved molecule
-			if((/*dac = */OpcodeCleaveSpatial(A,run,act))){//,x,y))){
+			if((/*dac = */ForDeletion_OpcodeCleaveSpatial(A,run,act))){//,x,y))){
 				//todo(sjh): Need to determine what safe_append is used for (after looking at cleave)
 				safe_append=0;	//extract_ag(&nowhead,p);
 			}
@@ -1032,76 +1094,6 @@ int ReactionExecuteOpcode_Spatial(stringPM *A, smsprun *run, s_ag *act, s_ag *pa
 
 
 
-//todo(sjh): this should be part of the smspatial subclass
-/*******************************************************************************
-* @brief attempt decay of a spatial agent
-*
-* @param[in] A the stringmol bucket
-*
-* @param[in] run the grid information
-*
-* @param[in] pag the agent
-*
-* @return 1 if decay happens, 0 if not
-*******************************************************************************/
-int AgentAttemptDecaySpatial(stringPM *A, smsprun *run, s_ag **pag){
-
- 	float prob = A->decayrate;//1./pow(65,2);//4./3.); //This is now done in load_decay...
-
-	float rno = RandomBetween0And1();
-
-	if(rno<prob){
-		//unbind_ag(pag);
-
-
-		s_ag *bag;
-		bag = NULL;//To prevend compiler "uninitialised" warning
-		switch((*pag)->status){
-		case B_UNBOUND:
-			bag = NULL;
-			break;
-		case B_ACTIVE:
-			bag = (*pag)->pass;
-			break;
-		case B_PASSIVE:
-			bag = (*pag)->exec;
-			break;
-		}
-		//int x,y;
-
-		//find_ag_gridpos(pag,run,&x,&y);
-		run->grid[(*pag)->x][(*pag)->y]=NULL;
-		run->status[(*pag)->x][(*pag)->y]=G_EMPTY;
-
-		AgentFreeAndNull(pag);
-		//TODO: sort this null-ing of free'd agents out!
-		//pag = NULL;
-
-		if(bag!=NULL){
-
-			//find_ag_gridpos(bag,run,&x,&y);
-			run->grid[bag->x][bag->y]=NULL;
-			run->status[bag->x][bag->y]=G_EMPTY;
-
-			AgentFreeAndNull(&bag);
-			//bag = NULL;
-		}
-
-		return 1;
-	}
-	else
-		return 0;
-}
-
-
-
-
-
-
-
-
-
-
 
 //todo(sjh): integrate this with stringPM::TimestepUpdate
 /*******************************************************************************
@@ -1117,7 +1109,7 @@ int AgentAttemptDecaySpatial(stringPM *A, smsprun *run, s_ag **pag){
 *
 * @return mt_error_code
 *******************************************************************************/
-int TimestepIncrementSpatial(stringPM *A, smsprun *run){
+int ForDeletion_TimestepIncrementSpatial(stringPM *A, smsprun *run){
 
 	//again, we follow TimestepIncrement, but are a little more careful with the binding and uncoupling
 	s_ag *pag;
@@ -1166,7 +1158,7 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 			break;
 		}
 
-		if(!AgentAttemptDecaySpatial(A,run,&pag)){
+		if(!ForDeletion_AgentAttemptDecaySpatial(A,run,&pag)){
 			int changed = 0;
 			if(A->energy>0){
 				switch(pag->status){
@@ -1181,7 +1173,7 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 					//find_ag_gridpos(pag,run,&x,&y);
 					run->status[pag->x][pag->y]=G_NEXT;
 
-					if((bag = ReactionSeekRandomSpatialPartner(A,run,pag->x,pag->y))!=NULL){
+					if((bag = ForDeletion_ReactionSeekRandomSpatialPartner(A,run,pag->x,pag->y))!=NULL){
 
 						//TODO: We need to make sure that bag is in nowhead first!
 						AgentExtract(&(A->nowhead),bag);
@@ -1212,13 +1204,13 @@ int TimestepIncrementSpatial(stringPM *A, smsprun *run){
 
 					//find_ag_gridpos(pag->exec,run,&x,&y);
 
-					changed = ReactionExecuteOpcode_Spatial(A,run,pag->exec,pag);//,x,y);
+					changed = ForDeletion_ReactionExecuteOpcode_Spatial(A,run,pag->exec,pag);//,x,y);
 
 					break;
 				case B_ACTIVE:
 
 					//find_ag_gridpos(pag,run,&x,&y);
-					changed = ReactionExecuteOpcode_Spatial(A,run,pag,pag->pass);//,x,y);
+					changed = ForDeletion_ReactionExecuteOpcode_Spatial(A,run,pag,pag->pass);//,x,y);
 					break;
 				default:
 					printf("ERROR: agent with unknown state encountered!\n");
@@ -1472,11 +1464,11 @@ int StringmolSpatial(int argc, char *argv[]) {
 			fclose(fp);
 
 
-			SpeciesPrintCounts(&A,A.timestep);
+			ForDeletion_SpeciesPrintCounts(&A,A.timestep);
 
 		}
 
-		TimestepIncrementSpatial(&A,run);
+		ForDeletion_TimestepIncrementSpatial(&A,run);
 
 #ifdef DODEBUG
 		printf("Nowhead is %p, Nexthead is %p\n",A.nowhead,A.nexthead);
@@ -2474,7 +2466,7 @@ int SmPm_AlifeXII(int argc, char *argv[]){
                 printf("%d%02u At  time %d e=%d,div=%d, mutrate = %0.9f & %0.9f\n",proc,rr,i,(int)BucketA.energy,div,BucketA.subrate,BucketA.indelrate);
                 //A.AgentsPrint_count(stdout);
 
-                SpeciesPrintCounts(&BucketA,i);
+                ForDeletion_SpeciesPrintCounts(&BucketA,i);
             }
 
 

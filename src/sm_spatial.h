@@ -31,11 +31,19 @@ private:
 
 public:
 
+	explicit Stringmol_Spatial(SMspp * pSP);
+
 	int Run(int argc, char *argv[]);
 
-	int ConfigureFromFile(const char *fn, stringPM *A, smsprun **run, int runno);
-	int GridSavePNG(stringPM *A, smpic pt);
-
+	int ConfigureFromFile(const char *fn, smsprun **run, int runno);
+	int GridSavePNG(smpic pt);
+	int TimestepIncrementSpatial();
+	int ReactionExecuteOpcode_Spatial(s_ag *act, s_ag *pass);
+	int AgentAttemptDecaySpatial(s_ag **pag);
+	s_ag * ReactionSeekRandomSpatialPartner(int x, int y);
+	int ToroidalNeighbour(int coord, int iterator, int dim);
+	int OpcodeCleaveSpatial(s_ag *act);
+	s_ag * AgentPlaceInMooreNeighbourhood(s_ag *c,int x,int y);
 };
 
 
