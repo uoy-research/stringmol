@@ -258,3 +258,73 @@ int ParameterReadOrDefineUnsignedInt(const char *fn, const char *label, unsigned
 
 	return errcode;
 }
+
+
+
+
+
+/*******************************************************************************
+* @brief get a filename for an input filename that doesn't exist
+*
+* @param[in] fn the filename of the file that might exist
+*******************************************************************************/
+void FilenameGetUnused(char *fn){
+
+	int found = 1;
+	char *point_pos, *tmp_pos;
+	char tmp[128];
+	char ofn[128];
+	int ncopies=1;
+
+
+	int ppos;
+	strcpy(ofn,fn);
+
+	point_pos = strchr(fn,'.');
+
+	while(found){
+		FILE * fpr;
+
+		if((fpr=fopen(ofn,"r"))!=NULL){
+			fclose(fpr);
+
+			//Keep track of the original filename
+			printf("Found a file called %s, incrementing counter...\n",ofn);
+			/* STRATEGY: add a number at the file extension point
+			 * until we find a file that hasn't been used yet...
+			 */
+
+
+			if(point_pos==NULL){
+				printf("Can't extend the filename %s, exiting\n",fn);
+				fflush(stdout);
+				exit(37);
+			}
+			else{
+				if(strlen(ofn)>127){
+					printf("potential buffer overrun for filename %s, exiting\n",ofn);
+					fflush(stdout);
+					exit(38);
+				}
+
+				ppos = point_pos-fn;
+
+				/*Build a new filename based on the original (ignoring the digits from intermediate attempts) */
+
+				strncpy(tmp,fn,ppos);
+
+				tmp_pos = &(tmp[ppos]);
+
+				sprintf(tmp_pos,".%d%s",ncopies++,point_pos);
+
+				strcpy(ofn,tmp);
+
+			}
+		}
+		else{
+			found = 0;
+		}
+	}
+	//copy the result back to the filename
+	strcpy(fn,ofn);
+}

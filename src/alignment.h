@@ -43,7 +43,7 @@ typedef struct td_s_sw{
 	//Now the bits we need when we are measuring distances between species
 
 	struct td_s_sw *next;	//next struct.
-} s_sw;
+} stored_smith_waterman;
 
 typedef struct s_align{
 	int match;		// the number of matching characters.
@@ -71,15 +71,15 @@ typedef struct s_swt{
 	float  	**T;	//substitution matrix values
 	char  	*key;	//Instruction set list
 	int		N;		//Number of instructions.
-} swt;
+} smith_waterman_table;
 
 
 //Linked list stuff
 float   ReactionCalculateBindProbability(align *sw);
-s_sw * 	ReactionReadAlignmentFromSWList(s_sw *swlist, int sp1, int sp2);
-int 	ReactionStoreAlignmentToSWList(s_sw **swlist, align * sw,int sp1, int sp2);
-int	SmithWatermanDataFromAlignmentObject(s_sw *b, align *sw);
-void 	SmithWatermanListFree(s_sw **head);
+stored_smith_waterman * 	ReactionReadAlignmentFromSWList(stored_smith_waterman *swlist, int sp1, int sp2);
+int 	ReactionStoreAlignmentToSWList(stored_smith_waterman **swlist, align * sw,int sp1, int sp2);
+int	SmithWatermanDataFromAlignmentObject(stored_smith_waterman *b, align *sw);
+void 	SmithWatermanListFree(stored_smith_waterman **head);
 
 
 //Important to have nonzero values for this enumerartion!
@@ -88,31 +88,31 @@ enum sw_subs{swMATCH=1,swDEL=2,swINS=3};
 
 int 	LongestCommonSubsequence(char *s1, char *s2);
 
-int 	SmithWaterman(char *s1, char *s2, align *A, swt *T, int verbose);
-int 	SmithWatermanAlignment(char *s1, char *s2, align *A, swt *swT, int verbose);
+int 	SmithWaterman(char *s1, char *s2, align *A, smith_waterman_table *T, int verbose);
+int 	SmithWatermanAlignment(char *s1, char *s2, align *A, smith_waterman_table *swT, int verbose);
 
 int 	OpcodeTemplateAligns(align *A, int len);
 
 
-void 	print_swt(FILE *fp, swt *sss);
+void 	print_swt(FILE *fp, smith_waterman_table *sss);
 
-int 	load_table(char *fn,swt *T);
+int 	load_table(char *fn,smith_waterman_table *T);
 void 	table_from_string(float **T, char *key, const int N);
-int 	OpcodeIndex(char X, swt*T);
+int 	OpcodeIndex(char X, smith_waterman_table*T);
 
 //Get an adjacent symbol in the mutation space
-char 	OpcodeAdjacent(char X, swt *swt);
+char 	OpcodeAdjacent(char X, smith_waterman_table *swt);
 
 
 /* Get score only and don't worry about anything else! */
 //float score_sw(char *s1, char *s2, swt *swT);
 
 //Create a default Blosum table with the "ALXII" values - this will be used if no alternative in the config
-swt * 	default_table();
+smith_waterman_table * 	default_table();
 
 
 /*TESTING:*/
-void 	test_adj(swt *swt);
+void 	test_adj(smith_waterman_table *swt);
 
 #endif /* ALIGNMENT_H_ */
 #ifdef __cplusplus

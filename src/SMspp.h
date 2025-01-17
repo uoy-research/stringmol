@@ -147,6 +147,9 @@ public:
 			 l_spp *paspp, l_spp * ppspp, int mass,
 			 const unsigned int timestep, const unsigned int maxl0);
 
+
+	 void SpeciesPrintCounts(s_ag *head, char popdyfn[], int timestep);
+
 	//TODO: write these - save memory!
 	//int		print_list();
 	//int		list_to_file(const char *fn, const char *mode);

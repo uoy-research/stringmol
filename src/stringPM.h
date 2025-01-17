@@ -76,8 +76,8 @@ public:
 	//! the count of species - but see inside spl
 	int	spp_count;
 
-	swt	*blosum;
-	s_sw *swlist;
+	smith_waterman_table	*blosum;
+	stored_smith_waterman   *swlist;
 
 	unsigned long agct;
 	unsigned int timestep; 	//record of the cell iteration count
@@ -161,6 +161,7 @@ public:
 	float 	load_decay(const char *fn, int verbose); //load the decay rate
 	int 	load_reactions(const char *fn, char *fntab, int test, int verbose);
 	int 	load_table_matrix(const char *fn);
+	void    PopdyInitFile(bool overwrite);
 
 	//Propensity
 	int 	PropensityEquation(const int n);
@@ -223,7 +224,7 @@ public:
 	//float 	AgentsAlign(s_ag *a1, s_ag *a2, align *sw);
 	void 	ReactionSetupExecution(s_ag *A, s_ag *B, align *sw);
 	int 	ReactionExecuteOpcode(s_ag *act, s_ag *pass);
-	void 	SmithWatermanFree(swt *pSWT, int verbose);
+	void 	SmithWatermanFree(smith_waterman_table *pSWT, int verbose);
 
 
 	//Checking the energy model: (THIS RESULTS IN AN UNSTABLE SYSTEM)

@@ -32,6 +32,8 @@ int ParameterReadOrDefineUnsignedInt(const char *fn, const char *label, unsigned
 
 void report_param_error(int error, int doexit);
 
+void FilenameGetUnused(char *fn);
+
 #endif /*PARAMS_H_*/
 
 #ifdef __cplusplus

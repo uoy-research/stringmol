@@ -44,9 +44,7 @@
 #include "agent.h"
 #include "SMspp.h"
 #include "stringPM.h"
-
-//signal
-//#include "signalSM.h"
+#include "sm_spatial.h"
 
 //TODO: Sort out this dependency nightmare!
 // Writing PNGs
@@ -68,7 +66,6 @@
 //extern const int maxl;//150;// 512;
 //extern const int maxl0; //allow room for a terminating 0
 
-void SpeciesPrintCounts(stringPM *A, int t);
 
 
 int joinsplists(int argc, char *argv[]){
@@ -485,7 +482,9 @@ int origlife(int argc, char *argv[]){
 
                     printf("%03u At  time %d e=%d,div=%d\n",
                         rr,i,(int)A.energy,div);
-                    SpeciesPrintCounts(&A,i);
+                    //todo(sjh): see top of this block - are we calling twice?
+                    //two different versions too!
+                    ForDeletion_SpeciesPrintCounts(&A,i);
                 }
 
 
@@ -672,7 +671,7 @@ int comass_AlifeXII(int argc, char *argv[]){
 
                 setmaxcode(&A,maxcode);
                 printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
-                SpeciesPrintCounts(&A,i);
+                ForDeletion_SpeciesPrintCounts(&A,i);
                 for(int k=0;k<A.blosum->N;k++){
                     printf("%c:\t%d\t%d",A.blosum->key[k],A.mass[k],maxcode[k]);
                     if(A.mass[k]<0)
@@ -1419,7 +1418,7 @@ int SmPm_conpop(int argc, char *argv[]){
             for(c=0;c<NCON;c++){
                 printf("\t%d",AgentsCount(A[c]->nowhead,-1));
                 fprintf(fpdiv,"\t%d",AgentsCount(A[c]->nowhead,-1));
-                SpeciesPrintCounts(A[c],gclock);
+                ForDeletion_SpeciesPrintCounts(A[c],gclock);
                 score[c] = ctspp(A[c],3);
             }
             //printf("\nScore:");
@@ -2032,7 +2031,7 @@ int speigmonst(int argc, char *argv[]){
 
                 setmaxcode(&A,maxcode);
                 printf("%03u At  time %d e=%d,div=%d\n",rr,i,(int)A.energy,div);
-                SpeciesPrintCounts(&A,i);
+                ForDeletion_SpeciesPrintCounts(&A,i);
                 for(int k=0;k<A.blosum->N;k++){
                     printf("%c:\t%d\t%d",A.blosum->key[k],A.mass[k],maxcode[k]);
                     if(A.mass[k]<0)
@@ -2140,6 +2139,13 @@ void StringmolPrintTrialTypes(){
 }
 
 
+void run_stringmol_spatial(int argc, char *argv[]){
+
+    SMspp                SP;
+    Stringmol_Spatial    A(&SP);
+    A.Run(argc,argv);
+}
+
 
 int main(int argc, char *argv[]) {
 
@@ -2217,9 +2223,15 @@ int main(int argc, char *argv[]) {
 				break;
 
 			/*************************************************/
-			case 33:  // Spatial stringmol experiments, summer 2016
-				StringmolSpatial(argc, argv);
+			case 30:  // Spatial stringmol experiments, summer 2016
+			
+				run_stringmol_spatial(argc, argv);
 				break;
+
+			/*************************************************/
+			//case 33:  // Spatial stringmol experiments, summer 2016
+			//	StringmolSpatial(argc, argv);
+			//	break;
 
 			/*************************************************/
 			case 34:  // Analyse spatial stringmol experiments

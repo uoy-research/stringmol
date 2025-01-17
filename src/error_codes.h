@@ -14,6 +14,8 @@
 #define FILE_READ_ERROR (4)
 #define EXIT_FILE_ERROR (5)
 
+#define SPATIAL_NO_GRID_DEFINED (33)
+#define SPATIAL_BAD_XY  (34)
 
 #define PARAM_LOAD_ERROR (42)
 

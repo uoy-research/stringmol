@@ -83,7 +83,7 @@ int AgentFreeAndNull(s_ag **pag);
 int 	SpeciesListUpdate(s_ag *p, char sptype, int add, l_spp *paspp,
 			l_spp * ppspp, int mass);
 
-float 	AgentsAlign(s_ag *a1, s_ag *a2, align *sw, swt *blosum, s_sw *swlist);
+float 	AgentsAlign(s_ag *a1, s_ag *a2, align *sw, smith_waterman_table *blosum, stored_smith_waterman *swlist);
 
 void 	AgentsPrint(FILE *fp, s_ag *head, bool verbose, const int maxl);
 

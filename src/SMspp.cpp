@@ -492,3 +492,67 @@ int SMspp::SpeciesListPrint(FILE *fp){
 
  	return found;
  }
+
+
+
+
+
+
+ /*******************************************************************************
+ * @brief count the species and write to file
+ *
+ * @param[in] head the head of the linked list of agents
+ *
+ * @param[in] popdyfn the file name for the population dynamics file
+ *
+ * @param[in] timestep the time
+ *******************************************************************************/
+ void SMspp::SpeciesPrintCounts(s_ag *head, char popdyfn[], int timestep){
+
+ 	//char fn[128];
+ 	FILE *fp;
+ 	s_ag *pa;
+ 	int spc,count;
+ 	int finished = 0;
+ 	int nag,*done;
+
+ 	nag = AgentsCount(head,-1);
+
+ 	done = (int *) malloc(nag*sizeof(int));
+ 	memset(done,0,nag*sizeof(int));
+
+ 	//TODO: need to check that this isn't going to cause problems with callers other than smspatial...!
+ 	fp = fopen(popdyfn,"a");
+
+ 	do{
+ 		int ii = 0;
+ 		int found=0;
+ 		finished = 1;
+ 		for(ii=0,pa=head;ii<nag;ii++,pa=pa->next){
+ 			if(!done[ii]){
+ 				if(!found){
+ 					done[ii]=1;
+ 					count=1;
+ 					finished=0;
+ 					found=1;
+ 					spc = pa->spp->spp;
+ 				}
+ 				else{
+ 					if(pa->spp->spp==spc){
+ 						done[ii]=1;
+ 						count++;
+ 					}
+ 				}
+ 			}
+ 		}
+
+ 		//Write to file
+ 		if(!finished)
+ 			fprintf(fp,"%d,%d,%d\n",timestep,spc,count);
+
+ 	}while(!finished);
+
+ 	fflush(fp);
+ 	fclose(fp);
+ 	free(done);
+ }

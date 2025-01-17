@@ -79,7 +79,7 @@ stringPM::stringPM(SMspp * pSP){
 	swlist=NULL;
 
 	blosum = NULL;
-	blosum = (swt *) malloc(sizeof(swt));
+	blosum = (smith_waterman_table *) malloc(sizeof(smith_waterman_table));
 	blosum->N=0;
 	blosum->T=NULL;
 	blosum->key=NULL;
@@ -165,7 +165,7 @@ stringPM& stringPM::operator=(const stringPM &spm){
 	swlist	 = spm.swlist;
 
 	blosum = NULL;
-	blosum = (swt *) malloc(sizeof(swt));
+	blosum = (smith_waterman_table *) malloc(sizeof(smith_waterman_table));
 	blosum->N   = 0;
 	blosum->T   = NULL;
 	blosum->key = NULL;
@@ -2355,7 +2355,7 @@ void stringPM::UpdateNowNext(){
  *
  * @param[in] verbose flag
  ******************************************************************************/
-void stringPM::SmithWatermanFree(swt *pSWT, int verbose){
+void stringPM::SmithWatermanFree(smith_waterman_table *pSWT, int verbose){
 
 
 	//print for debug.
@@ -3162,8 +3162,6 @@ int stringPM::print_conf(FILE *fp){
 		}
 	}
 
-
-
 	fprintf(fp,"%%%%%%RANDOM NUMBER SEED:\nRANDSEED  		%lu\n\n\n",randseed);
 
 	char mt_file[128];
@@ -3238,6 +3236,41 @@ int stringPM::print_conf(FILE *fp){
 	return 0;
 
 }
+
+
+
+
+
+/*******************************************************************************
+* @brief set up the popdy output file
+*
+* @param[in] A the stringPM object (i.e. the "bucket")
+*
+* @param[in] overwrite whether to overwrite or not... TODO(sjh): investigate!
+*
+* @return a double between 0 and 1
+*******************************************************************************/
+void stringPM::PopdyInitFile(bool overwrite){
+	char pfn[128];
+	memset(pfn,0,128*sizeof(char));
+
+	FILE *ftmp;
+
+	sprintf(pfn,"popdy%03d.dat",run_number);
+
+	if(!overwrite){
+		FilenameGetUnused(pfn);
+	}
+
+	//Make sure this file is empty...
+	ftmp = fopen(pfn,"w");
+	fclose(ftmp);
+
+	//Record the file name so we can append to it later
+	strcpy(popdyfn,pfn);
+
+}
+
 
 
 

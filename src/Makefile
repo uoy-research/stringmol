@@ -72,7 +72,6 @@ COBJECTS = $(OUTPUT_DIR)/hsort.o \
 		$(OUTPUT_DIR)/memoryutil.o \
 		$(OUTPUT_DIR)/microbial_ga.o \
 		$(OUTPUT_DIR)/params.o \
-		$(OUTPUT_DIR)/randutil.o \
 		$(OUTPUT_DIR)/mt19937-2.o \
 
 
@@ -91,9 +90,6 @@ $(OUTPUT_DIR)/microbial_ga.o: microbial_ga.c microbial_ga.h
 $(OUTPUT_DIR)/params.o:		params.c params.h 
 	$(C4C) -c params.c -o $(OUTPUT_DIR)/params.o
 
-$(OUTPUT_DIR)/randutil.o: 	randutil.c randutil.h mt19937-2.h
-	$(C4C) -c randutil.c -o $(OUTPUT_DIR)/randutil.o
-
 $(OUTPUT_DIR)/mt19937-2.o: 	mt19937-2.c mt19937-2.h
 	$(C4C) -c mt19937-2.c -o $(OUTPUT_DIR)/mt19937-2.o
 
@@ -106,6 +102,7 @@ $(OUTPUT_DIR)/mt19937-2.o: 	mt19937-2.c mt19937-2.h
 
 CPPOBJECTS = $(OUTPUT_DIR)/lodepng.o \
 		$(OUTPUT_DIR)/alignment.o \
+		$(OUTPUT_DIR)/randutil.o \
 		$(OUTPUT_DIR)/opcodes.o \
 		$(OUTPUT_DIR)/rules.o \
 		$(OUTPUT_DIR)/setupSM.o \
@@ -113,6 +110,7 @@ CPPOBJECTS = $(OUTPUT_DIR)/lodepng.o \
 		$(OUTPUT_DIR)/SMspp.o \
 		$(OUTPUT_DIR)/stringmanip.o \
 		$(OUTPUT_DIR)/stringPM.o \
+		$(OUTPUT_DIR)/sm_spatial.o
 		
 
 ###################
@@ -131,6 +129,9 @@ $(OUTPUT_DIR)/lodepng.o: lodepng.cpp lodepng.h
 
 $(OUTPUT_DIR)/alignment.o: 	alignment.cpp alignment.h randutil.h
 	$(CC) -c alignment.cpp -o $(OUTPUT_DIR)/alignment.o
+	
+$(OUTPUT_DIR)/randutil.o: 	randutil.cpp randutil.h mt19937-2.h
+	$(CC) -c randutil.cpp -o $(OUTPUT_DIR)/randutil.o
 
 #$(OUTPUT_DIR)/instructions.o: instructions.cpp instructions.h \
 #			memoryutil.h randutil.h alignment.h stringmanip.h
@@ -156,12 +157,16 @@ $(OUTPUT_DIR)/SMspp.o:	SMspp.cpp SMspp.h
 $(OUTPUT_DIR)/stringmanip.o: 	stringmanip.cpp stringmanip.h
 	$(CC) -c stringmanip.cpp -o $(OUTPUT_DIR)/stringmanip.o
 
-$(OUTPUT_DIR)/stringPM.o:	stringPM.cpp stringPM.h \
+$(OUTPUT_DIR)/stringPM.o: stringPM.cpp stringPM.h \
 		memoryutil.h	randutil.h	\
-        alignment.h		stringmanip.h	\
-		rules.h	SMspp.h error_codes.h
+                alignment.h     stringmanip.h   \
+		rules.h	SMspp.h error_codes.h   \
+		default_config.h
 	$(CC) -c stringPM.cpp -o $(OUTPUT_DIR)/stringPM.o
 
+
+$(OUTPUT_DIR)/sm_spatial.o: sm_spatial.cpp sm_spatial.h
+	$(CC) -c sm_spatial.cpp -o $(OUTPUT_DIR)/sm_spatial.o
 	
 	
 	

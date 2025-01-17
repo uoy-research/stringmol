@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2015 Simon Hickinbotham                           */
+/* Copyright (C) 2009-2012 Simon Hickinbotham                           */
 /* When you use this, send an email to: sjh436@gmail.com                */
 /* with an appropriate reference to your work.                          */
 
@@ -9,7 +9,7 @@
 /* the Free Software Foundation, either version 3 of the License, or    */
 /* (at your option) any later version.                                  */
 
-/* STRINGMOL is distributed in the hope that it will be useful,         */
+/* This program is distributed in the hope that it will be useful,      */
 /* but WITHOUT ANY WARRANTY; without even the implied warranty of       */
 /* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
 /* GNU General Public License for more details.                         */
@@ -17,33 +17,34 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
 
-#ifndef RANDUTIL_H_
-#define RANDUTIL_H_
+#ifndef SM_SPATIAL_H_
+#define SM_SPATIAL_H_
 
-		double raisin();
 
-		unsigned int RandomInit(int seed);
-		unsigned long RandomInitLong(const unsigned long *inseed);
 
-		double RandomBetween0And1();
-		int rand_in_rad(const float rad, float *x, float *y);
 
-		unsigned long randint();
-		int * randintarray(const int size,const int Min,const int max);
-		int * randboolarray(const int size);
+class Stringmol_Spatial: public stringPM
+{
 
-		//functions to get and set the Mersenne Twister index
-		int RandomNumberGeneratorGetState();
-		void set_mti(int val);
+private:
 
-		unsigned long RandomSeedInitFromFile(char *fn, int printrandseed);
+public:
 
-#endif /*RANDUTIL_H_*/
+	explicit Stringmol_Spatial(SMspp * pSP);
 
-#ifdef __cplusplus
-	}
-#endif
+	int Run(int argc, char *argv[]);
+
+	int ConfigureFromFile(const char *fn, smsprun **run, int runno);
+	int GridSavePNG(smpic pt);
+	int TimestepIncrementSpatial();
+	int ReactionExecuteOpcode_Spatial(s_ag *act, s_ag *pass);
+	int AgentAttemptDecaySpatial(s_ag **pag);
+	s_ag * ReactionSeekRandomSpatialPartner(int x, int y);
+	int ToroidalNeighbour(int coord, int iterator, int dim);
+	int OpcodeCleaveSpatial(s_ag *act);
+	s_ag * AgentPlaceInMooreNeighbourhood(s_ag *c,int x,int y);
+};
+
+
+#endif //SM_SPATIAL_H_
