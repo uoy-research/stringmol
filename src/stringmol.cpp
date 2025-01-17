@@ -2229,9 +2229,9 @@ int main(int argc, char *argv[]) {
 				break;
 
 			/*************************************************/
-			case 33:  // Spatial stringmol experiments, summer 2016
-				StringmolSpatial(argc, argv);
-				break;
+			//case 33:  // Spatial stringmol experiments, summer 2016
+			//	StringmolSpatial(argc, argv);
+			//	break;
 
 			/*************************************************/
 			case 34:  // Analyse spatial stringmol experiments

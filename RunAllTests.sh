@@ -5,11 +5,17 @@
 #./travis_gcc_cpp98
 #cppcheck --quiet --error-exitcode=1 main.cpp
 
+#TODO: this needs clearing up!! not a priority though...
+#Set some text colours up - https://gist.github.com/vratiu/9780109
+GREEN='\033[0;32m'    # Green
+YELLOW='\e[33m'       # Yellow - seems more brown to me! 
+BLUE='\033[0;34m'         # Blue
+PURPLE='\033[0;35m'       # Purple
+NC='\033[0m' # No Color
 
-echo "======================================"
-echo "Running Smoke Tests"
-echo "---------------------------------"
-echo "Building!"
+
+echo "${PURPLE}==============================================================================="
+echo "Building!${NC}"
 
 
 # Stop execution on any error
@@ -18,6 +24,14 @@ set -e
 cd src
 make clean
 make all
+
+
+# Continue execution despite error
+set +e
+
+echo "${BLUE}==============================================================================="
+echo "Running Smoke Tests${NC}"
+echo "---------------------------------"
 cd ../output
 
 
@@ -90,8 +104,6 @@ echo ""
 # unStop execution on any error
 #unset -e TODO: this doesn't recognise the "-e" option
 
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
 echo "${GREEN}===============================================================================${NC}"
 echo "Running Catch.hpp Tests.  Please Wait."
 #g++ -Wall Shapes-Catch-Testing-Example/Source/Shapes-Catch-Testing-Example.cpp Shapes-Catch-Testing-Example/Source/Implementation/*.cpp -o main
