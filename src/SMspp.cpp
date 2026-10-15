@@ -23,6 +23,9 @@
 #include "alignment.h"
 #include "agent.h"
 #include "SMspp.h"
+#include <unordered_map>
+#include <vector>
+#include <utility>
 
 
 //extern const int  maxl0;
@@ -508,51 +511,24 @@ int SMspp::SpeciesListPrint(FILE *fp){
  * @param[in] timestep the time
  *******************************************************************************/
  void SMspp::SpeciesPrintCounts(s_ag *head, char popdyfn[], int timestep){
-
- 	//char fn[128];
- 	FILE *fp;
- 	s_ag *pa;
- 	int spc,count;
- 	int finished = 0;
- 	int nag,*done;
-
- 	nag = AgentsCount(head,-1);
-
- 	done = (int *) malloc(nag*sizeof(int));
- 	memset(done,0,nag*sizeof(int));
-
- 	//TODO: need to check that this isn't going to cause problems with callers other than smspatial...!
- 	fp = fopen(popdyfn,"a");
-
- 	do{
- 		int ii = 0;
- 		int found=0;
- 		finished = 1;
- 		for(ii=0,pa=head;ii<nag;ii++,pa=pa->next){
- 			if(!done[ii]){
- 				if(!found){
- 					done[ii]=1;
- 					count=1;
- 					finished=0;
- 					found=1;
- 					spc = pa->spp->spp;
- 				}
- 				else{
- 					if(pa->spp->spp==spc){
- 						done[ii]=1;
- 						count++;
- 					}
- 				}
- 			}
+ 	// One pass with a hash map, rather than one pass over the agents per species:
+ 	// the old version was O(species x agents) and took over a second per call in a
+ 	// full grid. Output is unchanged: species appear in order of first occurrence.
+ 	std::vector<std::pair<int,int> > rows;
+ 	std::unordered_map<int,size_t> row_of;
+ 	for(s_ag *pa=head; pa!=NULL; pa=pa->next){
+ 		int spc = pa->spp->spp;
+ 		auto it = row_of.find(spc);
+ 		if(it==row_of.end()){
+ 			row_of.emplace(spc,rows.size());
+ 			rows.push_back(std::make_pair(spc,1));
  		}
-
- 		//Write to file
- 		if(!finished)
- 			fprintf(fp,"%d,%d,%d\n",timestep,spc,count);
-
- 	}while(!finished);
-
+ 		else
+ 			rows[it->second].second++;
+ 	}
+ 	FILE *fp = fopen(popdyfn,"a");
+ 	for(size_t i=0;i<rows.size();i++)
+ 		fprintf(fp,"%d,%d,%d\n",timestep,rows[i].first,rows[i].second);
  	fflush(fp);
  	fclose(fp);
- 	free(done);
  }
