@@ -282,8 +282,16 @@ int SmithWatermanAlignment(char *s1, char *s2, align *A, smith_waterman_table *s
 	//Set up the structures and test for errors.
 
 	//if either string is empty, the length must be 0
-	if ((l1=strlen(s1))==0 || (l2=strlen(s2))==0)
+	if ((l1=strlen(s1))==0 || (l2=strlen(s2))==0){
+		// An empty string matches nothing. Fill in the result explicitly: callers
+		// such as OpcodeIf() read A->score afterwards, and leaving it unset made
+		// the outcome depend on whatever happened to be on the stack.
+		A->match = 0;
+		A->score = 0;
+		A->prob = 0;
+		A->s1 = A->e1 = A->s2 = A->e2 = 0;
 		return 0;
+	}
 
 	H = (float **) 	malloc((l1+1)*sizeof(float *));// new int[s1.Length, s2.Length];  //2D array
 	T = (int **) 	malloc((l1+1)*sizeof(int *  ));
