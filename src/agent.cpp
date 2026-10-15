@@ -399,31 +399,21 @@ int AgentFreeAndNull(s_ag **pag){
 float AgentsAlign(s_ag *a1, s_ag *a2, align *sw, smith_waterman_table *blosum, stored_smith_waterman *swlist){
 
 	float bprob;
-	stored_smith_waterman *swa;
 
-	//SUGGEST: pass in pointer to the species - not its index
-	swa = ReactionReadAlignmentFromSWList(swlist,a1->spp->spp,a2->spp->spp);
-
-	if(swa==NULL){
-
-		char *comp;
-
-		comp = StringComplement(a1->S);
-
-		/*bprob =*/ SmithWatermanAlignment(comp,a2->S,sw,blosum,0);
-
-		free(comp);
-
-		align sw2;
-
-		/*bprob =*/ SmithWatermanAlignment(a1->S,a2->S,&sw2,blosum,0);
-
-		//TODO: SUGGEST: pass in pointer to the species - not its index
-		ReactionStoreAlignmentToSWList(&swlist,sw,a1->spp->spp,a2->spp->spp);
-	}
-	else{
-		SmithWatermanDataFromAlignmentObject(swa,sw);
-	}
+	// Binding is decided by aligning the complement of a1 against a2.
+	//
+	// This used to (1) look the pair up in swlist, (2) run a second alignment of the
+	// uncomplemented strings into a local that was never used, and (3) store the
+	// result with ReactionStoreAlignmentToSWList(&swlist,...). Because swlist is
+	// passed by value, (3) only updated this function's copy: the stored entry was
+	// lost (one leaked node per binding attempt) and (1) could never find anything.
+	// The lookup, the unused alignment and the store are removed; results are
+	// unchanged. See issue #42. The swlist parameter is kept so callers don't change.
+	(void) swlist;
+	char *comp;
+	comp = StringComplement(a1->S);
+	SmithWatermanAlignment(comp,a2->S,sw,blosum,0);
+	free(comp);
 
 	bprob = ReactionCalculateBindProbability(sw);
 
