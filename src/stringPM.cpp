@@ -268,7 +268,7 @@ void stringPM::SetHeadsAndDefaults(){
  * - so you can't do printf("%s",parse_error(1)); - the memory will not be freed.
  *
  */
-char * stringPM::parse_error(int errno){
+char * stringPM::parse_error(int errcode){
 
 	char * message;
 	message = (char *) malloc(100*sizeof(char));

@@ -69,6 +69,9 @@ SMspp& SMspp::operator=(const SMspp &SMspp_in){
 			pls = pls->next;
 		}
 	}
+	species_index.clear();
+	for(l_spp *p=species_list; p!=NULL; p=p->next)
+		species_index.emplace(std::string(p->S),p);	//first (head-most) wins
 
 	return *this;
 }
@@ -268,6 +271,7 @@ void SMspp::SpeciesPrependToList(l_spp *sp){
 
 	sp->next = species_list;
 	species_list = sp;
+	species_index[std::string(sp->S)] = sp;	//newest wins, as in a head-first search
 
 }
 
@@ -277,14 +281,10 @@ void SMspp::SpeciesPrependToList(l_spp *sp){
 
 l_spp * SMspp::find_spp(char *S, const int maxl0){
 
-	l_spp *p;
-	//First, check if it's in the list:
-	for(p=species_list;p!=NULL;p=p->next){
-		if(!strcmp(p->S,S))
-			return p;
-	}
-
-	return NULL;
+	//Hash lookup: a linear scan of every species ever seen was a large cost in
+	//long runs. Returns the same species as the old head-first search.
+	auto it = species_index.find(std::string(S));
+	return it==species_index.end() ? NULL : it->second;
 
 }
 
@@ -375,6 +375,7 @@ int SMspp::SpeciesListClear(){
 		ps = n;
 	}
 	species_list = NULL;
+	species_index.clear();
 	spp_count=1;  // Why is this 1??
 	return 0;
 }
@@ -450,7 +451,7 @@ int SMspp::SpeciesListPrint(FILE *fp){
 		 const unsigned int timestep, const unsigned int maxl0){
 
  	l_spp *sp;
- 	sp = species_list;
+ 	sp = find_spp(p->S,maxl0);	//hash lookup; the loop below stops at the match
  	int found=0;
  	int novel=0;
 

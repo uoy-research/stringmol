@@ -152,7 +152,7 @@ public:
 	void BucketReset(int verbose = 0);
 
 	//return a string describing the error
-	char * parse_error(int errno);
+	char * parse_error(int errcode);
 
 	//Loading
 	int 	ParametersLoad(const char *fn, int test, int verbose);
