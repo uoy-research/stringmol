@@ -282,10 +282,17 @@ unsigned long RandomSeedInitFromFile(char *fn, int printrandseed){
 				else
 					l--;
 			}
-			strncpy(rngpath,fn,l+1);
-			char *pp;
-			pp = &(rngpath[l+1]);
-			strcpy(pp,rngfn);
+			// Prefix RNGFILE with the config file's directory, if it has one.
+			// (Without this check, a config in the current directory had its first
+			// character copied as a "directory", the RNG state file was never found,
+			// and restarts silently reseeded - issue #46.)
+			if(fn[l]=='/'){
+				strncpy(rngpath,fn,l+1);
+				strcpy(&(rngpath[l+1]),rngfn);
+			}
+			else{
+				strcpy(rngpath,rngfn);
+			}
 
 			//TODO: check the logic of the following! Write in the usr guide..!
 			FILE *fprng;
