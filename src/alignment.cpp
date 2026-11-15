@@ -211,14 +211,43 @@ int AlignmentTableIndex(int c,smith_waterman_table *T){
 *
 * @return the score; or -10000 on error
 *******************************************************************************/
+/*******************************************************************************
+* @brief AlignmentTableIndex() with a cached symbol-to-row lookup
+*
+* @details AlignmentSimilarityScore() is called for every cell of every
+* alignment, and a linear search of the table key was the largest single cost in
+* a spatial run. The lookup array is rebuilt whenever a different table is used,
+* and symbols not in the key fall back to AlignmentTableIndex(), so results
+* (including its error message) are unchanged.
+*******************************************************************************/
+static inline int AlignmentTableIndexCached(int c, smith_waterman_table *T){
+	static smith_waterman_table *cached_table = NULL;
+	static char *cached_key = NULL;
+	static int cached_n = -1;
+	static int index[256];
+	if(T != cached_table || T->key != cached_key || T->N != cached_n){
+		for(int k=0;k<256;k++)
+			index[k] = -1;
+		for(int i=T->N-1;i>=0;i--)	// first match wins, as in AlignmentTableIndex()
+			index[(unsigned char)T->key[i]] = i;
+		cached_table = T;
+		cached_key = T->key;
+		cached_n = T->N;
+	}
+	int r = index[(unsigned char)c];
+	if(r < 0)
+		return AlignmentTableIndex(c,T);
+	return r;
+}
+
 float AlignmentSimilarityScore(int a, int b,smith_waterman_table *T){
 
 	int ai,bi;
 
 	if(a)
-		ai = AlignmentTableIndex(a,T);
+		ai = AlignmentTableIndexCached(a,T);
 	if(b)
-		bi = AlignmentTableIndex(b,T);
+		bi = AlignmentTableIndexCached(b,T);
 
 	if(a<0 || b<0){
 		printf("swt_index returned an error w()\n");fflush(stdout);
