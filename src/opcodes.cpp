@@ -396,6 +396,7 @@ int OpcodeCopyCheckSafe(s_ag *act, const unsigned int maxl, int & safe){
 		else
 			act->pass->S[maxl]='\0';
 		act->i[act->it]++;
+		safe = 0;	// don't write at maxl: that would overwrite the terminator just set
 		return -1;
 	}
 
@@ -403,6 +404,7 @@ int OpcodeCopyCheckSafe(s_ag *act, const unsigned int maxl, int & safe){
 
 		printf("Read head out of bounds: %d\n",ppos);
 		act->i[act->it]++;
+		safe = 0;
 		return -2;
 	}
 

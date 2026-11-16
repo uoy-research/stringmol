@@ -94,5 +94,39 @@ TEST_CASE("deletion operation works during copy"){
 
 
 
+TEST_CASE("copy with the write head at the length limit leaves the string terminated"){
+
+	SMspp SP;
+	stringPM A(&SP);
+
+	const unsigned int maxl = 20;	// small limit; the test buffers are 200 long
+	char a[] = "X=BLUBO=STRINGAAAAAA";	// exactly maxl symbols
+	char b[] = "=OYHOBZZZ";
+	REQUIRE(strlen(a) == maxl);
+
+	s_ag *pag = SetupReactionFromStrings(a,b,&A);
+	s_ag *act = (pag->status == B_ACTIVE) ? pag : pag->exec;
+	REQUIRE(act != NULL);
+	REQUIRE(strlen(act->S) == maxl);
+
+	// write head at the limit on the active string, read head at its start
+	act->wt = 1;
+	act->w[1] = act->S + maxl;
+	act->rt = 1;
+	act->r[1] = act->S;
+
+	long biomass = 0;
+	OpcodeCopy(act, false, 0, 0, maxl, A.blosum, 0, biomass, A.spl, 0);
+
+	// nothing is written at S[maxl], so the string keeps its terminator and length,
+	// and the reaction ends
+	REQUIRE(act->S[maxl] == 0);
+	REQUIRE(strlen(act->S) == maxl);
+	REQUIRE(act->status == B_UNBOUND);
+}
+
+
+
+
 TEST_CASE("substitution operation works during copy"){
 }
