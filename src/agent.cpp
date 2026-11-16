@@ -164,6 +164,16 @@ static AgentListIndex *AgentListIndexForHead(const s_ag *head){
 	return NULL;
 }
 
+// The registered list's index that holds this agent, or NULL.
+static AgentListIndex *AgentListIndexOwning(const s_ag *ag){
+	for(AgentListIndex *ix: agent_list_indexes){
+		AgentListIndex *cur = AgentListIndexFor(ix->list);
+		if(cur->holds(ag))
+			return cur;
+	}
+	return NULL;
+}
+
 void AgentListRegister(s_ag **list){
 	for(AgentListIndex *ix: agent_list_indexes)
 		if(ix->list == list){
@@ -939,12 +949,15 @@ s_ag * AgentSelectRandomly(s_ag *head, int state){
 *******************************************************************************/
 int AgentExtract(s_ag **list, s_ag *ag){
 
-	AgentListIndex *ix = AgentListIndexFor(list);
-	if(ix != NULL){
-		if(ix->holds(ag))
-			ix->remove(ag, ag->prev);
+	// Mirror on the index what the code below does to the lists. The agent may not be
+	// on *list (the spatial step can extract a partner that has already moved to
+	// nexthead); the unlinking below then acts on whichever list it is really on.
+	AgentListIndex *owner = AgentListIndexOwning(ag);
+	if(owner != NULL){
+		if(ag == *list || ag->prev != NULL)
+			owner->remove(ag, ag->prev);
 		else
-			ix->valid = false;	// not on this list: leave the list code to cope, as before
+			owner->valid = false;	// error path below: ag's own list is cut short after ag
 	}
 
 	//printf("extracting: list = %p, ag = %p\n",*list,ag);
