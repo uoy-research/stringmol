@@ -62,6 +62,9 @@ struct s_ag{//THIS DEFINES AN INDIVIDUAL AGENT IN A STRINGMOL SYSTEM
 	bool 		set;
 	int 		x;
 	int			y;
+
+	//position in the index of the agent list it is on (see AgentListRegister)
+	int			cslot;
 };
 
 
@@ -95,6 +98,18 @@ int 	AgentPrintWithIndex(FILE *fp, int detail, int idx,
 			s_ag * nowhead, unsigned int maxl);
 
 s_ag * 	AgentSelectRandomly(s_ag *head, int state);
+
+/* Agent list indexes. A registered list (stringPM's nowhead and nexthead) keeps an
+ * ordered index alongside the linked list, so that AgentAppend, AgentExtract,
+ * AgentSelectRandomly(head,-1), AgentsCount(head,-1) and AgentAddressInList no longer
+ * walk the list. The linked list is unchanged and stays the source of truth: the
+ * index only answers the same questions faster, so results are identical. Code that
+ * assigns a registered head pointer directly must call AgentListInvalidate().
+ * Setting STRINGMOL_VERIFY_AGENTLIST=1 checks every indexed answer against a walk
+ * of the list. */
+void	AgentListRegister(s_ag **list);
+void	AgentListUnregister(s_ag **list);
+void	AgentListInvalidate(s_ag **list);
 
 int 	AgentExtract(s_ag **list, s_ag *ag);
 

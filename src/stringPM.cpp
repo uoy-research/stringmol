@@ -237,6 +237,8 @@ stringPM::stringPM(const stringPM& spm){
 
 stringPM::~stringPM() {
 	BucketReset(0);
+	AgentListUnregister(&nowhead);
+	AgentListUnregister(&nexthead);
 }
 
 
@@ -251,6 +253,8 @@ void stringPM::SetHeadsAndDefaults(){
 
 	nowhead = NULL;
 	nexthead = NULL;
+	AgentListRegister(&nowhead);
+	AgentListRegister(&nexthead);
 
 	cellrad = 2500;
 	agrad = 10;
@@ -1479,6 +1483,7 @@ int stringPM::AgentsLoad(const char *fn, char *fntab, int test, int verbose){
 						//printf("agent %d, %c, %0.3f %0.3f\n",i,pag->sequence,pag->x,pag->y);
 						if(nowhead == NULL){
 							nowhead = pag;
+							AgentListInvalidate(&nowhead);
 						}
 						else{
 							AgentAppend(&nowhead,pag);
@@ -2000,6 +2005,8 @@ void stringPM::TimestepIncrement(){
 	//This used to be update()...
 	nowhead = nexthead;
 	nexthead = NULL;
+	AgentListInvalidate(&nowhead);
+	AgentListInvalidate(&nexthead);
 }
 
 
@@ -2327,6 +2334,8 @@ void stringPM::comass_TimestepIncrement(){
 
 	nowhead = nexthead;
 	nexthead = NULL;
+	AgentListInvalidate(&nowhead);
+	AgentListInvalidate(&nexthead);
 }
 /////////////////////////////////////////////////////////end of comass stuff
 
@@ -2342,6 +2351,8 @@ void stringPM::UpdateNowNext(){
 
 	nowhead = nexthead;
 	nexthead = NULL;
+	AgentListInvalidate(&nowhead);
+	AgentListInvalidate(&nexthead);
 }
 
 
