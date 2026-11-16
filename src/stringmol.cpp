@@ -184,6 +184,7 @@ void add_spp(const int nag, stringPM *A, char *sequence, char symbol){
         pag->spp=species;
         if(A->nowhead == NULL){
             A->nowhead = pag;
+            AgentListInvalidate(&(A->nowhead));
         }
         else{
             AgentAppend(&(A->nowhead),pag);
@@ -322,6 +323,7 @@ int random_config(stringPM *A, char *fout, const int nnew,const int nag){
             pag->spp=s;
             if(A->nowhead == NULL){
                 A->nowhead = pag;
+                AgentListInvalidate(&(A->nowhead));
             }
             else{
                 AgentAppend(&(A->nowhead),pag);
@@ -1870,6 +1872,8 @@ int speigpipette(stringPM *A, const int nmols, const int nrep, char *repstring, 
     //reset the now/next lists...
     A->nowhead = A->nexthead;
     A->nexthead = NULL;
+    AgentListInvalidate(&(A->nowhead));
+    AgentListInvalidate(&(A->nexthead));
 
     for(int i=0;i<A->blosum->N;i++){
         A->mass[i]=massval;

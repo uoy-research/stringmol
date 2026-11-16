@@ -38,6 +38,169 @@
 //FORWARD FUNCTION DECLARATIONS
 int 	AgentFree(s_ag *pag);
 
+#include <vector>
+
+/*******************************************************************************
+ * Agent list indexes (see agent.h).
+ *
+ * The index keeps the agents of one list in list order, in append-only slots. A
+ * removed agent leaves a dead slot; a Fenwick tree over the live flags finds the
+ * k-th live agent by a tree descent, and dead slots are compacted away once they
+ * outnumber the live ones. Each agent records its slot in cslot. The index also
+ * holds the list's tail, so appending needs no walk.
+ *
+ * All operations are O(log n) or O(1); rebuilding from the list is O(n) and happens
+ * only when an index has been invalidated or no longer matches its list's head.
+ ******************************************************************************/
+struct AgentListIndex {
+	s_ag **list = NULL;               // the head pointer this index mirrors
+	std::vector<s_ag *> slot;
+	std::vector<char> live;
+	std::vector<int> bit;             // 1-based Fenwick tree over live[]; bit[0] unused
+	int nlive = 0;
+	s_ag *tail = NULL;
+	bool valid = false;
+
+	void clear(){
+		slot.clear(); live.clear(); bit.assign(1,0);
+		nlive = 0; tail = NULL; valid = true;
+	}
+	int prefix(int i) const {
+		int s = 0;
+		for(; i > 0; i -= i & -i) s += bit[i];
+		return s;
+	}
+	void push(s_ag *a){
+		slot.push_back(a); live.push_back(1);
+		int i = (int) slot.size();    // 1-based index of the new slot
+		bit.push_back(1 + prefix(i-1) - prefix(i - (i & -i)));
+		a->cslot = i - 1;
+		nlive++; tail = a;
+	}
+	bool holds(const s_ag *a) const {
+		int k = a->cslot;
+		return k >= 0 && k < (int) slot.size() && slot[k] == a && live[k];
+	}
+	// prev: the agent before a in the list, before a was unlinked
+	void remove(s_ag *a, s_ag *prev){
+		int k = a->cslot;
+		live[k] = 0; nlive--;
+		for(int i = k+1; i < (int) bit.size(); i += i & -i) bit[i]--;
+		if(a == tail) tail = prev;
+		if((int) slot.size() > 2*nlive + 4096) compact();
+	}
+	s_ag *kth(int k) const {          // 0-based k-th live agent; k < nlive
+		int pos = 0, n = (int) bit.size() - 1, step = 1;
+		while(step*2 <= n) step *= 2;
+		for(; step; step >>= 1)
+			if(pos + step <= n && bit[pos+step] <= k){ pos += step; k -= bit[pos]; }
+		return slot[pos];
+	}
+	s_ag *first() const { return nlive ? kth(0) : NULL; }
+	void compact(){
+		std::vector<s_ag *> keep;
+		keep.reserve(nlive);
+		for(size_t i = 0; i < slot.size(); i++) if(live[i]) keep.push_back(slot[i]);
+		s_ag *t = tail;
+		clear();
+		for(s_ag *a: keep) push(a);
+		tail = t;
+	}
+	void rebuild(){
+		clear();
+		for(s_ag *p = *list; p != NULL; p = p->next) push(p);
+	}
+};
+
+static std::vector<AgentListIndex *> agent_list_indexes;
+static int agent_list_verify = -1;
+
+static bool AgentListVerifying(){
+	if(agent_list_verify < 0){
+		const char *v = getenv("STRINGMOL_VERIFY_AGENTLIST");
+		agent_list_verify = (v != NULL && v[0] != '\0' && v[0] != '0') ? 1 : 0;
+	}
+	return agent_list_verify == 1;
+}
+
+// The index must agree with the list it mirrors; abort if it doesn't.
+static void AgentListCheck(const AgentListIndex *ix){
+	int k = 0;
+	s_ag *p, *last = NULL;
+	for(p = *(ix->list); p != NULL; p = p->next, k++){
+		if(k >= ix->nlive || ix->kth(k) != p || !ix->holds(p)){
+			printf("ERROR: agent list index differs from its list at position %d\n", k);
+			exit(1);
+		}
+		last = p;
+	}
+	if(k != ix->nlive || ix->tail != last){
+		printf("ERROR: agent list index has %d agents, list has %d (or tail differs)\n", ix->nlive, k);
+		exit(1);
+	}
+}
+
+// An up-to-date index for this list, or NULL if the list isn't registered.
+static AgentListIndex *AgentListIndexFor(s_ag **list){
+	for(AgentListIndex *ix: agent_list_indexes){
+		if(ix->list == list){
+			if(!ix->valid || ix->first() != *list)
+				ix->rebuild();
+			if(AgentListVerifying())
+				AgentListCheck(ix);
+			return ix;
+		}
+	}
+	return NULL;
+}
+
+// The index of the registered list whose head is this agent, or NULL.
+static AgentListIndex *AgentListIndexForHead(const s_ag *head){
+	if(head == NULL)
+		return NULL;
+	for(AgentListIndex *ix: agent_list_indexes)
+		if(*(ix->list) == head)
+			return AgentListIndexFor(ix->list);
+	return NULL;
+}
+
+// The registered list's index that holds this agent, or NULL.
+static AgentListIndex *AgentListIndexOwning(const s_ag *ag){
+	for(AgentListIndex *ix: agent_list_indexes){
+		AgentListIndex *cur = AgentListIndexFor(ix->list);
+		if(cur->holds(ag))
+			return cur;
+	}
+	return NULL;
+}
+
+void AgentListRegister(s_ag **list){
+	for(AgentListIndex *ix: agent_list_indexes)
+		if(ix->list == list){
+			ix->valid = false;
+			return;
+		}
+	AgentListIndex *ix = new AgentListIndex();
+	ix->list = list;
+	agent_list_indexes.push_back(ix);
+}
+
+void AgentListUnregister(s_ag **list){
+	for(size_t i = 0; i < agent_list_indexes.size(); i++)
+		if(agent_list_indexes[i]->list == list){
+			delete agent_list_indexes[i];
+			agent_list_indexes.erase(agent_list_indexes.begin() + i);
+			return;
+		}
+}
+
+void AgentListInvalidate(s_ag **list){
+	for(AgentListIndex *ix: agent_list_indexes)
+		if(ix->list == list)
+			ix->valid = false;
+}
+
+
 
 /******************************************************************************
  * @brief reposition pointers if they are beyond the end of string post cleave
@@ -216,6 +379,7 @@ s_ag * AgentMake(int alab, const unsigned long int agct){//, const unsigned int 
 		ag->biomass=0;
 		ag->x=-1;
 		ag->y=-1;
+		ag->cslot=-1;
 		return ag;
 	}
 	else{
@@ -313,6 +477,19 @@ int AgentUnbind(s_ag * pag){
  *****************************************************************************/
 int AgentAppend(s_ag **list, s_ag *ag){
 	s_ag *pag;
+
+	AgentListIndex *ix = AgentListIndexFor(list);
+	if(ix != NULL){
+		if(*list==NULL){
+			*list=ag;
+		}
+		else{
+			ix->tail->next = ag;
+			ag->prev = ix->tail;
+		}
+		ix->push(ag);
+		return 0;
+	}
 
 	//printf("appending: list = %p, ag = %p\n",*list,ag);
 	if(*list==NULL){
@@ -668,6 +845,12 @@ int AgentPrintWithIndex(FILE *fp, int detail, int idx,
 int AgentsCount(s_ag *head, int state){
 	s_ag *pag;
 	int count=0;
+
+	if(state == -1){
+		AgentListIndex *ix = AgentListIndexForHead(head);
+		if(ix != NULL)
+			return ix->nlive;
+	}
 	pag = head;
 	while(pag!=NULL){
 		switch(state){
@@ -708,16 +891,24 @@ s_ag * AgentSelectRandomly(s_ag *head, int state){
 	pag=NULL;
 
 	switch(state){
-	case -1:
+	case -1:{
+		// same draws as walking the list: pos == count (a draw of exactly 1) gives
+		// NULL and draws again
+		AgentListIndex *ix = AgentListIndexForHead(head);
 		while(pag==NULL){
 			pos = (int) (count * RandomBetween0And1());
 			//printf("count = %d, pos = %d\n",count,pos);
+			if(ix != NULL){
+				pag = pos < count ? ix->kth(pos) : NULL;
+				continue;
+			}
 			pag = head;
 			for(i=0;i<pos;i++){
 				pag = pag->next;
 			}
 		}
 		break;
+	}
 	case B_UNBOUND:
 	case B_ACTIVE:
 	case B_PASSIVE:
@@ -758,6 +949,17 @@ s_ag * AgentSelectRandomly(s_ag *head, int state){
 *******************************************************************************/
 int AgentExtract(s_ag **list, s_ag *ag){
 
+	// Mirror on the index what the code below does to the lists. The agent may not be
+	// on *list (the spatial step can extract a partner that has already moved to
+	// nexthead); the unlinking below then acts on whichever list it is really on.
+	AgentListIndex *owner = AgentListIndexOwning(ag);
+	if(owner != NULL){
+		if(ag == *list || ag->prev != NULL)
+			owner->remove(ag, ag->prev);
+		else
+			owner->valid = false;	// error path below: ag's own list is cut short after ag
+	}
+
 	//printf("extracting: list = %p, ag = %p\n",*list,ag);
 	if(ag == *list){
 		*list = ag->next;
@@ -793,6 +995,10 @@ int AgentExtract(s_ag **list, s_ag *ag){
 *******************************************************************************/
 bool AgentAddressInList(s_ag *list,const s_ag *tag){
 	s_ag *pag;
+
+	AgentListIndex *ix = AgentListIndexForHead(list);
+	if(ix != NULL)
+		return ix->holds(tag);
 
 	for(pag=list;pag!=NULL;pag=pag->next){
 		if(tag == pag){
